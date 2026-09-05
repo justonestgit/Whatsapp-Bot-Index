@@ -1,0 +1,10 @@
+node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Dados locais do bot
+dados/
+
+# Arquivos temporários
+*.log
+*.tmp
