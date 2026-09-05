@@ -1157,6 +1157,330 @@ carregarControleXP();
 
 
 // ============================================================
+// 💤 OBTER MENSAGENS DO GRUPO DIRETAMENTE DO WHATSAPP WEB
+// Evita client.getChatById() e fetchMessages()
+// ============================================================
+
+async function obterMensagensGrupoDireto(
+    grupoId,
+    limite = 1000
+) {
+
+    try {
+
+        const resultado =
+            await client.pupPage.evaluate(
+                async (
+                    chatId,
+                    limiteMensagens
+                ) => {
+
+                    try {
+
+                        const Collections =
+                            window.require(
+                                'WAWebCollections'
+                            );
+
+                        if (!Collections) {
+                            return {
+                                sucesso: false,
+                                erro:
+                                    'WAWebCollections não disponível.'
+                            };
+                        }
+
+                        const Chat =
+                            Collections.Chat;
+
+                        if (!Chat) {
+                            return {
+                                sucesso: false,
+                                erro:
+                                    'Coleção Chat não disponível.'
+                            };
+                        }
+
+                        // ====================================================
+                        // TENTAR PEGAR O CHAT DIRETAMENTE DA COLEÇÃO
+                        // ====================================================
+
+                        let chat =
+                            Chat.get(chatId);
+
+                        // Caso não esteja carregado,
+                        // tentar localizar pelo WID
+                        if (!chat) {
+
+                            try {
+
+                                const WidFactory =
+                                    window.require(
+                                        'WAWebWidFactory'
+                                    );
+
+                                const wid =
+                                    WidFactory.createWid(
+                                        chatId
+                                    );
+
+                                if (wid) {
+
+                                    chat =
+                                        await Chat.find(
+                                            wid
+                                        );
+                                }
+
+                            } catch (erroFind) {
+
+                                console.log(
+                                    '⚠️ Chat.find falhou:',
+                                    String(
+                                        erroFind?.message ||
+                                        erroFind
+                                    )
+                                );
+                            }
+                        }
+
+                        if (!chat) {
+
+                            return {
+                                sucesso: false,
+                                erro:
+                                    'Grupo não encontrado na coleção do WhatsApp.'
+                            };
+                        }
+
+                        // ====================================================
+                        // PEGAR MENSAGENS JÁ CARREGADAS
+                        // ====================================================
+
+                        let mensagens =
+                            chat.msgs &&
+                            typeof chat.msgs.getModelsArray ===
+                                'function'
+                                ? chat.msgs.getModelsArray()
+                                : [];
+
+                        // ====================================================
+                        // TENTAR CARREGAR MENSAGENS ANTIGAS
+                        // ====================================================
+
+                        if (
+                            mensagens.length <
+                            limiteMensagens
+                        ) {
+
+                            try {
+
+                                const LoadMessages =
+                                    window.require(
+                                        'WAWebChatLoadMessages'
+                                    );
+
+                                if (
+                                    LoadMessages &&
+                                    typeof LoadMessages
+                                        .loadEarlierMsgs ===
+                                        'function'
+                                ) {
+
+                                    let tentativas = 0;
+
+                                    while (
+                                        mensagens.length <
+                                            limiteMensagens &&
+                                        tentativas < 20
+                                    ) {
+
+                                        const anteriores =
+                                            await LoadMessages
+                                                .loadEarlierMsgs({
+                                                    chat
+                                                });
+
+                                        if (
+                                            !anteriores ||
+                                            !anteriores.length
+                                        ) {
+                                            break;
+                                        }
+
+                                        mensagens =
+                                            chat.msgs &&
+                                            typeof chat.msgs
+                                                .getModelsArray ===
+                                                'function'
+                                                ? chat.msgs
+                                                    .getModelsArray()
+                                                : mensagens;
+
+                                        tentativas++;
+                                    }
+                                }
+
+                            } catch (erroHistorico) {
+
+                                console.log(
+                                    '⚠️ Não foi possível carregar mensagens antigas:',
+                                    String(
+                                        erroHistorico?.message ||
+                                        erroHistorico
+                                    )
+                                );
+                            }
+                        }
+
+                        // ====================================================
+                        // LIMITAR ÀS ÚLTIMAS MENSAGENS
+                        // ====================================================
+
+                        mensagens =
+                            mensagens
+                                .sort(
+                                    (a, b) =>
+                                        (a.t || 0) -
+                                        (b.t || 0)
+                                )
+                                .slice(
+                                    -limiteMensagens
+                                );
+
+                        // ====================================================
+                        // CONVERTER PARA DADOS SIMPLES
+                        // ====================================================
+
+                        const resultadoMensagens =
+                            mensagens.map(
+                                mensagem => {
+
+                                    let autor = null;
+
+                                    try {
+
+                                        autor =
+                                            mensagem.author?._serialized ||
+                                            mensagem.author?.toString?.() ||
+                                            null;
+
+                                    } catch {}
+
+                                    if (
+                                        !autor &&
+                                        mensagem.author
+                                    ) {
+                                        autor =
+                                            String(
+                                                mensagem.author
+                                            );
+                                    }
+
+                                    let from = null;
+
+                                    try {
+
+                                        from =
+                                            mensagem.from?._serialized ||
+                                            mensagem.from?.toString?.() ||
+                                            null;
+
+                                    } catch {}
+
+                                    if (
+                                        !from &&
+                                        mensagem.from
+                                    ) {
+                                        from =
+                                            String(
+                                                mensagem.from
+                                            );
+                                    }
+
+                                    return {
+
+                                        timestamp:
+                                            Number(
+                                                mensagem.t
+                                            ) || 0,
+
+                                        fromMe:
+                                            mensagem.id
+                                                ?.fromMe ===
+                                            true,
+
+                                        type:
+                                            mensagem.type ||
+                                            null,
+
+                                        isNotification:
+                                            !!mensagem
+                                                .isNotification,
+
+                                        author:
+                                            autor,
+
+                                        from:
+                                            from
+                                    };
+                                }
+                            );
+
+                        return {
+                            sucesso: true,
+                            mensagens:
+                                resultadoMensagens
+                        };
+
+                    } catch (erro) {
+
+                        return {
+                            sucesso: false,
+                            erro:
+                                String(
+                                    erro?.message ||
+                                    erro
+                                )
+                        };
+                    }
+
+                },
+                grupoId,
+                limite
+            );
+
+        if (
+            !resultado ||
+            !resultado.sucesso
+        ) {
+
+            console.log(
+                `⚠️ Não foi possível obter mensagens do grupo ${grupoId}:`,
+                resultado?.erro ||
+                    'erro desconhecido'
+            );
+
+            return [];
+        }
+
+        return (
+            resultado.mensagens ||
+            []
+        );
+
+    } catch (erro) {
+
+        console.error(
+            `❌ Erro ao acessar mensagens diretamente do grupo ${grupoId}:`,
+            erro
+        );
+
+        return [];
+    }
+}
+
+// ============================================================
 // 💤 PROCESSAR MENSAGENS ENVIADAS ENQUANTO O BOT ESTAVA OFFLINE
 // ============================================================
 
@@ -1187,27 +1511,6 @@ async function processarXPOffline() {
             try {
 
                 // ====================================================
-                // PEGAR O GRUPO DIRETAMENTE
-                // ====================================================
-
-                const grupo =
-                    await client.getChatById(
-                        grupoId
-                    );
-
-                if (
-                    !grupo ||
-                    !grupo.isGroup
-                ) {
-
-                    console.log(
-                        `⚠️ Não foi possível acessar o grupo ${grupoId}`
-                    );
-
-                    continue;
-                }
-
-                // ====================================================
                 // PRIMEIRA VEZ VENDO ESTE GRUPO
                 // ====================================================
 
@@ -1228,7 +1531,7 @@ async function processarXPOffline() {
                     );
 
                     console.log(
-                        `💤 Primeiro registro de XP: ${grupo.name}`
+                        `💤 Primeiro registro de XP para ${grupoId}`
                     );
 
                     continue;
@@ -1242,13 +1545,30 @@ async function processarXPOffline() {
                     ) || 0;
 
                 // ====================================================
-                // PEGAR MENSAGENS RECENTES
+                // PEGAR MENSAGENS DIRETAMENTE DO WHATSAPP WEB
                 // ====================================================
 
                 const mensagens =
-                    await grupo.fetchMessages({
-                        limit: 1000
-                    });
+                    await obterMensagensGrupoDireto(
+                        grupoId,
+                        1000
+                    );
+
+                if (
+                    !mensagens ||
+                    mensagens.length === 0
+                ) {
+
+                    console.log(
+                        `💤 Nenhuma mensagem disponível no grupo ${grupoId}.`
+                    );
+
+                    continue;
+                }
+
+                // ====================================================
+                // FILTRAR MENSAGENS ENVIADAS DURANTE O OFFLINE
+                // ====================================================
 
                 const mensagensOffline =
                     mensagens.filter(
@@ -1287,7 +1607,8 @@ async function processarXPOffline() {
                     // Ignorar notificações do sistema
                     if (
                         mensagem.type ===
-                        'notification'
+                            'notification' ||
+                        mensagem.isNotification
                     ) {
                         continue;
                     }
@@ -1331,7 +1652,7 @@ async function processarXPOffline() {
                 );
 
                 console.log(
-                    `💤 ${grupo.name}: ${quantidadeGrupo} mensagens recuperadas.`
+                    `💤 ${grupoId}: ${quantidadeGrupo} mensagens recuperadas.`
                 );
 
             } catch (erroGrupo) {
@@ -1468,7 +1789,7 @@ client.on(
 
         await processarXPOffline();
 
-        await atualizarControleXPOnline();
+        
 
     }
 );
