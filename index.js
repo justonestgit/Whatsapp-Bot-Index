@@ -5037,6 +5037,312 @@ try {
 }
 
 // ============================================================
+// 🏆 MOSTRAR RANKING DE XP
+// ============================================================
+
+async function mostrarRanking(message) {
+
+    try {
+
+        // ========================================================
+        // 1. VERIFICAR SE ESTÁ EM GRUPO
+        // ========================================================
+
+        if (
+            !message.from ||
+            !message.from.endsWith('@g.us')
+        ) {
+
+            await reagir(
+                message,
+                '❌'
+            );
+
+            await responderCitando(
+                message,
+                `┏═•❃༺🏆༻❃•═┓
+│   *🏆 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐗𝐏*
+├✯
+│
+├➤ ❌ Este comando só pode
+│   ser usado em grupos.
+│
+┗═•❃༺🏆༻❃•═┛`
+            );
+
+            return;
+        }
+
+        // ========================================================
+        // 2. PEGAR DADOS DO GRUPO
+        // ========================================================
+
+        const grupoXP =
+            dadosXP.get(
+                message.from
+            );
+
+        if (
+            !grupoXP ||
+            grupoXP.size === 0
+        ) {
+
+            await reagir(
+                message,
+                '📊'
+            );
+
+            await responderCitando(
+                message,
+                `┏═•❃༺🏆༻❃•═┓
+│   *🏆 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐗𝐏*
+├✯
+│
+├➤ 📊 Ainda não existem
+│   jogadores no ranking.
+│
+├➤ _Comecem a conversar
+│   para ganhar XP!_ ⭐
+│
+┗═•❃༺🏆༻❃•═┛`
+            );
+
+            return;
+        }
+
+        // ========================================================
+        // 3. TRANSFORMAR MAP EM ARRAY
+        // ========================================================
+
+        const jogadores =
+            [...grupoXP.entries()]
+                .map(
+                    (
+                        [
+                            usuarioId,
+                            dados
+                        ]
+                    ) => ({
+
+                        id:
+                            usuarioId,
+
+                        xp:
+                            Number(
+                                dados.xp
+                            ) || 0,
+
+                        mensagens:
+                            Number(
+                                dados.mensagens
+                            ) || 0,
+
+                        nivel:
+                            Number(
+                                dados.nivel
+                            ) ||
+                            calcularNivel(
+                                Number(
+                                    dados.xp
+                                ) || 0
+                            )
+
+                    })
+                );
+
+        // ========================================================
+        // 4. ORDENAR
+        // ========================================================
+        //
+        // Primeiro XP.
+        // Em caso de empate, mensagens.
+        // Se ainda empatar, mantém uma ordem estável pelo ID.
+        // ========================================================
+
+        jogadores.sort(
+            (a, b) => {
+
+                if (
+                    b.xp !==
+                    a.xp
+                ) {
+
+                    return (
+                        b.xp -
+                        a.xp
+                    );
+                }
+
+                if (
+                    b.mensagens !==
+                    a.mensagens
+                ) {
+
+                    return (
+                        b.mensagens -
+                        a.mensagens
+                    );
+                }
+
+                return String(
+                    a.id
+                ).localeCompare(
+                    String(
+                        b.id
+                    )
+                );
+            }
+        );
+
+        // ========================================================
+        // 5. ENCONTRAR POSIÇÃO DO USUÁRIO
+        // ========================================================
+
+        const idRemetente =
+            obterIdRemetente(
+                message
+            );
+
+        const posicaoUsuario =
+            jogadores.findIndex(
+                jogador =>
+                    idsIguais(
+                        jogador.id,
+                        idRemetente
+                    )
+            );
+
+        // ========================================================
+        // 6. TOP 10
+        // ========================================================
+
+        const top10 =
+            jogadores.slice(
+                0,
+                10
+            );
+
+        const medalhas = [
+            '🥇',
+            '🥈',
+            '🥉'
+        ];
+
+        let textoRanking =
+            `┏═•❃༺🏆༻❃•═┓
+│   *🏆 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐗𝐏*
+├✯
+│
+`;
+
+        const idsMencao = [];
+
+        for (
+            let i = 0;
+            i < top10.length;
+            i++
+        ) {
+
+            const jogador =
+                top10[i];
+
+            const posicao =
+                i + 1;
+
+            const emojiPosicao =
+                medalhas[i] ||
+                `${posicao}️⃣`;
+
+            const mencao =
+                `@${String(
+                    jogador.id
+                ).split('@')[0]}`;
+
+            idsMencao.push(
+                jogador.id
+            );
+
+            textoRanking +=
+                `├➤ ${emojiPosicao} *${posicao}º* ${mencao}
+│   ⭐ Nível *${jogador.nivel}* • *${jogador.xp} XP*
+│   💬 ${jogador.mensagens} mensagem${jogador.mensagens === 1 ? '' : 'ns'}
+│
+`;
+        }
+
+        textoRanking +=
+            `└──────────────────`;
+
+        // ========================================================
+        // 7. MOSTRAR POSIÇÃO DO USUÁRIO
+        // ========================================================
+
+        if (
+            posicaoUsuario !== -1
+        ) {
+
+            const jogadorUsuario =
+                jogadores[
+                    posicaoUsuario
+                ];
+
+            const posicao =
+                posicaoUsuario + 1;
+
+            textoRanking +=
+                `
+
+👤 *SUA POSIÇÃO*
+
+➜ *${posicao}º lugar*
+⭐ Nível *${jogadorUsuario.nivel}*
+✨ *${jogadorUsuario.xp} XP*
+💬 *${jogadorUsuario.mensagens} mensagens*`;
+        }
+
+        textoRanking +=
+            `
+
+┗═•❃༺🏆༻❃•═┛`;
+
+        // ========================================================
+        // 8. ENVIAR
+        // ========================================================
+
+        await reagir(
+            message,
+            '🏆'
+        );
+
+        await responderCitando(
+            message,
+            textoRanking,
+            {
+                mentions:
+                    idsMencao
+            }
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao mostrar ranking:',
+            erro
+        );
+
+        await reagir(
+            message,
+            '❌'
+        );
+
+        await responderCitando(
+            message,
+            '❌ _Ocorreu um erro ao carregar o ranking de XP._'
+        );
+    }
+}
+
+// ============================================================
 // FIGURINHA
 // ============================================================
 
@@ -12906,6 +13212,10 @@ case 'recusar':
 
     case 'perfil':
     await mostrarPerfil(message, argumentos);
+    break;
+
+    case 'ranking':
+    await mostrarRanking(message);
     break;
 
 
