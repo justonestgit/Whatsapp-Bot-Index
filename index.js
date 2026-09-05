@@ -4263,6 +4263,149 @@ async function mostrarInfo(message) {
 }
 
 // ============================================================
+// 🖼️ OBTER FOTO DE PERFIL DIRETAMENTE DO WHATSAPP WEB
+// ============================================================
+
+async function obterFotoPerfilDireta(idPessoa) {
+
+    try {
+
+        if (!idPessoa) {
+            return null;
+        }
+
+        const resultado =
+            await client.pupPage.evaluate(
+                async (contactId) => {
+
+                    try {
+
+                        // ====================================================
+                        // CRIAR O WID DIRETAMENTE
+                        // ====================================================
+
+                        const WidFactory =
+                            window.require(
+                                'WAWebWidFactory'
+                            );
+
+                        const wid =
+                            WidFactory.createWid(
+                                contactId
+                            );
+
+                        if (!wid) {
+                            return {
+                                sucesso: false,
+                                erro: 'Não foi possível criar o WID.'
+                            };
+                        }
+
+                        // ====================================================
+                        // LOCALIZAR O CHAT CORRETO
+                        // ====================================================
+
+                        const FindChatAction =
+                            window.require(
+                                'WAWebFindChatAction'
+                            );
+
+                        const resultadoChat =
+                            await FindChatAction
+                                .findOrCreateLatestChat(
+                                    wid
+                                );
+
+                        const chat =
+                            resultadoChat?.chat ||
+                            resultadoChat;
+
+                        if (!chat) {
+
+                            return {
+                                sucesso: false,
+                                erro: 'Chat não encontrado.'
+                            };
+                        }
+
+                        // ====================================================
+                        // OBTER FOTO
+                        // ====================================================
+
+                        const ProfilePicBridge =
+                            window.require(
+                                'WAWebContactProfilePicThumbBridge'
+                            );
+
+                        const foto =
+                            await ProfilePicBridge
+                                .requestProfilePicFromServer(
+                                    chat
+                                );
+
+                        if (!foto) {
+
+                            return {
+                                sucesso: false,
+                                erro: 'WhatsApp não retornou uma foto.'
+                            };
+                        }
+
+                        // ====================================================
+                        // DEVOLVER URL
+                        // ====================================================
+
+                        return {
+                            sucesso: true,
+                            url:
+                                foto.eurl ||
+                                foto.url ||
+                                null
+                        };
+
+                    } catch (erro) {
+
+                        return {
+                            sucesso: false,
+                            erro:
+                                String(
+                                    erro?.message ||
+                                    erro
+                                )
+                        };
+                    }
+                },
+                idPessoa
+            );
+
+        console.log(
+            '🖼️ RESULTADO FOTO DIRETA:',
+            resultado
+        );
+
+        if (
+            !resultado ||
+            !resultado.sucesso ||
+            !resultado.url
+        ) {
+
+            return null;
+        }
+
+        return resultado.url;
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao obter foto diretamente:',
+            erro
+        );
+
+        return null;
+    }
+}
+
+// ============================================================
 // 👤 MOSTRAR PERFIL
 // ============================================================
 
@@ -4442,82 +4585,44 @@ let imagemPerfil = null;
 
 try {
 
-    let contato = pessoa;
+    const urlFoto =
+        await obterFotoPerfilDireta(
+            idPessoa
+        );
 
-    // ====================================================
-    // TENTAR OBTER O CONTATO
-    // ====================================================
-
-    if (!contato) {
+    if (urlFoto) {
 
         try {
 
-            contato =
-                await client.getContactById(
-                    idPessoa
+            imagemPerfil =
+                await MessageMedia.fromUrl(
+                    urlFoto
                 );
 
-        } catch (erroContato) {
+            console.log(
+                '✅ Foto de perfil carregada!'
+            );
+
+        } catch (erroDownload) {
 
             console.log(
-                '⚠️ Não foi possível obter o contato pelo ID:',
-                erroContato.message
+                '⚠️ Não foi possível baixar a foto:',
+                erroDownload.message
             );
         }
+
+    } else {
+
+        console.log(
+            'ℹ️ Nenhuma foto de perfil disponível.'
+        );
     }
 
-    // ====================================================
-    // TENTAR OBTER A FOTO
-    // ====================================================
-
-    if (contato) {
-
-        try {
-
-            const urlFoto =
-                await contato.getProfilePicUrl();
-
-            console.log(
-                '🖼️ URL DA FOTO:',
-                urlFoto || 'NENHUMA'
-            );
-
-            if (urlFoto) {
-
-                try {
-
-                    imagemPerfil =
-                        await MessageMedia.fromUrl(
-                            urlFoto
-                        );
-
-                    console.log(
-                        '✅ Foto de perfil carregada!'
-                    );
-
-                } catch (erroDownload) {
-
-                    console.log(
-                        '⚠️ Não foi possível baixar a foto:',
-                        erroDownload.message
-                    );
-                }
-            }
-
-        } catch (erroFoto) {
-
-            console.log(
-                '⚠️ getProfilePicUrl falhou:',
-                erroFoto.message
-            );
-        }
-    }
-
-} catch (erro) {
+} catch (erroFoto) {
 
     console.log(
-        '⚠️ Erro geral ao carregar foto de perfil:',
-        erro.message
+        '⚠️ Erro ao obter foto de perfil:',
+        erroFoto.message
     );
 }
 
