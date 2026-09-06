@@ -26,7 +26,7 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.12';
+const VERSAO = '3.13';;
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -49,6 +49,11 @@ const dadosXP = new Map();
 const moedasUsuarios = new Map();
 const jogosEliminacao = new Map();
 const personalidadesGrupos = new Map();
+const historicoEconomia = [];
+const inventariosEconomia = new Map();
+const cooldownsMineracao = new Map();
+const cooldownsRoubo = new Map();
+const dadosRoubo = new Map();
 
 // ============================================================
 // 🎖️ SISTEMA DE CONQUISTAS
@@ -1271,159 +1276,190 @@ function carregarXP() {
     }
 }
 
+function formatarMoedas(valor) {
+    return Math.max(0, Math.floor(Number(valor) || 0)).toLocaleString('pt-BR');
+}
+
+function obterInventario(usuarioId) {
+    if (!usuarioId) return null;
+    if (!inventariosEconomia.has(usuarioId)) {
+        inventariosEconomia.set(usuarioId, {});
+    }
+    return inventariosEconomia.get(usuarioId);
+}
+
+function quantidadeItem(usuarioId, item) {
+    return Number(obterInventario(usuarioId)?.[item] || 0);
+}
+
+function adicionarItem(usuarioId, item, quantidade = 1) {
+    const inventario = obterInventario(usuarioId);
+    inventario[item] = Math.max(0, quantidadeItem(usuarioId, item) + quantidade);
+    return inventario[item];
+}
+
+function consumirItem(usuarioId, item, quantidade = 1) {
+    if (quantidadeItem(usuarioId, item) < quantidade) return false;
+    adicionarItem(usuarioId, item, -quantidade);
+    return true;
+}
+
+function registrarTransacao(tipo, de, para, valor, detalhes = '') {
+    historicoEconomia.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        tipo,
+        de: de || null,
+        para: para || null,
+        valor: Math.max(0, Math.floor(Number(valor) || 0)),
+        detalhes,
+        data: new Date().toISOString()
+    });
+
+    if (historicoEconomia.length > 500) {
+        historicoEconomia.splice(0, historicoEconomia.length - 500);
+    }
+}
+
 function salvarMoedas() {
-
     try {
-
-        const dados = {};
-
-        for (
-            const [usuarioId, carteira]
-            of moedasUsuarios.entries()
-        ) {
-            dados[usuarioId] = {
-                saldo:
-                    Number(carteira.saldo) || 0,
-
-                ultimoDiario:
-                    Number(carteira.ultimoDiario) || 0
+        const usuarios = {};
+        for (const [usuarioId, carteira] of moedasUsuarios.entries()) {
+            usuarios[usuarioId] = {
+                saldo: Math.max(0, Math.floor(Number(carteira.saldo) || 0)),
+                ultimoDiario: 0,
+                mineracoes: Number(carteira.mineracoes) || 0,
+                roubosSucesso: Number(carteira.roubosSucesso) || 0
             };
+        }
+
+        const inventarios = {};
+        for (const [usuarioId, inventario] of inventariosEconomia.entries()) {
+            inventarios[usuarioId] = inventario;
         }
 
         fs.writeFileSync(
             arquivoMoedas,
-            JSON.stringify(
-                dados,
-                null,
-                2
-            ),
+            JSON.stringify({ usuarios, inventarios, transacoes: historicoEconomia }, null, 2),
             'utf8'
         );
-
     } catch (erro) {
-
-        console.error(
-            '❌ Erro ao salvar moedas:',
-            erro
-        );
+        console.error('❌ Erro ao salvar economia:', erro);
     }
 }
 
 function carregarMoedas() {
-
     try {
+        if (!fs.existsSync(arquivoMoedas)) return;
 
-        if (!fs.existsSync(arquivoMoedas)) {
-            return;
-        }
-
-        const dados =
-            JSON.parse(
-                fs.readFileSync(
-                    arquivoMoedas,
-                    'utf8'
-                )
-            );
-
+        const dados = JSON.parse(fs.readFileSync(arquivoMoedas, 'utf8'));
         moedasUsuarios.clear();
+        inventariosEconomia.clear();
+        historicoEconomia.length = 0;
 
-        for (
-            const [usuarioId, carteira]
-            of Object.entries(dados)
-        ) {
+        const usuarios = dados?.usuarios && typeof dados.usuarios === 'object'
+            ? dados.usuarios
+            : dados;
+
+        for (const [usuarioId, carteira] of Object.entries(usuarios || {})) {
+            if (usuarioId === 'usuarios' || usuarioId === 'inventarios' || usuarioId === 'transacoes') continue;
 
             if (typeof carteira === 'number') {
-                moedasUsuarios.set(
-                    usuarioId,
-                    {
-                        saldo: Math.max(0, carteira),
-                        ultimoDiario: 0
-                    }
-                );
+                moedasUsuarios.set(usuarioId, {
+                    saldo: Math.max(0, carteira),
+                    ultimoDiario: 0,
+                    mineracoes: 0,
+                    roubosSucesso: 0
+                });
                 continue;
             }
 
-            if (
-                carteira &&
-                typeof carteira === 'object'
-            ) {
-                moedasUsuarios.set(
-                    usuarioId,
-                    {
-                        saldo: Math.max(
-                            0,
-                            Number(carteira.saldo) || 0
-                        ),
-                        ultimoDiario:
-                            Number(carteira.ultimoDiario) || 0
-                    }
-                );
+            if (carteira && typeof carteira === 'object') {
+                moedasUsuarios.set(usuarioId, {
+                    saldo: Math.max(0, Number(carteira.saldo) || 0),
+                    ultimoDiario: 0,
+                    mineracoes: Number(carteira.mineracoes) || 0,
+                    roubosSucesso: Number(carteira.roubosSucesso) || 0
+                });
             }
         }
 
-        console.log(
-            '💰 Sistema de moedas carregado:',
-            moedasUsuarios.size,
-            'usuários'
-        );
+        if (dados?.inventarios && typeof dados.inventarios === 'object') {
+            for (const [usuarioId, inventario] of Object.entries(dados.inventarios)) {
+                inventariosEconomia.set(usuarioId, inventario || {});
+            }
+        }
 
+        if (Array.isArray(dados?.transacoes)) {
+            historicoEconomia.push(...dados.transacoes.slice(-500));
+        }
+
+        console.log('💰 Economia carregada:', moedasUsuarios.size, 'usuários');
     } catch (erro) {
-
-        console.error(
-            '❌ Erro ao carregar moedas:',
-            erro
-        );
+        console.error('❌ Erro ao carregar economia:', erro);
     }
 }
 
 function garantirCarteira(usuarioId) {
-
-    if (!usuarioId) {
-        return null;
-    }
+    if (!usuarioId) return null;
 
     if (!moedasUsuarios.has(usuarioId)) {
-        moedasUsuarios.set(
-            usuarioId,
-            {
-                saldo: MOEDAS_INICIAIS,
-                ultimoDiario: 0
-            }
-        );
+        moedasUsuarios.set(usuarioId, {
+            saldo: MOEDAS_INICIAIS,
+            ultimoDiario: 0,
+            mineracoes: 0,
+            roubosSucesso: 0
+        });
     }
 
-    const carteira =
-        moedasUsuarios.get(usuarioId);
-
-    if (typeof carteira === 'number') {
-        const novaCarteira = {
-            saldo: carteira,
-            ultimoDiario: 0
-        };
-
-        moedasUsuarios.set(
-            usuarioId,
-            novaCarteira
-        );
-
-        return novaCarteira;
-    }
-
-    carteira.saldo = Math.max(
-        0,
-        Number(carteira.saldo) || 0
-    );
-
-    carteira.ultimoDiario =
-        Number(carteira.ultimoDiario) || 0;
-
+    const carteira = moedasUsuarios.get(usuarioId);
+    carteira.saldo = Math.max(0, Math.floor(Number(carteira.saldo) || 0));
+    carteira.mineracoes = Number(carteira.mineracoes) || 0;
+    carteira.roubosSucesso = Number(carteira.roubosSucesso) || 0;
+    obterInventario(usuarioId);
     return carteira;
 }
 
+function transferirMoedas(de, para, valor, tipo = 'transferencia', detalhes = '') {
+    valor = Math.floor(Number(valor) || 0);
+    if (valor <= 0 || !de || !para || de === para) return false;
+
+    const carteiraDe = garantirCarteira(de);
+    const carteiraPara = garantirCarteira(para);
+
+    if (carteiraDe.saldo < valor) return false;
+
+    carteiraDe.saldo -= valor;
+    carteiraPara.saldo += valor;
+    registrarTransacao(tipo, de, para, valor, detalhes);
+    salvarMoedas();
+    return true;
+}
+
 const MOEDAS_INICIAIS = 1000;
-const RECOMPENSA_DIARIA = 500;
-const INTERVALO_DIARIO =
-    24 * 60 * 60 * 1000;
+const INTERVALO_MINERACAO = 60 * 1000;
+const INTERVALO_ROUBO = 30 * 60 * 1000;
+const INTERVALO_MESMA_VITIMA = 6 * 60 * 60 * 1000;
+
+const ITENS_LOJA = {
+    picareta: {
+        nome: 'Picareta Reforçada',
+        emoji: '⛏️',
+        preco: 1200,
+        descricao: 'Reduz o cooldown da mineração e aumenta seus ganhos.'
+    },
+    luvas: {
+        nome: 'Luvas de Ladrão',
+        emoji: '🥷',
+        preco: 1500,
+        descricao: 'Aumenta sua chance de escapar quando tentar roubar.'
+    },
+    colete: {
+        nome: 'Colete Anti-Punição',
+        emoji: '🛡️',
+        preco: 2000,
+        descricao: 'Protege uma vez contra a punição de ser pego duas vezes.'
+    }
+};
 
 carregarMoedas();
 
@@ -4238,6 +4274,40 @@ async function listarComandos(message) {
 │
 ├✯
 │
+│  💰 *𝐄𝐂𝐎𝐍𝐎𝐌𝐈𝐀*
+│
+├➤ ⛏️ *${PREFIXO}minerar*
+│   _Minerar e ganhar moedas_
+│
+├➤ 🥷 *${PREFIXO}roubar @pessoa*
+│   _Tentar roubar alguém_
+│
+├➤ 🎰 *${PREFIXO}slots 100*
+│   _Apostar moedas_
+│
+├➤ 💰 *${PREFIXO}saldo*
+│   _Ver seu saldo_
+│
+├➤ 🏪 *${PREFIXO}loja*
+│   _Ver a loja_
+│
+├➤ 🛒 *${PREFIXO}comprar <item>*
+│   _Comprar um item_
+│
+├➤ 🎒 *${PREFIXO}inventario*
+│   _Ver seus itens_
+│
+├➤ 💸 *${PREFIXO}doar 500 @pessoa*
+│   _Doar moedas_
+│
+├➤ 🏆 *${PREFIXO}rankingdinheiro*
+│   _Ranking dos mais ricos_
+│
+├➤ 🎉 *${PREFIXO}sortearm 500*
+│   _Sortear moedas (admins)_
+│
+├✯
+│
 │  ⚔️ *𝐑𝐏𝐆*
 │
 ├➤ 👋 *${PREFIXO}tapa @pessoa*
@@ -4873,51 +4943,141 @@ async function duelo(message) {
 }
 
 async function roubar(message) {
-    const pessoa =
-        await exigirPessoa(message);
+    try {
+        if (!message.from.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ _Roubo só pode ser feito em grupos._');
+            return;
+        }
 
-    if (!pessoa) return;
+        const pessoa = await exigirPessoa(message);
+        if (!pessoa) return;
 
-    const mencao =
-        mencaoDaPessoa(pessoa);
+        const ladrao = obterIdRemetente(message);
+        const vitima = idDaPessoa(pessoa);
+        if (!ladrao || !vitima || idsIguais(ladrao, vitima)) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ _Você não pode roubar a si mesmo._');
+            return;
+        }
 
-    const idPessoa =
-        idDaPessoa(pessoa);
+        const agora = Date.now();
+        const chaveCooldown = `${ladrao}:${vitima}`;
+        const ultimoAlvo = cooldownsRoubo.get(chaveCooldown) || 0;
+        const restanteAlvo = INTERVALO_MESMA_VITIMA - (agora - ultimoAlvo);
 
-    const moedas =
-        Math.floor(
-            Math.random() * 91
-        ) + 10;
+        if (ultimoAlvo && restanteAlvo > 0) {
+            const horas = Math.floor(restanteAlvo / 3600000);
+            const minutos = Math.ceil((restanteAlvo % 3600000) / 60000);
+            await reagir(message, '⏳');
+            await responderCitando(message, `⏳ _Você já tentou roubar ${mencaoDaPessoa(pessoa)} recentemente._\n\nVolte em aproximadamente *${horas}h ${minutos}min*.`);
+            return;
+        }
 
-    const sucesso =
-        Math.random() < 0.6;
+        const ultimoRoubo = cooldownsRoubo.get(`${ladrao}:geral`) || 0;
+        if (agora - ultimoRoubo < INTERVALO_ROUBO) {
+            const restante = INTERVALO_ROUBO - (agora - ultimoRoubo);
+            const minutos = Math.ceil(restante / 60000);
+            await reagir(message, '⏳');
+            await responderCitando(message, `⏳ _Você precisa esperar mais *${minutos} min* antes de tentar outro roubo._`);
+            return;
+        }
 
-    await reagir(message, '💰');
+        const carteiraLadrao = garantirCarteira(ladrao);
+        const carteiraVitima = garantirCarteira(vitima);
+        const mencao = mencaoDaPessoa(pessoa);
+        const saldoVitima = carteiraVitima.saldo;
 
-    const opcoesEnvio = {};
+        if (saldoVitima < 50) {
+            cooldownsRoubo.set(chaveCooldown, agora);
+            cooldownsRoubo.set(`${ladrao}:geral`, agora);
+            await reagir(message, '💸');
+            await responderCitando(message, `💸 _${mencao} está praticamente sem moedas para roubar._`);
+            return;
+        }
 
-    if (idPessoa) {
-        opcoesEnvio.mentions = [idPessoa];
+        cooldownsRoubo.set(chaveCooldown, agora);
+        cooldownsRoubo.set(`${ladrao}:geral`, agora);
+
+        const luvas = quantidadeItem(ladrao, 'luvas');
+        const chanceSucesso = Math.min(0.82, 0.62 + luvas * 0.05);
+        const sorte = Math.random();
+        const valorRoubo = Math.max(10, Math.min(1000, Math.floor(saldoVitima * (0.10 + Math.random() * 0.16))));
+
+        if (sorte < chanceSucesso) {
+            transferirMoedas(vitima, ladrao, Math.min(valorRoubo, carteiraVitima.saldo), 'roubo', 'Roubo bem-sucedido');
+            carteiraLadrao.roubosSucesso += 1;
+            salvarMoedas();
+
+            await reagir(message, '🥷');
+            await responderCitando(message, `┏═•❃༺🥷༻❃•═┓
+├✯ *𝐑𝐎𝐔𝐁𝐎 𝐁𝐄𝐌-𝐒𝐔𝐂𝐄𝐃𝐈𝐃𝐎!*
+│
+├➤ Você roubou *${formatarMoedas(valorRoubo)} 🪙* de ${mencao}!
+├➤ 🥷 Chance extra das luvas: *${luvas}x*
+│
+├➤ 💰 Seu saldo: *${formatarMoedas(carteiraLadrao.saldo)} 🪙*
+│
+┗═•❃༺🥷༻❃•═┛` , { mentions: [vitima] });
+            return;
+        }
+
+        const dados = dadosRoubo.get(ladrao) || { pegos: 0 };
+        dados.pegos += 1;
+        dadosRoubo.set(ladrao, dados);
+
+        if (dados.pegos < 2) {
+            salvarMoedas();
+            await reagir(message, '🚨');
+            await responderCitando(message, `┏═•❃༺🚨༻❃•═┓
+├✯ *𝐕𝐎𝐂𝐄̂ 𝐅𝐎𝐈 𝐏𝐄𝐆𝐎!*
+│
+├➤ ${mencao} percebeu o roubo!
+├➤ 🚨 Primeira captura registrada.
+├➤ ⚠️ Na *segunda captura*, você poderá perder parte do seu saldo para a vítima.
+│
+┗═•❃༺🚨༻❃•═┛`, { mentions: [vitima] });
+            return;
+        }
+
+        dados.pegos = 0;
+        const colete = quantidadeItem(ladrao, 'colete');
+        if (colete > 0) {
+            consumirItem(ladrao, 'colete');
+            salvarMoedas();
+            await reagir(message, '🛡️');
+            await responderCitando(message, `┏═•❃༺🛡️༻❃•═┓
+├✯ *𝐂𝐎𝐋𝐄𝐓𝐄 𝐀𝐓𝐈𝐕𝐀𝐃𝐎!*
+│
+├➤ Você foi pego pela *segunda vez*.
+├➤ 🛡️ Seu Colete Anti-Punição absorveu a perda!
+├➤ ${mencao} não recebeu moedas desta vez.
+│
+┗═•❃༺🛡️༻❃•═┛`, { mentions: [vitima] });
+            return;
+        }
+
+        const perda = Math.min(carteiraLadrao.saldo, Math.max(100, Math.floor(carteiraLadrao.saldo * 0.20)));
+        if (perda > 0) {
+            transferirMoedas(ladrao, vitima, perda, 'punição_roubo', 'Segunda captura no roubo');
+        }
+
+        await reagir(message, '💸');
+        await responderCitando(message, `┏═•❃༺💸༻❃•═┓
+├✯ *𝐒𝐄𝐆𝐔𝐍𝐃𝐀 𝐂𝐀𝐏𝐓𝐔𝐑𝐀!*
+│
+├➤ 🚨 Você foi pego roubando ${mencao} pela segunda vez.
+├➤ 💸 Multa: *${formatarMoedas(perda)} 🪙*
+├➤ 💰 Esse dinheiro foi entregue à vítima.
+│
+├➤ Seu saldo: *${formatarMoedas(carteiraLadrao.saldo)} 🪙*
+│
+┗═•❃༺💸༻❃•═┛`, { mentions: [vitima] });
+    } catch (erro) {
+        console.error('❌ Erro no sistema de roubo:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Ocorreu um erro ao executar o roubo._');
     }
-
-    await client.sendMessage(
-        message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *💰 𝐑𝐎𝐔𝐁𝐀𝐑*
-├✯
-├➤ _Você tentou roubar ${mencao}!_
-│
-├➤ *💰 𝐑𝐄𝐂𝐎𝐌𝐏𝐄𝐍𝐒𝐀:* ${moedas}
-│   _moedas fictícias_
-│
-├➤ *🎲 𝐑𝐄𝐒𝐔𝐋𝐓𝐀𝐃𝐎:*
-│   ${sucesso
-            ? '✅ *𝐑𝐎𝐔𝐁𝐎 𝐁𝐄𝐌-𝐒𝐔𝐂𝐄𝐃𝐈𝐃𝐎!*'
-            : '❌ *𝐕𝐎𝐂𝐄̂ 𝐅𝐎𝐈 𝐏𝐄𝐆𝐎!*'}
-│
-┗═•❃༺✿༻❃•═┛`,
-        opcoesEnvio
-    );
 }
 
 async function aventura(message) {
@@ -12943,394 +13103,365 @@ async function mandarCantada(message) {
 // 🎰 SLOTS
 // ============================================================
 
-async function jogarSlots(
-    message,
-    argumento
-) {
-
+async function minerar(message) {
     try {
+        const usuarioId = obterIdRemetente(message);
+        if (!usuarioId) return;
 
-        const usuarioId =
-            obterIdRemetente(
-                message
-            );
+        const agora = Date.now();
+        const ultimo = cooldownsMineracao.get(usuarioId) || 0;
+        const temPicareta = quantidadeItem(usuarioId, 'picareta') > 0;
+        const intervalo = temPicareta ? 30 * 1000 : INTERVALO_MINERACAO;
+        const restante = intervalo - (agora - ultimo);
 
-        if (!usuarioId) {
-            await reagir(message, '❌');
+        if (restante > 0) {
+            const segundos = Math.ceil(restante / 1000);
+            await reagir(message, '⏳');
+            await responderCitando(message, `⏳ _Sua mina ainda está sendo preparada._\n\nTente novamente em *${segundos}s*.`);
             return;
         }
 
-        const aposta =
-            parseInt(
-                argumento.trim(),
-                10
-            );
+        cooldownsMineracao.set(usuarioId, agora);
+        const carteira = garantirCarteira(usuarioId);
+        const sorte = Math.random();
+        let minerio;
+        let emoji;
+        let valor;
 
-        if (
-            isNaN(aposta) ||
-            aposta < 10
-        ) {
+        if (sorte < 0.05) {
+            minerio = 'Diamante'; emoji = '💎'; valor = Math.floor(Math.random() * 501) + 500;
+        } else if (sorte < 0.20) {
+            minerio = 'Ouro'; emoji = '🥇'; valor = Math.floor(Math.random() * 151) + 250;
+        } else if (sorte < 0.50) {
+            minerio = 'Prata'; emoji = '🥈'; valor = Math.floor(Math.random() * 71) + 120;
+        } else {
+            minerio = 'Carvão'; emoji = '🪨'; valor = Math.floor(Math.random() * 51) + 30;
+        }
 
+        if (temPicareta) valor = Math.floor(valor * 1.25);
+        carteira.saldo += valor;
+        carteira.mineracoes += 1;
+        registrarTransacao('mineracao', null, usuarioId, valor, minerio);
+        salvarMoedas();
+
+        await reagir(message, emoji);
+        await responderCitando(message, `┏═•❃༺⛏️༻❃•═┓
+├✯ *𝐌𝐈𝐍𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
+│
+├➤ ${emoji} Você encontrou *${minerio}*!
+├➤ 🪙 Valor: *${formatarMoedas(valor)} moedas*
+${temPicareta ? '├➤ ⛏️ Picareta Reforçada: *+25%*\n' : ''}│
+├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)} moedas*
+│
+┗═•❃༺⛏️༻❃•═┛`);
+    } catch (erro) {
+        console.error('❌ Erro na mineração:', erro);
+        await reagir(message, '❌');
+    }
+}
+
+async function mostrarLoja(message) {
+    let texto = `┏═•❃༺🏪༻❃•═┓
+│      *𝐋𝐎𝐉𝐀 𝐉𝐔𝐒𝐓 𝐌𝐀𝐑𝐊𝐄𝐓*
+├✯
+│
+`;
+    for (const [id, item] of Object.entries(ITENS_LOJA)) {
+        texto += `├➤ ${item.emoji} *${id}* — *${formatarMoedas(item.preco)} 🪙*\n│   _${item.descricao}_\n│\n`;
+    }
+    texto += `├✯
+│
+├➤ Comprar: *${PREFIXO}comprar <item>*
+├➤ Exemplo: *${PREFIXO}comprar picareta*
+│
+┗═•❃༺🏪༻❃•═┛`;
+    await reagir(message, '🏪');
+    await responderCitando(message, texto);
+}
+
+async function comprarItem(message, argumentos) {
+    const usuarioId = obterIdRemetente(message);
+    const escolha = String(argumentos || '').trim().toLowerCase().split(/\s+/)[0];
+    const item = ITENS_LOJA[escolha];
+
+    if (!item) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Item inválido._ Use *${PREFIXO}loja* para ver os produtos.`);
+        return;
+    }
+
+    const carteira = garantirCarteira(usuarioId);
+    if (carteira.saldo < item.preco) {
+        await reagir(message, '💸');
+        await responderCitando(message, `💸 _Você precisa de *${formatarMoedas(item.preco)} moedas* para comprar ${item.emoji} ${item.nome}._\n\nSeu saldo: *${formatarMoedas(carteira.saldo)} moedas*.`);
+        return;
+    }
+
+    carteira.saldo -= item.preco;
+    adicionarItem(usuarioId, escolha);
+    registrarTransacao('compra', usuarioId, null, item.preco, item.nome);
+    salvarMoedas();
+
+    await reagir(message, '🛒');
+    await responderCitando(message, `┏═•❃༺🛒༻❃•═┓
+├✯ *𝐂𝐎𝐌𝐏𝐑𝐀 𝐑𝐄𝐀𝐋𝐈𝐙𝐀𝐃𝐀!*
+│
+├➤ ${item.emoji} *${item.nome}*
+├➤ 🪙 Pago: *${formatarMoedas(item.preco)} moedas*
+├➤ 📦 Quantidade: *${quantidadeItem(usuarioId, escolha)}x*
+│
+├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)} moedas*
+│
+┗═•❃༺🛒༻❃•═┛`);
+}
+
+async function mostrarInventario(message) {
+    const usuarioId = obterIdRemetente(message);
+    garantirCarteira(usuarioId);
+    let texto = `┏═•❃༺🎒༻❃•═┓
+├✯ *𝐒𝐄𝐔 𝐈𝐍𝐕𝐄𝐍𝐓𝐀́𝐑𝐈𝐎*
+│
+`;
+    for (const [id, item] of Object.entries(ITENS_LOJA)) {
+        texto += `├➤ ${item.emoji} *${item.nome}*: ${quantidadeItem(usuarioId, id)}x\n`;
+    }
+    texto += `│
+┗═•❃༺🎒༻❃•═┛`;
+    await reagir(message, '🎒');
+    await responderCitando(message, texto);
+}
+
+async function mostrarSaldo(message) {
+    try {
+        const usuarioId = obterIdRemetente(message);
+        if (!usuarioId) return;
+        const carteira = garantirCarteira(usuarioId);
+        salvarMoedas();
+        await reagir(message, '💰');
+        await responderCitando(message, `┏═•❃༺💰༻❃•═┓
+│       *𝐒𝐄𝐔 𝐒𝐀𝐋𝐃𝐎*
+├✯
+│
+├➤ 🪙 *${formatarMoedas(carteira.saldo)} moedas*
+│
+├➤ ⛏️ Minerações: *${carteira.mineracoes}*
+├➤ 🥷 Roubos bem-sucedidos: *${carteira.roubosSucesso}*
+│
+├➤ ⛏️ *${PREFIXO}minerar*
+├➤ 🏪 *${PREFIXO}loja*
+├➤ 🎰 *${PREFIXO}slots 100*
+│
+┗═•❃༺💰༻❃•═┛`);
+    } catch (erro) {
+        console.error('❌ Erro ao mostrar saldo:', erro);
+    }
+}
+
+async function jogarSlots(message, argumento) {
+    try {
+        const usuarioId = obterIdRemetente(message);
+        const aposta = parseInt(String(argumento || '').trim(), 10);
+        if (!usuarioId || isNaN(aposta) || aposta < 10) {
             await reagir(message, '❌');
-
-            await responderCitando(
-                message,
-                `┏═•❃༺🎰༻❃•═┓
-│
-│  *🎰 𝐒𝐋𝐎𝐓𝐒*
-│
-├➤ Escolha uma aposta de
-│   pelo menos *10 moedas*.
-│
-│  💡 Exemplo:
-│  *${PREFIXO}slots 100*
-│
-┗═•❃༺🎰༻❃•═┛`
-            );
-
+            await responderCitando(message, `❌ _A aposta mínima é 10 moedas._\n\nExemplo: *${PREFIXO}slots 100*`);
             return;
         }
 
-        const carteira =
-            garantirCarteira(
-                usuarioId
-            );
-
-        if (
-            aposta > carteira.saldo
-        ) {
-
+        const carteira = garantirCarteira(usuarioId);
+        if (aposta > carteira.saldo) {
             await reagir(message, '💸');
-
-            await responderCitando(
-                message,
-                `┏═•❃༺💸༻❃•═┓
-│
-│  *💸 𝐒𝐀𝐋𝐃𝐎 𝐈𝐍𝐒𝐔𝐅𝐈𝐂𝐈𝐄𝐍𝐓𝐄*
-│
-├➤ Sua aposta: *${aposta} moedas*
-├➤ Seu saldo: *${carteira.saldo} moedas*
-│
-├➤ Use *${PREFIXO}saldo* para conferir
-│   suas moedas.
-│
-┗═•❃༺💸༻❃•═┛`
-            );
-
+            await responderCitando(message, `💸 _Saldo insuficiente._\n\nAposta: *${formatarMoedas(aposta)}*\nSaldo: *${formatarMoedas(carteira.saldo)}*`);
             return;
         }
 
         carteira.saldo -= aposta;
-
-        const simbolos = [
-            '🍒',
-            '🍋',
-            '🍉',
-            '🔔',
-            '⭐',
-            '💎',
-            '7️⃣'
-        ];
-
-        const rolos = [
-            simbolos[
-                Math.floor(
-                    Math.random() * simbolos.length
-                )
-            ],
-            simbolos[
-                Math.floor(
-                    Math.random() * simbolos.length
-                )
-            ],
-            simbolos[
-                Math.floor(
-                    Math.random() * simbolos.length
-                )
-            ]
-        ];
-
+        const simbolos = ['🍒','🍋','🍉','🔔','⭐','💎','7️⃣'];
+        const rolos = [0,1,2].map(() => simbolos[Math.floor(Math.random() * simbolos.length)]);
         let multiplicador = 0;
 
-        if (
-            rolos[0] === '7️⃣' &&
-            rolos[1] === '7️⃣' &&
-            rolos[2] === '7️⃣'
-        ) {
-            multiplicador = 50;
+        if (rolos.every(s => s === '7️⃣')) multiplicador = 50;
+        else if (rolos.every(s => s === '💎')) multiplicador = 25;
+        else if (rolos.every(s => s === '⭐')) multiplicador = 15;
+        else if (rolos.every(s => s === '🔔')) multiplicador = 10;
+        else if (rolos.every(s => s === '🍉')) multiplicador = 7;
+        else if (rolos.every(s => s === '🍋')) multiplicador = 5;
+        else if (rolos.every(s => s === '🍒')) multiplicador = 3;
+        else if (rolos[0] === rolos[1] || rolos[1] === rolos[2] || rolos[0] === rolos[2]) multiplicador = 2;
 
-        } else if (
-            rolos.every(
-                simbolo => simbolo === '💎'
-            )
-        ) {
-            multiplicador = 25;
-
-        } else if (
-            rolos.every(
-                simbolo => simbolo === '⭐'
-            )
-        ) {
-            multiplicador = 15;
-
-        } else if (
-            rolos.every(
-                simbolo => simbolo === '🔔'
-            )
-        ) {
-            multiplicador = 10;
-
-        } else if (
-            rolos.every(
-                simbolo => simbolo === '🍉'
-            )
-        ) {
-            multiplicador = 7;
-
-        } else if (
-            rolos.every(
-                simbolo => simbolo === '🍋'
-            )
-        ) {
-            multiplicador = 5;
-
-        } else if (
-            rolos.every(
-                simbolo => simbolo === '🍒'
-            )
-        ) {
-            multiplicador = 3;
-
-        } else if (
-            rolos[0] === rolos[1] ||
-            rolos[1] === rolos[2] ||
-            rolos[0] === rolos[2]
-        ) {
-            multiplicador = 2;
-        }
-
-        const premio =
-            aposta * multiplicador;
-
+        const premio = aposta * multiplicador;
         carteira.saldo += premio;
-
+        registrarTransacao('slots', null, usuarioId, premio, `Aposta ${aposta}, ${rolos.join(' ')}`);
         salvarMoedas();
 
-        await reagir(
-            message,
-            multiplicador > 0
-                ? '🎉'
-                : '🎰'
-        );
-
-        let resultado =
-            '💀 *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐃𝐄𝐒𝐒𝐀 𝐕𝐄𝐙...*';
-
-        if (multiplicador > 0) {
-            resultado =
-                `🎉 *𝐏𝐑𝐄𝐌𝐈𝐀𝐃𝐎!*\n├➤ Multiplicador: *${multiplicador}x*\n├➤ 🪙 Prêmio: *${premio} moedas*`;
-        }
-
-        await responderCitando(
-            message,
-            `┏═•❃༺🎰༻❃•═┓
-│
-│      *🎰 𝐉𝐔𝐒𝐓 𝐒𝐋𝐎𝐓𝐒*
-│
+        await reagir(message, multiplicador ? '🎉' : '🎰');
+        await responderCitando(message, `┏═•❃༺🎰༻❃•═┓
+│      *𝐉𝐔𝐒𝐓 𝐒𝐋𝐎𝐓𝐒*
 ├✯
 │
 │      ${rolos.join(' │ ')}
 │
-├✯
+├➤ 🎲 Aposta: *${formatarMoedas(aposta)}*
+├➤ 🎉 Multiplicador: *${multiplicador}x*
+├➤ 🪙 Prêmio: *${formatarMoedas(premio)}*
+├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)}*
 │
-├➤ 🎲 Aposta: *${aposta} moedas*
-│
-├➤ ${resultado}
-│
-├➤ 💰 Saldo: *${carteira.saldo} moedas*
-│
-┗═•❃༺🎰༻❃•═┛`
-        );
-
+┗═•❃༺🎰༻❃•═┛`);
     } catch (erro) {
-
-        console.error(
-            '❌ Erro no comando slots:',
-            erro
-        );
-
-        await reagir(
-            message,
-            '❌'
-        );
-
-        await responderCitando(
-            message,
-            '❌ _Ocorreu um erro ao executar os slots._'
-        );
+        console.error('❌ Erro nos slots:', erro);
+        await reagir(message, '❌');
     }
 }
 
-// ============================================================
-// 💰 SALDO
-// ============================================================
+async function doarMoedas(message, argumentos) {
+    const remetente = obterIdRemetente(message);
+    const pessoa = await exigirPessoa(message);
+    if (!pessoa) return;
+    const destinatario = idDaPessoa(pessoa);
+    const partes = String(argumentos || '').trim().split(/\s+/);
+    const valor = parseInt(partes[0], 10);
 
-async function mostrarSaldo(message) {
+    if (!Number.isInteger(valor) || valor <= 0) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe um valor válido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
+        return;
+    }
 
-    try {
+    if (idsIguais(remetente, destinatario)) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Você não pode doar para si mesmo._');
+        return;
+    }
 
-        const usuarioId =
-            obterIdRemetente(
-                message
-            );
+    const carteira = garantirCarteira(remetente);
+    if (carteira.saldo < valor) {
+        await reagir(message, '💸');
+        await responderCitando(message, `💸 _Você não possui moedas suficientes._\n\nSeu saldo: *${formatarMoedas(carteira.saldo)}*\nValor: *${formatarMoedas(valor)}*`);
+        return;
+    }
 
-        if (!usuarioId) {
-            await reagir(message, '❌');
-            return;
-        }
+    const antesRemetente = carteira.saldo;
+    if (!transferirMoedas(remetente, destinatario, valor, 'doacao', 'Doação entre usuários')) return;
+    const saldoDestinatario = garantirCarteira(destinatario).saldo;
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-        const carteira =
-            garantirCarteira(
-                usuarioId
-            );
-
-        salvarMoedas();
-
-        await reagir(
-            message,
-            '💰'
-        );
-
-        await responderCitando(
-            message,
-            `┏═•❃༺💰༻❃•═┓
-│
-│    *💰 𝐒𝐄𝐔 𝐒𝐀𝐋𝐃𝐎*
-│
+    await reagir(message, '💸');
+    await responderCitando(message, `┏═•❃༺💸༻❃•═┓
+│       *𝐂𝐎𝐌𝐏𝐑𝐎𝐕𝐀𝐍𝐓𝐄 𝐃𝐄 𝐃𝐎𝐀𝐂̧𝐀̃𝐎*
 ├✯
 │
-├➤ 🪙 Moedas: *${carteira.saldo}*
+├➤ 👤 De: *@${String(remetente).split('@')[0]}*
+├➤ 🎁 Para: *${mencaoDaPessoa(pessoa)}*
+├➤ 🪙 Valor: *${formatarMoedas(valor)} moedas*
 │
-├➤ 🎰 Use *${PREFIXO}slots 100*
-│   para apostar.
+├➤ 💰 Saldo após envio: *${formatarMoedas(antesRemetente - valor)}*
+├➤ 💰 Saldo do destinatário: *${formatarMoedas(saldoDestinatario)}*
+├➤ 🕐 Horário: *${hora}*
 │
-├➤ 🎁 Use *${PREFIXO}diario*
-│   para receber sua recompensa.
-│
-┗═•❃༺💰༻❃•═┛`
-        );
-
-    } catch (erro) {
-
-        console.error(
-            '❌ Erro ao mostrar saldo:',
-            erro
-        );
-    }
+├✯ *𝐓𝐑𝐀𝐍𝐒𝐀𝐂̧𝐀̃𝐎 𝐂𝐎𝐍𝐅𝐈𝐑𝐌𝐀𝐃𝐀* ✅
+┗═•❃༺💸༻❃•═┛`, { mentions: [remetente, destinatario] });
 }
 
-// ============================================================
-// 🎁 RECOMPENSA DIÁRIA
-// ============================================================
-
-async function recompensaDiaria(message) {
-
-    try {
-
-        const usuarioId =
-            obterIdRemetente(
-                message
-            );
-
-        if (!usuarioId) {
-            await reagir(message, '❌');
-            return;
-        }
-
-        const carteira =
-            garantirCarteira(
-                usuarioId
-            );
-
-        const agora =
-            Date.now();
-
-        const restante =
-            INTERVALO_DIARIO -
-            (agora - carteira.ultimoDiario);
-
-        if (
-            carteira.ultimoDiario > 0 &&
-            restante > 0
-        ) {
-
-            const horas =
-                Math.floor(
-                    restante / (60 * 60 * 1000)
-                );
-
-            const minutos =
-                Math.floor(
-                    (restante % (60 * 60 * 1000)) /
-                    (60 * 1000)
-                );
-
-            await reagir(
-                message,
-                '⏳'
-            );
-
-            await responderCitando(
-                message,
-                `┏═•❃༺🎁༻❃•═┓
-│
-│   *🎁 𝐑𝐄𝐂𝐎𝐌𝐏𝐄𝐍𝐒𝐀 𝐃𝐈𝐀́𝐑𝐈𝐀*
-│
-├➤ Você já recebeu sua recompensa hoje!
-│
-├➤ ⏳ Volte em aproximadamente *${horas}h ${minutos}min*.
-│
-┗═•❃༺🎁༻❃•═┛`
-            );
-
-            return;
-        }
-
-        carteira.saldo +=
-            RECOMPENSA_DIARIA;
-
-        carteira.ultimoDiario =
-            agora;
-
-        salvarMoedas();
-
-        await reagir(
-            message,
-            '🎁'
-        );
-
-        await responderCitando(
-            message,
-            `┏═•❃༺🎁༻❃•═┓
-│
-│   *🎁 𝐑𝐄𝐂𝐎𝐌𝐏𝐄𝐍𝐒𝐀 𝐃𝐈𝐀́𝐑𝐈𝐀!*
-│
-├➤ 🪙 Você recebeu *${RECOMPENSA_DIARIA} moedas*.
-│
-├➤ 💰 Saldo atual: *${carteira.saldo} moedas*
-│
-├➤ Volte amanhã para receber novamente!
-│
-┗═•❃༺🎁༻❃•═┛`
-        );
-
-    } catch (erro) {
-
-        console.error(
-            '❌ Erro na recompensa diária:',
-            erro
-        );
+async function sortearMoedas(message, argumentos) {
+    if (!(await exigirAdmin(message))) return;
+    const valor = parseInt(String(argumentos || '').trim(), 10);
+    if (!Number.isInteger(valor) || valor <= 0) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe o valor do sorteio._\n\nExemplo: *${PREFIXO}sortearm 500*`);
+        return;
     }
+    if (!message.from.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        return;
+    }
+
+    const dados = await client.pupPage.evaluate(async (chatId, botId) => {
+        try {
+            const Store = window.require('WAWebCollections');
+            const chat = Store.Chat.get(chatId);
+            const participantes = chat?.groupMetadata?.participants;
+            let modelos = [];
+            if (participantes?.getModelsArray) modelos = participantes.getModelsArray();
+            else if (Array.isArray(participantes?.models)) modelos = participantes.models;
+            const jogadores = modelos
+                .map(p => ({ id: p.id?._serialized || p.id?.toString?.(), admin: !!p.isAdmin || !!p.isSuperAdmin }))
+                .filter(p => p.id && p.id !== botId && !p.admin)
+                .map(p => p.id);
+            return { jogadores };
+        } catch (erro) {
+            return { erro: String(erro?.message || erro) };
+        }
+    }, message.from, client.info?.wid?._serialized || null);
+
+    if (dados.erro || !dados.jogadores?.length) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Não encontrei participantes elegíveis para o sorteio._`);
+        return;
+    }
+
+    const vencedor = dados.jogadores[Math.floor(Math.random() * dados.jogadores.length)];
+    const carteira = garantirCarteira(vencedor);
+    carteira.saldo += valor;
+    registrarTransacao('sorteio_admin', null, vencedor, valor, `Sorteio realizado por administrador ${obterIdRemetente(message)}`);
+    salvarMoedas();
+    const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    await reagir(message, '🎉');
+    await client.sendMessage(message.from, `┏═•❃༺🎉༻❃•═┓
+│       *𝐒𝐎𝐑𝐓𝐄𝐈𝐎 𝐃𝐄 𝐌𝐎𝐄𝐃𝐀𝐒*
+├✯
+│
+├➤ 🎯 O vencedor é *@${String(vencedor).split('@')[0]}*!
+├➤ 🪙 Prêmio: *${formatarMoedas(valor)} moedas*
+├➤ 🕐 Horário: *${hora}*
+│
+├➤ 👑 Sorteio criado por um administrador.
+├➤ 💰 As moedas foram geradas pelo bot.
+│
+┗═•❃༺🎉༻❃•═┛`, { mentions: [vencedor] });
+}
+
+async function rankingDinheiro(message) {
+    if (!message.from.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _O ranking de moedas só funciona em grupos._');
+        return;
+    }
+
+    const dados = await client.pupPage.evaluate(async chatId => {
+        try {
+            const Store = window.require('WAWebCollections');
+            const chat = Store.Chat.get(chatId);
+            const participantes = chat?.groupMetadata?.participants;
+            let modelos = [];
+            if (participantes?.getModelsArray) modelos = participantes.getModelsArray();
+            else if (Array.isArray(participantes?.models)) modelos = participantes.models;
+            return modelos.map(p => p.id?._serialized || p.id?.toString?.()).filter(Boolean);
+        } catch (erro) { return []; }
+    }, message.from);
+
+    const lista = (dados || []).map(id => ({ id, saldo: garantirCarteira(id).saldo }))
+        .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).slice(0,10);
+
+    const eu = obterIdRemetente(message);
+    const posicao = (dados || []).map(id => ({id, saldo: garantirCarteira(id).saldo}))
+        .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).findIndex(x => idsIguais(x.id, eu)) + 1;
+
+    let texto = `┏═•❃༺🏆༻❃•═┓
+│    *𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐌𝐎𝐄𝐃𝐀𝐒*
+├✯
+│
+`;
+    const medalhas = ['🥇','🥈','🥉'];
+    lista.forEach((item, i) => {
+        texto += `├➤ ${medalhas[i] || `${i+1}º`} *@${String(item.id).split('@')[0]}* — *${formatarMoedas(item.saldo)} 🪙*\n`;
+    });
+    texto += `│
+├➤ 📍 Sua posição: *${posicao > 0 ? `${posicao}º` : 'fora do ranking'}*
+│
+┗═•❃༺🏆༻❃•═┛`;
+    await reagir(message, '🏆');
+    await client.sendMessage(message.from, texto, { mentions: lista.map(x => x.id) });
 }
 
 // ============================================================
@@ -13647,14 +13778,33 @@ async function menuJogos(message) {
 ├➤ ❤️ *${PREFIXO}ppp @pessoa*
 │   _Pega, pensa ou passa?_
 │
+├➤ ⛏️ *${PREFIXO}minerar*
+│   _Minerar e ganhar moedas_
+│
+├➤ 🏪 *${PREFIXO}loja*
+│   _Ver a loja de itens_
+│
+├➤ 🛒 *${PREFIXO}comprar <item>*
+│   _Comprar um item_
+│
+├➤ 🎒 *${PREFIXO}inventario*
+│   _Ver seus itens_
+│
 ├➤ 🎰 *${PREFIXO}slots 100*
 │   _Aposte suas moedas_
 │
 ├➤ 💰 *${PREFIXO}saldo*
-│   _Veja suas moedas_
+│   _Ver sua carteira_
 │
-├➤ 🎁 *${PREFIXO}diario*
-│   _Pegue sua recompensa diária_
+├➤ 💸 *${PREFIXO}doar 500 @pessoa*
+│   _Transferir moedas para alguém_
+│
+├➤ 🏆 *${PREFIXO}rankingdinheiro*
+│   _Ver os mais ricos do grupo_
+│
+├➤ 🎉 *${PREFIXO}sortearm 500*
+│   _Sorteio de moedas para admins_
+│
 │
 ├➤ 🥔 *${PREFIXO}batata*
 │   _Escolha aleatoriamente quem será expulso_
@@ -14944,6 +15094,41 @@ case 'sobre':
     await jogoPPP(message);
     break;
 
+        case 'minerar':
+        case 'mina':
+            await minerar(message);
+            break;
+
+        case 'loja':
+        case 'shop':
+            await mostrarLoja(message);
+            break;
+
+        case 'comprar':
+        case 'buy':
+            await comprarItem(message, argumentos);
+            break;
+
+        case 'inventario':
+        case 'inv':
+            await mostrarInventario(message);
+            break;
+
+        case 'doar':
+        case 'donate':
+            await doarMoedas(message, argumentos);
+            break;
+
+        case 'sortearm':
+            await sortearMoedas(message, argumentos);
+            break;
+
+        case 'rankingdinheiro':
+        case 'rankingmoedas':
+        case 'ricos':
+            await rankingDinheiro(message);
+            break;
+
         case 'slots':
         case 'slot':
             await jogarSlots(
@@ -14955,11 +15140,6 @@ case 'sobre':
         case 'saldo':
         case 'carteira':
             await mostrarSaldo(message);
-            break;
-
-        case 'diario':
-        case 'diaria':
-            await recompensaDiaria(message);
             break;
 
         case 'batata':
