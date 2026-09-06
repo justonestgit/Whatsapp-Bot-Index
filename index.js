@@ -15320,13 +15320,13 @@ async function iniciarForca(message) {
     const chatId = message?.from;
     if (!chatId?.endsWith('@g.us')) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ A forca só pode ser jogada em grupos.');
+        await responderCitando(message, `┏═•❃༺🪢༻❃•═┓\n├✯ *𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ ❌ _Esse jogo só funciona em grupos._\n┗═•❃༺🪢༻❃•═┛`);
         return;
     }
 
     if (jogosForca.has(chatId)) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ Já existe uma forca em andamento neste grupo. Use *;revforca* para revelar a palavra.');
+        await responderCitando(message, `┏═•❃༺🪢༻❃•═┓\n├✯ *𝐅𝐎𝐑𝐂𝐀 𝐄𝐌 𝐀𝐍𝐃𝐀𝐌𝐄𝐍𝐓𝐎*\n│\n├➤ ⚠️ Já existe uma rodada ativa.\n├➤ 👑 Um admin pode usar *${PREFIXO}revforca*.\n┗═•❃༺🪢༻❃•═┛`);
         return;
     }
 
@@ -15350,7 +15350,7 @@ async function jogarForca(message, argumentos = '') {
     const chatId = message?.from;
     if (!chatId?.endsWith('@g.us')) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ A forca só pode ser jogada em grupos.');
+        await responderCitando(message, `┏═•❃༺🪢༻❃•═┓\n├✯ *𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ ❌ _Esse jogo só funciona em grupos._\n┗═•❃༺🪢༻❃•═┛`);
         return;
     }
 
@@ -15426,13 +15426,13 @@ async function revelarForca(message) {
     const jogo = jogosForca.get(message.from);
     if (!jogo) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ Não existe uma forca em andamento neste grupo.');
+        await responderCitando(message, `┏═•❃༺👑༻❃•═┓\n├✯ *𝐑𝐄𝐕𝐄𝐋𝐀𝐑 𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ ❌ _Não existe uma rodada ativa._\n┗═•❃༺👑༻❃•═┛`);
         return;
     }
 
     limparJogoForca(message.from);
     await reagir(message, '👑');
-    await responderCitando(message, `👑 *FORCA REVELADA POR UM ADMINISTRADOR!*\n\n🪢 A palavra era: *${jogo.palavra.toUpperCase()}*`);
+    await responderCitando(message, `┏═•❃༺👑༻❃•═┓\n│      *𝐅𝐎𝐑𝐂𝐀 𝐑𝐄𝐕𝐄𝐋𝐀𝐃𝐀*\n│\n├➤ 👑 _Um administrador encerrou a rodada._\n├➤ 🪢 Palavra: *${jogo.palavra.toUpperCase()}*\n│\n┗═•❃༺👑༻❃•═┛`);
 }
 
 // ============================================================
@@ -15515,7 +15515,7 @@ async function jogarStop(message, argumentos = '') {
     const chatId = message?.from;
     if (!chatId?.endsWith('@g.us')) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ O STOP só pode ser jogado em grupos.');
+        await responderCitando(message, `┏═•❃༺🛑༻❃•═┓\n├✯ *𝐒𝐓𝐎𝐏*\n│\n├➤ ❌ _Esse jogo só funciona em grupos._\n┗═•❃༺🛑༻❃•═┛`);
         return;
     }
 
@@ -15573,7 +15573,7 @@ async function jogarStop(message, argumentos = '') {
 async function configurarGrupoMensagens(message, argumentos = '') {
     if (!message?.from?.endsWith('@g.us')) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ Esse comando só funciona em grupos.');
+        await responderCitando(message, `┏═•❃༺🔒༻❃•═┓\n├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐃𝐄 𝐆𝐑𝐔𝐏𝐎*\n│\n├➤ ❌ _Esse comando só funciona em grupos._\n│\n┗═•❃༺🔒༻❃•═┛`);
         return;
     }
 
@@ -15581,36 +15581,62 @@ async function configurarGrupoMensagens(message, argumentos = '') {
 
     const modo = String(argumentos || '').trim().toLowerCase();
     if (!['f', 'a'].includes(modo)) {
-        await responderCitando(message, `❌ Use:\n\n🔒 *${PREFIXO}gp f* → somente administradores podem mandar mensagens.\n🔓 *${PREFIXO}gp a* → todos podem mandar mensagens.`);
+        await reagir(message, '❓');
+        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│      *𝐂𝐎𝐍𝐓𝐑𝐎𝐋𝐄 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n├➤ 🔒 *${PREFIXO}gp f*\n│   _Somente administradores podem falar._\n│\n├➤ 🔓 *${PREFIXO}gp a*\n│   _Todos podem falar novamente._\n│\n┗═•❃༺⚙️༻❃•═┛`);
         return;
     }
 
     try {
-        const chat = await message.getChat();
-        if (!chat?.isGroup || typeof chat.setMessagesAdminsOnly !== 'function') {
-            throw new Error('A função de alteração das permissões do grupo não está disponível.');
-        }
-
         const somenteAdmins = modo === 'f';
-        const sucesso = await chat.setMessagesAdminsOnly(somenteAdmins);
+        const resultado = await client.pupPage.evaluate(
+            async (chatId, adminsOnly) => {
+                try {
+                    const chat = await window.WWebJS.getChat(chatId, {
+                        getAsModel: false
+                    });
 
-        if (!sucesso) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ O WhatsApp não permitiu alterar essa configuração. Verifique se o bot é administrador do grupo.');
-            return;
+                    if (!chat) {
+                        return { sucesso: false, erro: 'grupo não encontrado' };
+                    }
+
+                    const GroupAction = window.require('WAWebSetPropertyGroupAction');
+                    if (!GroupAction?.setGroupProperty) {
+                        return { sucesso: false, erro: 'ação do grupo indisponível' };
+                    }
+
+                    await GroupAction.setGroupProperty(
+                        chat,
+                        'announcement',
+                        adminsOnly ? 1 : 0
+                    );
+
+                    return { sucesso: true };
+                } catch (erro) {
+                    return {
+                        sucesso: false,
+                        erro: String(erro?.message || erro)
+                    };
+                }
+            },
+            message.from,
+            somenteAdmins
+        );
+
+        if (!resultado?.sucesso) {
+            throw new Error(resultado?.erro || 'O WhatsApp recusou a alteração.');
         }
 
         await reagir(message, somenteAdmins ? '🔒' : '🔓');
         await responderCitando(
             message,
             somenteAdmins
-                ? `┏═•❃༺🔒༻❃•═┓\n│ *𝐆𝐑𝐔𝐏𝐎 𝐅𝐄𝐂𝐇𝐀𝐃𝐎*\n│\n├➤ 👑 Agora *somente administradores* podem enviar mensagens.\n├➤ 🔓 Para liberar novamente: *${PREFIXO}gp a*\n┗═•❃༺🔒༻❃•═┓`
-                : `┏═•❃༺🔓༻❃•═┓\n│ *𝐆𝐑𝐔𝐏𝐎 𝐀𝐁𝐄𝐑𝐓𝐎*\n│\n├➤ 👥 Agora *todos os membros* podem enviar mensagens.\n├➤ 🔒 Para fechar novamente: *${PREFIXO}gp f*\n┗═•❃༺🔓༻❃•═┓`
+                ? `┏═•❃༺🔒༻❃•═┓\n│      *𝐆𝐑𝐔𝐏𝐎 𝐅𝐄𝐂𝐇𝐀𝐃𝐎*\n│\n├➤ 👑 _Somente administradores podem enviar mensagens._\n│\n├➤ 🔓 Para abrir novamente:\n│   *${PREFIXO}gp a*\n│\n┗═•❃༺🔒༻❃•═┛`
+                : `┏═•❃༺🔓༻❃•═┓\n│       *𝐆𝐑𝐔𝐏𝐎 𝐀𝐁𝐄𝐑𝐓𝐎*\n│\n├➤ 👥 _Todos os membros podem enviar mensagens._\n│\n├➤ 🔒 Para fechar novamente:\n│   *${PREFIXO}gp f*\n│\n┗═•❃༺🔓༻❃•═┛`
         );
     } catch (erro) {
         console.error('❌ ERRO AO ALTERAR PERMISSÃO DE MENSAGENS DO GRUPO:', erro);
         await reagir(message, '❌');
-        await responderCitando(message, `❌ Não consegui alterar as permissões do grupo.\n\n_${String(erro?.message || erro)}_`);
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│    *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n├➤ _Não consegui alterar as permissões._\n│\n├➤ 👑 Verifique se o bot é administrador.\n│\n┗═•❃༺❌༻❃•═┛`);
     }
 }
 
