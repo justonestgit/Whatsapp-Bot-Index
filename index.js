@@ -8,6 +8,7 @@ const ytdlp = require('youtube-dl-exec');
 const ffmpeg = require('ffmpeg-static');
 const { spawn } = require('child_process');
 const os = require('os');
+const crypto = require('crypto');
 
 const path = require('path');
 
@@ -14916,63 +14917,192 @@ async function expulsarJogadorDoGrupo(message, idUsuario) {
     }
 }
 
-async function jogarBatataQuente(message) {
+const TEMPO_BATATA_QUENTE = 15 * 1000;
+
+function escolherAleatorioSeguro(lista) {
+    if (!Array.isArray(lista) || lista.length === 0) return null;
+    return lista[crypto.randomInt(0, lista.length)];
+}
+
+function limparJogoBatataQuente(chatId) {
+    const jogo = jogosEliminacao.get(chatId);
+    if (jogo?.timeout) clearTimeout(jogo.timeout);
+    jogosEliminacao.delete(chatId);
+}
+
+async function explodirBatataQuente(chatId, jogo) {
+    const atual = jogosEliminacao.get(chatId);
+
+    if (!atual || atual !== jogo || atual.tipo !== 'batata') return;
+
+    jogosEliminacao.delete(chatId);
+    if (atual.timeout) clearTimeout(atual.timeout);
+
+    const mensagemBase = {
+        from: chatId
+    };
+
+    const mencao = `@${String(atual.jogador).split('@')[0]}`;
+
+    await enviarComMencoes(
+        chatId,
+        `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ ⏰ *O tempo acabou!*\n├➤ A batata explodiu na mão de *${mencao}*! 💥\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🥔༻❃•═┛`,
+        { mentions: [atual.jogador] }
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    const remocao = await expulsarJogadorDoGrupo(mensagemBase, atual.jogador);
+
+    if (!remocao.sucesso) {
+        await enviarComMencoes(
+            chatId,
+            `⚠️ A batata explodiu em @${String(atual.jogador).split('@')[0]}, mas não consegui expulsá-lo.\n\n❌ ${remocao.erro}`,
+            { mentions: [atual.jogador] }
+        );
+    }
+}
+
+function iniciarTimerBatataQuente(chatId, jogo) {
+    if (jogo.timeout) clearTimeout(jogo.timeout);
+
+    jogo.expiraEm = Date.now() + TEMPO_BATATA_QUENTE;
+    jogo.timeout = setTimeout(() => {
+        explodirBatataQuente(chatId, jogo).catch(erro => {
+            console.error('❌ ERRO AO EXPLODIR A BATATA QUENTE:', erro);
+        });
+    }, TEMPO_BATATA_QUENTE);
+}
+
+async function passarBatataQuente(message) {
     try {
-        if (!message.from.endsWith('@g.us')) {
+        if (!message.from?.endsWith('@g.us')) {
             await reagir(message, '❌');
-            await message.reply('❌ A batata quente só pode ser jogada em grupos!');
+            await responderCitando(message, '❌ A batata quente só pode ser passada em grupos.');
+            return;
+        }
+
+        const jogo = jogosEliminacao.get(message.from);
+
+        if (!jogo || jogo.tipo !== 'batata') {
+            await reagir(message, '❌');
+            await responderCitando(message, `❌ Não existe uma *batata quente* em andamento neste grupo.\n\n🥔 Inicie com *${PREFIXO}batata*.`);
+            return;
+        }
+
+        const remetente = obterIdRemetente(message);
+        if (!idsIguais(remetente, jogo.jogador)) {
+            await reagir(message, '❌');
+            await responderCitando(
+                message,
+                `❌ A batata está com @${String(jogo.jogador).split('@')[0]}! Somente quem está segurando a batata pode usar *${PREFIXO}passar*.`,
+                { mentions: [jogo.jogador] }
+            );
+            return;
+        }
+
+        const pessoa = await obterPessoaMarcada(message);
+        const destino = pessoa ? obterIdDeMencao(pessoa) : null;
+
+        if (!destino) {
+            await reagir(message, '❌');
+            await responderCitando(message, `🥔 Você precisa mencionar quem vai receber a batata.\n\n💡 Exemplo: *${PREFIXO}passar @pessoa*`);
+            return;
+        }
+
+        if (idsIguais(remetente, destino)) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ Você não pode passar a batata para você mesmo!');
             return;
         }
 
         const jogadores = await obterJogadoresParaEliminacao(message);
         if (jogadores.erro) {
             await reagir(message, '❌');
-            await message.reply(`❌ ${jogadores.erro}`);
+            await responderCitando(message, `❌ ${jogadores.erro}`);
+            return;
+        }
+
+        const participanteValido = jogadores.jogadores.some(id => idsIguais(id, destino));
+        if (!participanteValido) {
+            await reagir(message, '❌');
+            await responderComMencoes(
+                message,
+                `❌ @${String(destino).split('@')[0]} não pode receber a batata.\n_Administradores e o próprio bot não participam._`,
+                { mentions: [destino] }
+            );
+            return;
+        }
+
+        jogo.jogador = destino;
+        jogo.ultimaPassagemEm = Date.now();
+        iniciarTimerBatataQuente(message.from, jogo);
+
+        const segundos = Math.ceil(TEMPO_BATATA_QUENTE / 1000);
+        await reagir(message, '🥔');
+        await enviarComMencoes(
+            message.from,
+            `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ 🥔 @${String(remetente).split('@')[0]} passou a batata para @${String(destino).split('@')[0]}!\n├➤ ⏰ *${segundos} segundos!*\n│\n└➤ _Passe antes que ela exploda!_ 💥\n┗═•❃༺🥔༻❃•═┛`,
+            { mentions: [remetente, destino] }
+        );
+    } catch (erro) {
+        console.error('❌ ERRO AO PASSAR BATATA QUENTE:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ Ocorreu um erro ao passar a batata quente.');
+    }
+}
+
+async function jogarBatataQuente(message) {
+    try {
+        if (!message.from?.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ A batata quente só pode ser jogada em grupos!');
+            return;
+        }
+
+        if (jogosEliminacao.has(message.from)) {
+            await reagir(message, '❌');
+            await responderCitando(message, `🥔 Já existe uma *batata quente* ou outro jogo de eliminação em andamento neste grupo.`);
+            return;
+        }
+
+        const jogadores = await obterJogadoresParaEliminacao(message);
+        if (jogadores.erro) {
+            await reagir(message, '❌');
+            await responderCitando(message, `❌ ${jogadores.erro}`);
             return;
         }
 
         if (jogadores.jogadores.length < 2) {
             await reagir(message, '❌');
-            await message.reply(
-                '❌ Preciso de pelo menos *2 participantes que não sejam administradores* para jogar a batata quente!'
-            );
+            await responderCitando(message, '❌ Preciso de pelo menos *2 participantes que não sejam administradores* para jogar a batata quente!');
             return;
         }
 
-        const azarado =
-            jogadores.jogadores[Math.floor(Math.random() * jogadores.jogadores.length)];
-
-        jogosEliminacao.set(message.from, {
+        const inicial = escolherAleatorioSeguro(jogadores.jogadores);
+        const jogo = {
             tipo: 'batata',
-            jogador: azarado,
-            criadoEm: Date.now()
-        });
+            jogador: inicial,
+            criadoEm: Date.now(),
+            ultimaPassagemEm: Date.now(),
+            timeout: null
+        };
 
-        const mencao = `@${String(azarado).split('@')[0]}`;
+        jogosEliminacao.set(message.from, jogo);
+        iniciarTimerBatataQuente(message.from, jogo);
+
+        const segundos = Math.ceil(TEMPO_BATATA_QUENTE / 1000);
+        const mencao = `@${String(inicial).split('@')[0]}`;
 
         await reagir(message, '🥔');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ A batata passou de mão em mão...\n├➤ E explodiu na mão de *${mencao}*! 💥\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🥔༻❃•═┛`,
-            { mentions: [azarado] }
+            `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ 🥔 A batata começou com *${mencao}*!\n├➤ ⏰ Você tem *${segundos} segundos* para passar!\n│\n├➤ 💡 Use *${PREFIXO}passar @pessoa*\n├➤ ⚠️ Somente quem está com a batata pode passá-la.\n│\n└➤ _Se o tempo acabar, a batata explode!_ 💥\n┗═•❃༺🥔༻❃•═┛`,
+            { mentions: [inicial] }
         );
-
-        await new Promise(resolve => setTimeout(resolve, 1200));
-
-        const remocao = await expulsarJogadorDoGrupo(message, azarado);
-        jogosEliminacao.delete(message.from);
-
-        if (!remocao.sucesso) {
-            await enviarComMencoes(
-                message.from,
-                `⚠️ A batata acertou em cheio, mas não consegui expulsar @${String(azarado).split('@')[0]}.\n\n❌ ${remocao.erro}`,
-                { mentions: [azarado] }
-            );
-        }
     } catch (erro) {
-        jogosEliminacao.delete(message.from);
+        limparJogoBatataQuente(message.from);
         console.error('❌ ERRO NA BATATA QUENTE:', erro);
-        await message.reply('❌ Ocorreu um erro ao jogar a batata quente.');
+        await responderCitando(message, '❌ Ocorreu um erro ao iniciar a batata quente.');
     }
 }
 
@@ -14984,9 +15114,13 @@ async function jogarRoletaRussa(message) {
             return;
         }
 
-        // 🔐 Verificação padrão de administrador
-        // Usa o mesmo sistema dos outros comandos de administração.
         if (!(await exigirAdmin(message))) {
+            return;
+        }
+
+        if (jogosEliminacao.has(message.from)) {
+            await reagir(message, '❌');
+            await message.reply('❌ Já existe um jogo de eliminação em andamento neste grupo.');
             return;
         }
 
@@ -14999,15 +15133,11 @@ async function jogarRoletaRussa(message) {
 
         if (jogadores.jogadores.length < 2) {
             await reagir(message, '❌');
-            await message.reply(
-                '❌ Preciso de pelo menos *2 participantes que não sejam administradores* para girar a roleta russa!'
-            );
+            await message.reply('❌ Preciso de pelo menos *2 participantes que não sejam administradores* para girar a roleta russa!');
             return;
         }
 
-        const azarado =
-            jogadores.jogadores[Math.floor(Math.random() * jogadores.jogadores.length)];
-
+        const azarado = escolherAleatorioSeguro(jogadores.jogadores);
         jogosEliminacao.set(message.from, {
             tipo: 'rr',
             jogador: azarado,
@@ -15019,12 +15149,11 @@ async function jogarRoletaRussa(message) {
         await reagir(message, '🔫');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺🔫༻❃•═┓\n│\n│  *𝐑𝐎𝐋𝐄𝐓𝐀 𝐑𝐔𝐒𝐒𝐀!*\n│\n├➤ A roleta girou... 🔄\n├➤ O destino escolheu *${mencao}*! 💀\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🔫༻❃•═┛`,
+            `┏═•❃༺🔫༻❃•═┓\n│\n│  *𝐑𝐎𝐋𝐄𝐓𝐀 𝐑𝐔𝐒𝐒𝐀!*\n│\n├➤ A roleta girou... 🔄\n├➤ O destino escolheu *${mencao}*! 💀\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🔫༻❃•═┓`,
             { mentions: [azarado] }
         );
 
         await new Promise(resolve => setTimeout(resolve, 1200));
-
         const remocao = await expulsarJogadorDoGrupo(message, azarado);
         jogosEliminacao.delete(message.from);
 
@@ -15107,7 +15236,10 @@ async function menuJogos(message) {
 │
 │
 ├➤ 🥔 *${PREFIXO}batata*
-│   _Escolha aleatoriamente quem será expulso_
+│   _Começa a batata quente com tempo_
+│
+├➤ 🥔 *${PREFIXO}passar @pessoa*
+│   _Passa a batata para outra pessoa_
 │
 ├➤ 🔫 *${PREFIXO}rr*
 │   _Roleta russa: alguém será expulso_
@@ -17052,6 +17184,10 @@ case 'sobre':
         case 'saldo':
         case 'carteira':
             await mostrarSaldo(message);
+            break;
+
+        case 'passar':
+            await passarBatataQuente(message);
             break;
 
         case 'batata':
