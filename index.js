@@ -26,7 +26,7 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.13';;
+const VERSAO = '3.14';;
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -2861,19 +2861,34 @@ async function reagir(message, emoji) {
 async function obterPessoaMarcada(message) {
     try {
         const mencoes = await message.getMentions();
+        if (mencoes && mencoes.length > 0) return mencoes[0];
 
-        if (mencoes && mencoes.length > 0) {
-            return mencoes[0];
+        if (message.hasQuotedMsg) {
+            try {
+                const mensagemCitada = await message.getQuotedMessage();
+                if (!mensagemCitada) return null;
+
+                const idAutor = mensagemCitada.author || mensagemCitada.from || null;
+                if (!idAutor || idAutor === message.from) return null;
+
+                if (typeof mensagemCitada.getContact === 'function') {
+                    try {
+                        const contato = await mensagemCitada.getContact();
+                        if (contato) return contato;
+                    } catch (erroContato) {
+                        console.log('⚠️ Não foi possível obter o contato da mensagem citada:', erroContato.message);
+                    }
+                }
+
+                return { id: { _serialized: idAutor } };
+            } catch (erroResposta) {
+                console.log('⚠️ Erro ao obter pessoa pela resposta:', erroResposta.message);
+            }
         }
 
         return null;
-
     } catch (erro) {
-        console.log(
-            '⚠️ Erro ao obter menção:',
-            erro.message
-        );
-
+        console.log('⚠️ Erro ao obter menção/resposta:', erro.message);
         return null;
     }
 }
@@ -3063,7 +3078,7 @@ async function exigirPessoa(message) {
             `┏═•❃༺✿༻❃•═┓
 ├✯ *𝐌𝐄𝐍𝐂̧𝐀̃𝐎 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐀*
 │
-├➤ _Mencione alguém do grupo._
+├➤ _Mencione alguém ou responda à mensagem dela._
 │
 ├➤ *𝐄𝐗𝐄𝐌𝐏𝐋𝐎:*
 │   *${PREFIXO}tapa @pessoa*
@@ -4295,6 +4310,10 @@ async function menuModeracao(message) {
 │    *🛡️ 𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
 ├✯
 │
+├➤ 🔨 *${PREFIXO}ban @pessoa*
+│   _Expulsar uma pessoa_
+│   _Também funciona respondendo à mensagem_
+│
 ├➤ 🔇 *${PREFIXO}mute @pessoa*
 │   _Silenciar uma pessoa_
 │
@@ -4431,7 +4450,26 @@ async function changelog(message) {
 │
 ├✯
 │
-│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟗*
+│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟒*
+│
+│  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎 E ALVOS POR RESPOSTA*
+│
+│  ├➤ *${PREFIXO}ban @pessoa*
+│  │   Expulsa participantes do grupo.
+│  │
+│  ├➤ *${PREFIXO}ban* em resposta
+│  │   Identifica o alvo pela mensagem respondida.
+│  │
+│  └➤ Comandos de alvo agora aceitam resposta
+│      além de menções quando aplicável.
+│
+│  💰 *𝐁𝐋𝐈𝐍𝐃𝐀𝐆𝐄𝐌 𝐃𝐀 𝐄𝐂𝐎𝐍𝐎𝐌𝐈𝐀*
+│
+│  ├➤ Identidade LID/JID e carteiras reforçadas.
+│  ├➤ Cooldowns de mineração e roubo persistem após reinício.
+│  ├➤ Apostas, doações e sorteios recebem validação rígida.
+│  ├➤ Histórico dos slots ficou mais completo.
+│  └➤ Rankings não criam carteiras novas.
 │
 │  😂 *𝐒𝐈𝐒𝐓𝐄𝐌𝐀 𝐃𝐄 𝐏𝐈𝐀𝐃𝐀𝐒*
 │
@@ -4485,7 +4523,7 @@ async function changelog(message) {
 │
 ┗═•❃༺📜༻❃•═┛
 
-*𝐕𝐄𝐑𝐒𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋: 𝟑.𝟗*`
+*𝐕𝐄𝐑𝐒𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋: 𝟑.𝟏𝟒*`
     );
 }
 
@@ -9321,6 +9359,93 @@ _Tente pesquisar pelo nome completo do vídeo._`
 // MODERAÇÃO
 // ============================================================
 
+async function banirPessoa(message) {
+    try {
+        if (!(await exigirAdmin(message))) return;
+
+        const pessoa = await exigirPessoa(message);
+        if (!pessoa) return;
+
+        const idPessoa = idDaPessoa(pessoa);
+        if (!idPessoa) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ _Não consegui identificar essa pessoa._');
+            return;
+        }
+
+        const botId = client.info?.wid?._serialized || null;
+        const idRemetente = obterIdRemetente(message);
+
+        if (botId && idsIguais(idPessoa, botId)) {
+            await reagir(message, '🤨');
+            await responderCitando(message, '🤨 _Bonito. Tentando banir o próprio segurança da festa._');
+            return;
+        }
+
+        if (idRemetente && idsIguais(idPessoa, idRemetente)) {
+            await reagir(message, '🤨');
+            await responderCitando(message, '🤨 _Você realmente tentou se expulsar do próprio grupo._');
+            return;
+        }
+
+        const chat = await message.getChat();
+        if (!chat?.isGroup) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+            return;
+        }
+
+        const participante = chat.participants?.find(item => {
+            const idAtual = item.id?._serialized || item.id?.toString?.();
+            return idAtual && idsIguais(idAtual, idPessoa);
+        });
+
+        if (participante?.isAdmin || participante?.isSuperAdmin) {
+            await reagir(message, '👑');
+            await responderCitando(message, '👑 _Nem pensar. Administrador não entra na fila da expulsão._');
+            return;
+        }
+
+        const mencao = mencaoDaPessoa(pessoa);
+        const idsParaTentar = [...new Set([idPessoa, ...(await obterIdsPessoa(pessoa))])];
+        let removido = false;
+        let ultimoErro = null;
+
+        for (const id of idsParaTentar) {
+            try {
+                await chat.removeParticipants([id]);
+                removido = true;
+                break;
+            } catch (erroRemocao) {
+                ultimoErro = erroRemocao;
+            }
+        }
+
+        if (!removido) throw ultimoErro || new Error('O WhatsApp recusou a remoção.');
+
+        await reagir(message, '🔨');
+        await enviarComMencoes(
+            message.from,
+            `┏═•❃༺🔨༻❃•═┓
+│      *𝐁𝐀𝐍 𝐄𝐅𝐄𝐓𝐈𝐕𝐀𝐃𝐎*
+├✯
+│
+├➤ 👤 ${mencao} foi expulso(a) do grupo.
+│
+├➤ 🔨 _A democracia fez uma pausa._
+├➤ 🚪 _A porta de saída estava logo ali._
+├➤ 😭 _Volte quando o universo perdoar você._
+│
+┗═•❃༺🔨༻❃•═┛`,
+            { mentions: [idPessoa] }
+        );
+    } catch (erro) {
+        console.error('❌ Erro ao banir pessoa:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui expulsar essa pessoa._\n\n_Confira se eu sou administrador do grupo e se a pessoa não é administradora._');
+    }
+}
+
 async function mutarPessoa(message) {
 
     const permitido =
@@ -11729,11 +11854,20 @@ async function shiparPessoas(message) {
     // 👥 PEGAR AS PESSOAS MENCIONADAS
     // ============================================================
 
-    const mencionados =
-        message.mentionedIds || [];
+    const mencionados = [...new Set(message.mentionedIds || [])];
+    const pessoas = [...mencionados];
 
-    const pessoas =
-        [...new Set(mencionados)];
+    if (pessoas.length < 2 && message.hasQuotedMsg) {
+        try {
+            const mensagemCitada = await message.getQuotedMessage();
+            const idCitado = mensagemCitada?.author || mensagemCitada?.from || null;
+            if (idCitado && idCitado !== message.from && !pessoas.includes(idCitado)) {
+                pessoas.push(idCitado);
+            }
+        } catch (erro) {
+            console.log('⚠️ Erro ao obter pessoa citada no ship:', erro.message);
+        }
+    }
 
 
     // ============================================================
@@ -13408,29 +13542,20 @@ async function mandarCantada(message) {
             )
         ];
 
-    const mencionados =
-        message.mentionedIds || [];
+    const pessoa = await obterPessoaMarcada(message);
+    const idPessoa = idDaPessoa(pessoa);
 
-    if (
-        mencionados.length === 1
-    ) {
-
+    if (idPessoa) {
         await responderComMencoes(
             message,
-            `💘 @${mencionados[0].split('@')[0]}\n\n` +
-            cantada,
+            `💘 ${mencaoDaPessoa(pessoa)}\n\n${cantada}`,
             undefined,
-            {
-                mentions: mencionados
-            }
+            { mentions: [idPessoa] }
         );
-
         return;
     }
 
-    await message.reply(
-        cantada
-    );
+    await message.reply(cantada);
 }
 
 
@@ -15425,22 +15550,14 @@ case 'sobre':
             break;
 
         case 'chute':
-
             if (
-                message.mentionedIds &&
-                message.mentionedIds.length > 0
+                (message.mentionedIds && message.mentionedIds.length > 0) ||
+                message.hasQuotedMsg
             ) {
-
                 await chuteRPG(message);
-
             } else {
-
-                await fazerChute(
-                    message,
-                    argumentos
-                );
+                await fazerChute(message, argumentos);
             }
-
             break;
 
         case 'chuterpg':
@@ -15685,7 +15802,12 @@ case 'recusar':
     );
     break;    
     
-    case 'mute':
+    case 'ban':
+        case 'banir':
+            await banirPessoa(message);
+            break;
+
+        case 'mute':
             await mutarPessoa(message);
             break;
 
