@@ -1341,7 +1341,16 @@ function salvarMoedas() {
 
         fs.writeFileSync(
             arquivoMoedas,
-            JSON.stringify({ usuarios, inventarios, transacoes: historicoEconomia, identidades: Object.fromEntries(economiaIdentidades) }, null, 2),
+            JSON.stringify({
+                usuarios,
+                inventarios,
+                transacoes: historicoEconomia,
+                identidades: Object.fromEntries(economiaIdentidades),
+                cooldowns: {
+                    mineracao: Object.fromEntries(cooldownsMineracao),
+                    roubo: Object.fromEntries(cooldownsRoubo)
+                }
+            }, null, 2),
             'utf8'
         );
     } catch (erro) {
@@ -1402,8 +1411,55 @@ function carregarMoedas() {
             historicoEconomia.push(...dados.transacoes.slice(-500));
         }
 
+        const agora = Date.now();
+        if (dados?.cooldowns?.mineracao && typeof dados.cooldowns.mineracao === 'object') {
+            for (const [usuarioId, timestamp] of Object.entries(dados.cooldowns.mineracao)) {
+                const valor = Number(timestamp);
+                if (usuarioId && Number.isFinite(valor) && valor > 0 && agora - valor < 24 * 60 * 60 * 1000) {
+                    cooldownsMineracao.set(usuarioId, valor);
+                }
+            }
+        }
+
+        if (dados?.cooldowns?.roubo && typeof dados.cooldowns.roubo === 'object') {
+            for (const [chave, timestamp] of Object.entries(dados.cooldowns.roubo)) {
+                const valor = Number(timestamp);
+                if (chave && Number.isFinite(valor) && valor > 0 && agora - valor < 24 * 60 * 60 * 1000) {
+                    cooldownsRoubo.set(chave, valor);
+                }
+            }
+        }
+
         for (const [alias, canonico] of economiaIdentidades.entries()) {
             if (alias !== canonico) migrarCarteiraEconomia(alias, canonico);
+        }
+
+        const cooldownsMineracaoNormalizados = new Map();
+        for (const [usuarioId, timestamp] of cooldownsMineracao.entries()) {
+            const canonico = economiaIdentidades.get(usuarioId) || usuarioId;
+            const anterior = cooldownsMineracaoNormalizados.get(canonico) || 0;
+            cooldownsMineracaoNormalizados.set(canonico, Math.max(anterior, timestamp));
+        }
+        cooldownsMineracao.clear();
+        for (const [usuarioId, timestamp] of cooldownsMineracaoNormalizados.entries()) {
+            cooldownsMineracao.set(usuarioId, timestamp);
+        }
+
+        const cooldownsRouboNormalizados = new Map();
+        for (const [chave, timestamp] of cooldownsRoubo.entries()) {
+            const partes = String(chave).split(':');
+            if (partes.length !== 2) continue;
+            const ladrao = economiaIdentidades.get(partes[0]) || partes[0];
+            const vitima = partes[1] === 'geral'
+                ? 'geral'
+                : (economiaIdentidades.get(partes[1]) || partes[1]);
+            const chaveNormalizada = `${ladrao}:${vitima}`;
+            const anterior = cooldownsRouboNormalizados.get(chaveNormalizada) || 0;
+            cooldownsRouboNormalizados.set(chaveNormalizada, Math.max(anterior, timestamp));
+        }
+        cooldownsRoubo.clear();
+        for (const [chave, timestamp] of cooldownsRouboNormalizados.entries()) {
+            cooldownsRoubo.set(chave, timestamp);
         }
 
         console.log('💰 Economia carregada:', moedasUsuarios.size, 'usuários');
@@ -5242,6 +5298,7 @@ async function roubar(message) {
         if (saldoVitima < 50) {
             cooldownsRoubo.set(chaveCooldown, agora);
             cooldownsRoubo.set(`${ladrao}:geral`, agora);
+            salvarMoedas();
             await reagir(message, '💸');
             await responderCitando(message, `💸 _${mencao} está praticamente sem moedas para roubar._`);
             return;
@@ -5249,6 +5306,7 @@ async function roubar(message) {
 
         cooldownsRoubo.set(chaveCooldown, agora);
         cooldownsRoubo.set(`${ladrao}:geral`, agora);
+        salvarMoedas();
 
         const luvas = quantidadeItem(ladrao, 'luvas');
         const chanceSucesso = Math.min(0.82, 0.62 + luvas * 0.05);
@@ -13385,6 +13443,7 @@ async function minerar(message) {
         }
 
         cooldownsMineracao.set(usuarioId, agora);
+        salvarMoedas();
         const carteira = garantirCarteira(usuarioId);
         const sorte = Math.random();
         let minerio;
