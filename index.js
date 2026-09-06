@@ -16202,7 +16202,7 @@ async function modificarAudio(message, comando) {
         const mensagemAudio = await obterMensagemDeAudio(message);
         if (!mensagemAudio) {
             await reagir(message, '🎙️');
-            await responderCitando(message, `🎙️ _Envie um áudio junto com_ *${PREFIXO}${comando}* _ou responda a um áudio com o comando._`);
+            await responderCitando(message, `┏═•❃༺🎙️༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🎙️ _Envie um áudio junto com_ *${PREFIXO}${comando}*\n│   _ou responda a um áudio com o comando._\n│\n┗═•❃༺🎙️༻❃•═┓`);
             return true;
         }
 
@@ -16229,14 +16229,15 @@ async function modificarAudio(message, comando) {
             const dados = await fs.promises.readFile(saida);
             const audio = new MessageMedia('audio/ogg; codecs=opus', dados.toString('base64'), `${comando}.ogg`);
             await reagir(message, '🎙️');
+            await responderCitando(message, `┏═•❃༺🎙️༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ ${efeito.nome}\n│   _Áudio processado com sucesso!_\n│\n┗═•❃༺🎙️༻❃•═┓`);
             await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
         } finally {
             await Promise.allSettled([fs.promises.unlink(entrada), fs.promises.unlink(saida)]);
         }
     } catch (erro) {
-        console.error(`❌ Erro no efeito de voz ${comando}:`, erro.message);
+        console.error(`❌ Erro no efeito de voz ${comando}:`, erro);
         await reagir(message, '❌');
-        await responderCitando(message, `❌ _Não consegui aplicar o efeito_ *${efeito.nome}* _neste áudio._`);
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ ❌ _Não consegui aplicar_ *${efeito.nome}*\n│   _Verifique se o áudio é válido e tente novamente._\n│\n┗═•❃༺❌༻❃•═┓`);
     }
     return true;
 }
@@ -16245,12 +16246,12 @@ async function comandoTTS(message, argumentos) {
     const texto = String(argumentos || '').trim();
     if (!texto) {
         await reagir(message, '🗣️');
-        await responderCitando(message, `🗣️ _Informe o texto que devo falar._\n\nExemplo: *${PREFIXO}tts Olá pessoal, tudo bem?*`);
+        await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Informe o texto que devo falar._\n│\n├➤ Exemplo: *${PREFIXO}tts Olá pessoal, tudo bem?*\n│\n┗═•❃༺🗣️༻❃•═┓`);
         return;
     }
     if (texto.length > 200) {
         await reagir(message, '⚠️');
-        await responderCitando(message, '⚠️ _O texto para TTS deve ter no máximo 200 caracteres._');
+        await responderCitando(message, `┏═•❃༺⚠️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ ⚠️ _O texto para TTS deve ter no máximo 200 caracteres._\n│\n┗═•❃༺⚠️༻❃•═┓`);
         return;
     }
 
@@ -16289,6 +16290,7 @@ async function comandoTTS(message, argumentos) {
             );
 
             await reagir(message, '🗣️');
+            await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Voz gerada com sucesso!_\n│   _Seu áudio está logo abaixo._\n│\n┗═•❃༺🗣️༻❃•═┓`);
             await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
         } finally {
             await Promise.allSettled([
