@@ -1455,6 +1455,31 @@ if (
     }
 }    
 
+// ========================================================
+// 👑 LENDA
+// ========================================================
+
+if (
+    Number(dadosUsuario.nivel) >= 25 &&
+    !possuiConquista(
+        usuarioId,
+        'nivel25'
+    )
+) {
+
+    if (
+        desbloquearConquista(
+            usuarioId,
+            'nivel25'
+        )
+    ) {
+
+        novasConquistas.push(
+            'nivel25'
+        );
+    }
+}
+
 return novasConquistas;
 }
 
