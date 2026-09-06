@@ -1430,7 +1430,32 @@ if (
     }
 }    
 
-    return novasConquistas;
+// ========================================================
+// 🚀 VETERANO
+// ========================================================
+
+if (
+    Number(dadosUsuario.nivel) >= 10 &&
+    !possuiConquista(
+        usuarioId,
+        'nivel10'
+    )
+) {
+
+    if (
+        desbloquearConquista(
+            usuarioId,
+            'nivel10'
+        )
+    ) {
+
+        novasConquistas.push(
+            'nivel10'
+        );
+    }
+}    
+
+return novasConquistas;
 }
 
 
