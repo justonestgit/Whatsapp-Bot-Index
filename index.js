@@ -1328,7 +1328,7 @@ function salvarMoedas() {
         for (const [usuarioId, carteira] of moedasUsuarios.entries()) {
             usuarios[usuarioId] = {
                 saldo: Math.max(0, Math.floor(Number(carteira.saldo) || 0)),
-                ultimoDiario: 0,
+                ultimoDiario: Number(carteira.ultimoDiario) || 0,
                 mineracoes: Number(carteira.mineracoes) || 0,
                 roubosSucesso: Number(carteira.roubosSucesso) || 0
             };
@@ -1394,7 +1394,7 @@ function carregarMoedas() {
             if (carteira && typeof carteira === 'object') {
                 moedasUsuarios.set(usuarioId, {
                     saldo: Math.max(0, Number(carteira.saldo) || 0),
-                    ultimoDiario: 0,
+                    ultimoDiario: Number(carteira.ultimoDiario) || 0,
                     mineracoes: Number(carteira.mineracoes) || 0,
                     roubosSucesso: Number(carteira.roubosSucesso) || 0
                 });
@@ -13582,10 +13582,17 @@ async function mostrarSaldo(message) {
 async function jogarSlots(message, argumento) {
     try {
         const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
-        const aposta = parseInt(String(argumento || '').trim(), 10);
-        if (!usuarioId || isNaN(aposta) || aposta < 10) {
+        const argumentoLimpo = String(argumento || '').trim();
+        if (!usuarioId || !/^\d+$/.test(argumentoLimpo)) {
             await reagir(message, '❌');
-            await responderCitando(message, `❌ _A aposta mínima é 10 moedas._\n\nExemplo: *${PREFIXO}slots 100*`);
+            await responderCitando(message, `❌ _Informe uma aposta inteira válida._\n\nA aposta mínima é *10 moedas*.\nExemplo: *${PREFIXO}slots 100*`);
+            return;
+        }
+
+        const aposta = Number(argumentoLimpo);
+        if (!Number.isSafeInteger(aposta) || aposta < 10) {
+            await reagir(message, '❌');
+            await responderCitando(message, `❌ _A aposta deve ser um número inteiro entre *10* e *${formatarMoedas(Number.MAX_SAFE_INTEGER)}* moedas._`);
             return;
         }
 
@@ -13597,6 +13604,8 @@ async function jogarSlots(message, argumento) {
         }
 
         carteira.saldo -= aposta;
+        registrarTransacao('slots_aposta', usuarioId, null, aposta, 'Aposta nos slots');
+
         const simbolos = ['🍒','🍋','🍉','🔔','⭐','💎','7️⃣'];
         const rolos = [0,1,2].map(() => simbolos[Math.floor(Math.random() * simbolos.length)]);
         let multiplicador = 0;
@@ -13611,23 +13620,24 @@ async function jogarSlots(message, argumento) {
         else if (rolos[0] === rolos[1] || rolos[1] === rolos[2] || rolos[0] === rolos[2]) multiplicador = 2;
 
         const premio = aposta * multiplicador;
+        if (!Number.isSafeInteger(premio)) {
+            console.error('❌ Prêmio dos slots excedeu o limite seguro:', { aposta, multiplicador });
+            carteira.saldo += aposta;
+            historicoEconomia.pop();
+            salvarMoedas();
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ _Não foi possível processar essa aposta com segurança. Suas moedas foram devolvidas._');
+            return;
+        }
+
         carteira.saldo += premio;
-        registrarTransacao('slots', null, usuarioId, premio, `Aposta ${aposta}, ${rolos.join(' ')}`);
+        if (premio > 0) {
+            registrarTransacao('slots_premio', null, usuarioId, premio, `Prêmio dos slots: ${rolos.join(' ')}, ${multiplicador}x`);
+        }
         salvarMoedas();
 
         await reagir(message, multiplicador ? '🎉' : '🎰');
-        await responderCitando(message, `┏═•❃༺🎰༻❃•═┓
-│      *𝐉𝐔𝐒𝐓 𝐒𝐋𝐎𝐓𝐒*
-├✯
-│
-│      ${rolos.join(' │ ')}
-│
-├➤ 🎲 Aposta: *${formatarMoedas(aposta)}*
-├➤ 🎉 Multiplicador: *${multiplicador}x*
-├➤ 🪙 Prêmio: *${formatarMoedas(premio)}*
-├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)}*
-│
-┗═•❃༺🎰༻❃•═┛`);
+        await responderCitando(message, `┏═•❃༺🎰༻❃•═┓\n│      *𝐉𝐔𝐒𝐓 𝐒𝐋𝐎𝐓𝐒*\n├✯\n│\n│      ${rolos.join(' │ ')}\n│\n├➤ 🎲 Aposta: *${formatarMoedas(aposta)}*\n├➤ 🎉 Multiplicador: *${multiplicador}x*\n├➤ 🪙 Prêmio: *${formatarMoedas(premio)}*\n├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)}*\n│\n┗═•❃༺🎰༻❃•═┛`);
     } catch (erro) {
         console.error('❌ Erro nos slots:', erro);
         await reagir(message, '❌');
