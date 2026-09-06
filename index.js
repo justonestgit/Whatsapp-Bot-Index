@@ -26,7 +26,9 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.16';
+const VERSAO = '3.17';
+const SHAZAM_API_KEY = process.env.SHAZAM_API_KEY || '';
+const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY || '';
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -4229,6 +4231,9 @@ async function menuPrincipal(message) {
 │  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
 │  _Ferramentas para administradores_
 │
+│  🌐 *𝐀𝐏𝐈𝐒*
+│  _Serviços e informações online_
+│
 │  ⚙️ *𝐔𝐓𝐈𝐋𝐈𝐃𝐀𝐃𝐄𝐒*
 │  _Ferramentas gerais_
 │
@@ -4527,6 +4532,15 @@ async function menuModeracao(message) {
 
 
 // ============================================================
+// 🌐 MENU APIS
+// ============================================================
+
+async function menuAPIs(message) {
+    await reagir(message, '🌐');
+    await responderCitando(message, `┏═•❃༺🌐༻❃•═┓\n│        *🌐 𝐀𝐏𝐈𝐒*\n├✯\n│\n├➤ 🎵 *${PREFIXO}shazam*\n│   _Identificar uma música a partir de um áudio._\n│\n├➤ 📱 *${PREFIXO}qr <texto/link>*\n│   _Gerar um QR Code._\n│\n├➤ ⚽ *${PREFIXO}futebol*\n│   _Ver jogos de futebol de hoje._\n│\n├➤ 🔴 *${PREFIXO}futebol ao vivo*\n│   _Ver partidas ao vivo._\n│\n├➤ 🏎️ *${PREFIXO}f1*\n│   _Ver a próxima corrida._\n│\n├➤ 📅 *${PREFIXO}f1 calendario*\n│   _Ver o calendário da temporada._\n│\n├➤ 🏆 *${PREFIXO}f1 classificacao*\n│   _Ver a classificação de pilotos._\n│\n├➤ 🌫️ *${PREFIXO}ar <cidade>*\n│   _Consultar a qualidade do ar._\n│\n┗═•❃༺🌐༻❃•═┛`);
+}
+
+// ============================================================
 // ⚙️ MENU UTILIDADES
 // ============================================================
 
@@ -4632,7 +4646,7 @@ async function changelog(message) {
 │
 ├✯
 │
-│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟔*
+│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟕*
 │
 │  🌐 *𝐈𝐍𝐓𝐄𝐆𝐑𝐀𝐂̧𝐀̃𝐎 𝐂𝐎𝐌 𝐀𝐏𝐈𝐒*
 │
@@ -4650,6 +4664,23 @@ async function changelog(message) {
 │  │
 │  └➤ *${PREFIXO}clima <cidade>*
 │      Consulta o clima atual.
+│
+│  🌐 *𝐍𝐎𝐕𝐀𝐒 𝐀𝐏𝐈𝐒*
+│
+│  ├➤ *${PREFIXO}shazam*
+│  │   Identifica músicas enviadas como áudio.
+│  │
+│  ├➤ *${PREFIXO}qr <texto/link>*
+│  │   Gera QR Codes.
+│  │
+│  ├➤ *${PREFIXO}futebol*
+│  │   Consulta jogos de futebol.
+│  │
+│  ├➤ *${PREFIXO}f1*
+│  │   Consulta calendário e classificação da F1.
+│  │
+│  └➤ *${PREFIXO}ar <cidade>*
+│      Consulta a qualidade do ar.
 │
 │  🔒 *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌*
 │
@@ -4809,6 +4840,21 @@ async function listarComandos(message) {
 │
 ├➤ 🍥 *${PREFIXO}anime <nome>*
 │   _Consultar informações de um anime_
+│
+├➤ 🎵 *${PREFIXO}shazam*
+│   _Identificar uma música a partir de um áudio_
+│
+├➤ 📱 *${PREFIXO}qr <texto/link>*
+│   _Gerar um QR Code_
+│
+├➤ ⚽ *${PREFIXO}futebol*
+│   _Ver jogos de futebol de hoje_
+│
+├➤ 🏎️ *${PREFIXO}f1*
+│   _Ver a próxima corrida de F1_
+│
+├➤ 🌫️ *${PREFIXO}ar <cidade>*
+│   _Consultar a qualidade do ar_
 │
 ├➤ ☠️ *${PREFIXO}suicidio*
 │   _Comando de humor_
@@ -5013,6 +5059,9 @@ async function listarComandos(message) {
 │
 ├➤ 🛡️ *${PREFIXO}moderacao*
 │   _Menu de moderação_
+│
+├➤ 🌐 *${PREFIXO}apis*
+│   _Menu de APIs_
 │
 ├➤ ⚙️ *${PREFIXO}utilidades*
 │   _Menu de utilidades_
@@ -5913,10 +5962,20 @@ async function buscarJsonAPI(url, opcoes = {}) {
     const controlador = new AbortController();
     const timeout = setTimeout(() => controlador.abort(), opcoes.timeout || 12000);
     try {
-        const resposta = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: controlador.signal });
+        const resposta = await fetch(url, {
+            method: opcoes.method || 'GET',
+            headers: {
+                'Accept': 'application/json',
+                ...(opcoes.headers || {})
+            },
+            body: opcoes.body,
+            signal: controlador.signal
+        });
         if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
         return await resposta.json();
-    } finally { clearTimeout(timeout); }
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
 function limparTextoAPI(texto) {
@@ -5988,6 +6047,348 @@ async function comandoClima(message, argumentos) {
         const codigos={0:'☀️ Céu limpo',1:'🌤️ Principalmente limpo',2:'⛅ Parcialmente nublado',3:'☁️ Nublado',45:'🌫️ Nevoeiro',48:'🌫️ Nevoeiro com geada',51:'🌦️ Chuvisco leve',53:'🌦️ Chuvisco moderado',55:'🌧️ Chuvisco intenso',61:'🌦️ Chuva leve',63:'🌧️ Chuva moderada',65:'🌧️ Chuva forte',71:'🌨️ Neve leve',73:'🌨️ Neve moderada',75:'❄️ Neve forte',80:'🌦️ Pancadas de chuva',81:'🌧️ Pancadas moderadas',82:'⛈️ Pancadas fortes',95:'⛈️ Trovoada',96:'⛈️ Trovoada com granizo',99:'⛈️ Trovoada forte com granizo'}; const atual=clima.current||{}; const diaria=clima.daily||{}; const regiao=[local.admin1,local.country].filter(Boolean).join(', ');
         const texto=`┏═•❃༺🌦️༻❃•═┓\n│       *𝐂𝐋𝐈𝐌𝐀*\n├✯\n│\n├➤ 📍 *${local.name||cidade}*\n├➤ 🌎 ${regiao}\n│\n├➤ ${codigos[atual.weather_code]||'🌡️ Condição desconhecida'}\n├➤ 🌡️ Temperatura: *${atual.temperature_2m??'?'}°C*\n├➤ 🤒 Sensação: *${atual.apparent_temperature??'?'}°C*\n├➤ 💧 Umidade: *${atual.relative_humidity_2m??'?'}%*\n├➤ 💨 Vento: *${atual.wind_speed_10m??'?'} km/h*\n│\n├➤ 🔺 Máxima: *${diaria.temperature_2m_max?.[0]??'?'}°C*\n├➤ 🔻 Mínima: *${diaria.temperature_2m_min?.[0]??'?'}°C*\n├➤ ☔ Chance de chuva: *${diaria.precipitation_probability_max?.[0]??'?'}%*\n│\n┗═•❃༺🌦️༻❃•═┛`; await reagir(message,'🌦️'); await responderCitando(message,texto);
     } catch(erro){console.error('❌ Erro na API de clima:',erro.message);await reagir(message,'❌');await responderCitando(message,`❌ _Não consegui consultar o clima de_ *${cidade}* _agora._`);}
+}
+
+// ============================================================
+// 🌐 NOVAS APIS: QR, SHAZAM, FUTEBOL, F1 E QUALIDADE DO AR
+// ============================================================
+
+async function comandoQR(message, argumentos) {
+    const conteudo = String(argumentos || '').trim();
+    if (!conteudo) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe o texto ou link para gerar o QR Code._\n\nExemplo: *${PREFIXO}qr https://youtube.com*`);
+        return;
+    }
+
+    if (conteudo.length > 900) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _O conteúdo do QR Code é grande demais. Tente usar até 900 caracteres._');
+        return;
+    }
+
+    try {
+        const url = `https://api.qrserver.com/v1/create-qr-code/?size=700x700&format=png&data=${encodeURIComponent(conteudo)}`;
+        const resposta = await fetch(url);
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+
+        const bytes = Buffer.from(await resposta.arrayBuffer());
+        const midia = new MessageMedia('image/png', bytes.toString('base64'), 'qrcode.png');
+
+        await reagir(message, '📱');
+        await client.sendMessage(message.from, midia, {
+            caption: `📱 *𝐐𝐑 𝐂𝐎𝐃𝐄*\n\n🔗 _Conteúdo codificado com sucesso._`
+        });
+    } catch (erro) {
+        console.error('❌ Erro na API de QR Code:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui gerar o QR Code agora. Tente novamente em alguns segundos._');
+    }
+}
+
+async function converterAudioParaPCM(caminhoEntrada) {
+    return new Promise((resolve, reject) => {
+        const processo = spawn(ffmpeg, [
+            '-hide_banner',
+            '-loglevel', 'error',
+            '-i', caminhoEntrada,
+            '-f', 's16le',
+            '-acodec', 'pcm_s16le',
+            '-ac', '1',
+            '-ar', '44100',
+            'pipe:1'
+        ]);
+
+        const partes = [];
+        let tamanho = 0;
+
+        processo.stdout.on('data', parte => {
+            if (tamanho < 780000) {
+                const restante = 780000 - tamanho;
+                const recorte = parte.length > restante ? parte.subarray(0, restante) : parte;
+                partes.push(recorte);
+                tamanho += recorte.length;
+            }
+        });
+
+        let erroFFmpeg = '';
+        processo.stderr.on('data', parte => {
+            erroFFmpeg += parte.toString();
+        });
+
+        processo.on('error', reject);
+        processo.on('close', codigo => {
+            if (codigo !== 0) {
+                reject(new Error(`FFmpeg terminou com código ${codigo}: ${erroFFmpeg.trim()}`));
+                return;
+            }
+            const pcm = Buffer.concat(partes);
+            if (!pcm.length) {
+                reject(new Error('Nenhum áudio PCM foi produzido.'));
+                return;
+            }
+            resolve(pcm);
+        });
+    });
+}
+
+async function comandoShazam(message) {
+    if (!SHAZAM_API_KEY) {
+        await reagir(message, '🔑');
+        await responderCitando(message, '🔑 *𝐒𝐇𝐀𝐙𝐀𝐌 𝐍𝐀̃𝐎 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐃𝐎*\n\n_O comando precisa da variável de ambiente_ `SHAZAM_API_KEY` _no computador/servidor do bot._');
+        return;
+    }
+
+    if (!message.hasMedia) {
+        await reagir(message, '🎵');
+        await responderCitando(message, `🎵 _Envie um áudio junto com_ *${PREFIXO}shazam* _ou responda a um áudio com o comando._`);
+        return;
+    }
+
+    const pastaTemporaria = path.join(os.tmpdir(), 'justbot-shazam');
+    fs.mkdirSync(pastaTemporaria, { recursive: true });
+    const idTemporario = `${Date.now()}-${String(message.id?.id || 'audio').replace(/[^a-zA-Z0-9_-]/g, '')}`;
+    const arquivoEntrada = path.join(pastaTemporaria, `${idTemporario}.audio`);
+
+    try {
+        await reagir(message, '🎵');
+        const midia = await message.downloadMedia();
+        if (!midia || !midia.data) throw new Error('Não foi possível baixar o áudio.');
+
+        fs.writeFileSync(arquivoEntrada, Buffer.from(midia.data, 'base64'));
+        const pcm = await converterAudioParaPCM(arquivoEntrada);
+        const base64PCM = pcm.toString('base64');
+
+        const controlador = new AbortController();
+        const timeout = setTimeout(() => controlador.abort(), 20000);
+        let resposta;
+        try {
+            resposta = await fetch('https://shazam.p.rapidapi.com/songs/v2/detect?timezone=America%2FSao_Paulo&locale=pt-BR', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'text/plain',
+                    'X-RapidAPI-Key': SHAZAM_API_KEY,
+                    'X-RapidAPI-Host': 'shazam.p.rapidapi.com'
+                },
+                body: base64PCM,
+                signal: controlador.signal
+            });
+        } finally {
+            clearTimeout(timeout);
+        }
+
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+        const dados = await resposta.json();
+        const faixa = dados?.track;
+
+        if (!faixa || !faixa.title) {
+            await reagir(message, '❓');
+            await responderCitando(message, '❓ _Não consegui identificar essa música. Tente enviar um trecho com áudio mais limpo e com alguns segundos de duração._');
+            return;
+        }
+
+        const metadados = Array.isArray(faixa.sections?.[0]?.metadata) ? faixa.sections[0].metadata : [];
+        const album = metadados.find(item => item.title === 'Album')?.text || 'N/A';
+        const lancamento = metadados.find(item => item.title === 'Released')?.text || 'N/A';
+        const genero = faixa.genres?.primary || 'N/A';
+        const capaUrl = faixa.images?.coverart || faixa.images?.coverarthq || null;
+        const urlFaixa = faixa.url || null;
+
+        const texto = `┏═•❃༺🎵༻❃•═┓\n│       *𝐒𝐇𝐀𝐙𝐀𝐌*\n├✯\n│\n├➤ 🎶 *${limparTextoAPI(faixa.title)}*\n├➤ 👤 Artista: *${limparTextoAPI(faixa.subtitle || 'N/A')}*\n├➤ 💿 Álbum: *${limparTextoAPI(album)}*\n├➤ 📅 Lançamento: *${limparTextoAPI(lancamento)}*\n├➤ 🎼 Gênero: *${limparTextoAPI(genero)}*\n${urlFaixa ? `├➤ 🔗 ${urlFaixa}\n` : ''}│\n┗═•❃༺🎵༻❃•═┛`;
+
+        if (capaUrl) {
+            try {
+                const capaResposta = await fetch(capaUrl);
+                if (capaResposta.ok) {
+                    const capaBytes = Buffer.from(await capaResposta.arrayBuffer());
+                    const capa = new MessageMedia('image/jpeg', capaBytes.toString('base64'), 'shazam.jpg');
+                    await client.sendMessage(message.from, capa, { caption: texto });
+                    return;
+                }
+            } catch (erroCapa) {
+                console.log('⚠️ Não foi possível baixar a capa do Shazam:', erroCapa.message);
+            }
+        }
+
+        await responderCitando(message, texto);
+    } catch (erro) {
+        console.error('❌ Erro na API do Shazam:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui identificar a música agora. Verifique se a chave do Shazam está válida e tente novamente._');
+    } finally {
+        try {
+            if (fs.existsSync(arquivoEntrada)) fs.unlinkSync(arquivoEntrada);
+        } catch (erroLimpeza) {
+            console.log('⚠️ Não foi possível limpar arquivo temporário do Shazam:', erroLimpeza.message);
+        }
+    }
+}
+
+async function buscarApiFootball(endpoint, parametros = {}) {
+    if (!API_FOOTBALL_KEY) throw new Error('API_FOOTBALL_KEY não configurada.');
+    const query = new URLSearchParams(parametros).toString();
+    const url = `https://v3.football.api-sports.io/${endpoint}${query ? `?${query}` : ''}`;
+    const dados = await buscarJsonAPI(url, {
+        timeout: 15000,
+        headers: {
+            'x-apisports-key': API_FOOTBALL_KEY
+        }
+    });
+    if (dados?.errors && Object.keys(dados.errors).length > 0) {
+        throw new Error(Object.values(dados.errors).join(', '));
+    }
+    return dados;
+}
+
+function dataHojeSaoPaulo() {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Sao_Paulo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
+}
+
+function formatarHoraFutebol(dataISO) {
+    if (!dataISO) return '--:--';
+    try {
+        return new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(new Date(dataISO));
+    } catch {
+        return '--:--';
+    }
+}
+
+async function comandoFutebol(message, argumentos) {
+    if (!API_FOOTBALL_KEY) {
+        await reagir(message, '🔑');
+        await responderCitando(message, '🔑 *𝐅𝐔𝐓𝐄𝐁𝐎𝐋 𝐍𝐀̃𝐎 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐃𝐎*\n\n_O comando precisa da variável de ambiente_ `API_FOOTBALL_KEY` _no computador/servidor do bot._');
+        return;
+    }
+
+    const modo = String(argumentos || '').trim().toLowerCase();
+    try {
+        const aoVivo = ['ao vivo', 'aovivo', 'live'].includes(modo);
+        const dados = aoVivo
+            ? await buscarApiFootball('fixtures', { live: 'all' })
+            : await buscarApiFootball('fixtures', { date: dataHojeSaoPaulo() });
+        const jogos = Array.isArray(dados?.response) ? dados.response : [];
+
+        if (!jogos.length) {
+            await reagir(message, '⚽');
+            await responderCitando(message, aoVivo ? '⚽ _Não há partidas ao vivo encontradas agora._' : `⚽ _Não encontrei partidas para_ *${dataHojeSaoPaulo()}* _nas competições disponíveis._`);
+            return;
+        }
+
+        const lista = jogos.slice(0, 12).map(jogo => {
+            const status = jogo.fixture?.status?.short || 'N/A';
+            const tempo = formatarHoraFutebol(jogo.fixture?.date);
+            const casa = jogo.teams?.home?.name || '?';
+            const fora = jogo.teams?.away?.name || '?';
+            const golsCasa = jogo.goals?.home;
+            const golsFora = jogo.goals?.away;
+            const placar = golsCasa !== null && golsCasa !== undefined && golsFora !== null && golsFora !== undefined
+                ? `*${golsCasa} x ${golsFora}*`
+                : `_vs_`;
+            const competicao = jogo.league?.name || 'Competição';
+            return `├➤ 🏆 *${limitarTextoAPI(competicao, 45)}*\n│   🕐 ${tempo} • *${status}*\n│   ⚽ ${limitarTextoAPI(casa, 28)} ${placar} ${limitarTextoAPI(fora, 28)}`;
+        }).join('\n│\n');
+
+        const titulo = aoVivo ? '𝐅𝐔𝐓𝐄𝐁𝐎𝐋 𝐀𝐎 𝐕𝐈𝐕𝐎' : `𝐅𝐔𝐓𝐄𝐁𝐎𝐋 • ${dataHojeSaoPaulo()}`;
+        await reagir(message, '⚽');
+        await responderCitando(message, `┏═•❃༺⚽༻❃•═┓\n│      *${titulo}*\n├✯\n│\n${lista}\n│\n├➤ _Mostrando até 12 partidas._\n┗═•❃༺⚽༻❃•═┛`);
+    } catch (erro) {
+        console.error('❌ Erro na API de futebol:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui consultar os jogos agora. A API pode estar temporariamente indisponível ou a chave pode ter atingido o limite diário._');
+    }
+}
+
+async function buscarF1API(caminho) {
+    return buscarJsonAPI(`https://api.jolpi.ca/ergast/f1/${caminho}`, {
+        timeout: 15000,
+        headers: {
+            'User-Agent': `JUST-BOT/${VERSAO}`
+        }
+    });
+}
+
+function extrairMRData(dados) {
+    return dados?.MRData || dados?.mrData || {};
+}
+
+async function comandoF1(message, argumentos) {
+    const modo = String(argumentos || '').trim().toLowerCase();
+    try {
+        if (!modo || ['proxima', 'próxima', 'next'].includes(modo)) {
+            const dados = extrairMRData(await buscarF1API('current/next/races/?limit=1'));
+            const corrida = dados?.RaceTable?.Races?.[0];
+            if (!corrida) throw new Error('Próxima corrida não encontrada.');
+            const data = corrida.date ? new Date(`${corrida.date}T${corrida.time || '00:00:00Z'}`).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'full', timeStyle: 'short' }) : 'N/A';
+            const circuito = corrida.Circuit?.circuitName || 'N/A';
+            const local = corrida.Circuit?.Location?.locality && corrida.Circuit?.Location?.country ? `${corrida.Circuit.Location.locality}, ${corrida.Circuit.Location.country}` : 'N/A';
+            await reagir(message, '🏎️');
+            await responderCitando(message, `┏═•❃༺🏎️༻❃•═┓\n│       *𝐅𝟏 • 𝐏𝐑𝐎́𝐗𝐈𝐌𝐀*\n├✯\n│\n├➤ 🏁 *${limparTextoAPI(corrida.raceName)}*\n├➤ 📍 ${limparTextoAPI(circuito)}\n├➤ 🌎 ${limparTextoAPI(local)}\n├➤ 📅 ${data}\n├➤ 🔢 Rodada: *${corrida.round || 'N/A'}*\n│\n┗═•❃༺🏎️༻❃•═┛`);
+            return;
+        }
+
+        if (['calendario', 'calendar', 'corridas'].includes(modo)) {
+            const dados = extrairMRData(await buscarF1API('current/races/?limit=30'));
+            const corridas = dados?.RaceTable?.Races || [];
+            if (!corridas.length) throw new Error('Calendário vazio.');
+            const lista = corridas.map(corrida => `├➤ *${corrida.round || '?'}.* ${limparTextoAPI(corrida.raceName)}\n│   📅 ${corrida.date || 'N/A'} • 📍 ${limparTextoAPI(corrida.Circuit?.circuitName || 'N/A')}`).join('\n│\n');
+            await reagir(message, '📅');
+            await responderCitando(message, `┏═•❃༺🏎️༻❃•═┓\n│       *𝐂𝐀𝐋𝐄𝐍𝐃𝐀́𝐑𝐈𝐎 𝐅𝟏*\n├✯\n│\n${lista}\n│\n┗═•❃༺🏎️༻❃•═┛`);
+            return;
+        }
+
+        if (['classificacao', 'classificação', 'ranking', 'pilotos'].includes(modo)) {
+            const dados = extrairMRData(await buscarF1API('current/driverstandings/?limit=20'));
+            const standings = dados?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || [];
+            if (!standings.length) throw new Error('Classificação vazia.');
+            const lista = standings.slice(0, 20).map(item => `├➤ *${item.position || '?'}º* ${limparTextoAPI(`${item.Driver?.givenName || ''} ${item.Driver?.familyName || ''}`)} • *${item.points || 0} pts*\n│   🏎️ ${limparTextoAPI(item.Constructors?.[0]?.name || 'N/A')}`).join('\n│\n');
+            await reagir(message, '🏆');
+            await responderCitando(message, `┏═•❃༺🏆༻❃•═┓\n│      *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀𝐂̧𝐀̃𝐎 𝐅𝟏*\n├✯\n│\n${lista}\n│\n┗═•❃༺🏆༻❃•═┛`);
+            return;
+        }
+
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Opção de F1 não reconhecida._\n\nUse:\n*${PREFIXO}f1*\n*${PREFIXO}f1 calendario*\n*${PREFIXO}f1 classificacao*`);
+    } catch (erro) {
+        console.error('❌ Erro na API de F1:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui consultar os dados da Fórmula 1 agora. Tente novamente em alguns segundos._');
+    }
+}
+
+async function comandoQualidadeAr(message, argumentos) {
+    const cidade = String(argumentos || '').trim();
+    if (!cidade) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe uma cidade._\n\nExemplo: *${PREFIXO}ar São Paulo*`);
+        return;
+    }
+
+    try {
+        const geo = await buscarJsonAPI(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`);
+        const local = geo?.results?.[0];
+        if (!local) throw new Error('Cidade não encontrada.');
+
+        const dados = await buscarJsonAPI(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${local.latitude}&longitude=${local.longitude}&current=european_aqi,pm2_5,pm10,nitrogen_dioxide,ozone,sulphur_dioxide&timezone=auto`);
+        const atual = dados?.current || {};
+        const aqi = atual.european_aqi;
+        const classificacao = aqi === undefined || aqi === null ? 'N/A' : aqi <= 20 ? '🟢 Boa' : aqi <= 40 ? '🟡 Razoável' : aqi <= 60 ? '🟠 Moderada' : aqi <= 80 ? '🔴 Ruim' : aqi <= 100 ? '🟣 Muito ruim' : '⚫ Extremamente ruim';
+
+        await reagir(message, '🌫️');
+        await responderCitando(message, `┏═•❃༺🌫️༻❃•═┓\n│    *𝐐𝐔𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐀𝐑*\n├✯\n│\n├➤ 📍 *${limparTextoAPI(local.name)}, ${limparTextoAPI(local.country || '')}*\n├➤ 🌫️ AQI europeu: *${aqi ?? 'N/A'}*\n├➤ 📊 Classificação: *${classificacao}*\n│\n├➤ 💨 PM2.5: *${atual.pm2_5 ?? 'N/A'} µg/m³*\n├➤ 💨 PM10: *${atual.pm10 ?? 'N/A'} µg/m³*\n├➤ 🧪 NO₂: *${atual.nitrogen_dioxide ?? 'N/A'} µg/m³*\n├➤ 🧪 O₃: *${atual.ozone ?? 'N/A'} µg/m³*\n├➤ 🧪 SO₂: *${atual.sulphur_dioxide ?? 'N/A'} µg/m³*\n│\n┗═•❃༺🌫️༻❃•═┛`);
+    } catch (erro) {
+        console.error('❌ Erro na API de qualidade do ar:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Não consegui consultar a qualidade do ar de_ *${cidade}* _agora._`);
+    }
 }
 
 // ============================================================
@@ -15821,6 +16222,12 @@ case 'menumoderacao':
     await menuModeracao(message);
     break;
 
+case 'apis':
+case 'api':
+case 'menuapis':
+    await menuAPIs(message);
+    break;
+
 case 'utilidades':
 case 'menuutil':
     await menuUtil(message);
@@ -15941,6 +16348,32 @@ case 'sobre':
         case 'clima':
         case 'tempo':
             await comandoClima(message, argumentos);
+            break;
+
+        case 'qr':
+        case 'qrcode':
+            await comandoQR(message, argumentos);
+            break;
+
+        case 'shazam':
+        case 'identificarmusica':
+            await comandoShazam(message);
+            break;
+
+        case 'futebol':
+        case 'fut':
+            await comandoFutebol(message, argumentos);
+            break;
+
+        case 'f1':
+        case 'formula1':
+        case 'formulauno':
+            await comandoF1(message, argumentos);
+            break;
+
+        case 'ar':
+        case 'qualidadedoar':
+            await comandoQualidadeAr(message, argumentos);
             break;
 
         case 'ppp':
