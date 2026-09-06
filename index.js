@@ -1323,24 +1323,59 @@ function verificarConquistas(
     usuarioId,
     dadosUsuario
 ) {
+
     const novasConquistas = [];
 
+    if (!dadosUsuario) {
+        return novasConquistas;
+    }
+
+    // ========================================================
+    // 🌱 PRIMEIRO PASSO
+    // ========================================================
+
     if (
-        dadosUsuario &&
         Number(dadosUsuario.xp) > 0 &&
         !possuiConquista(
             usuarioId,
             'primeiroPasso'
         )
     ) {
+
         if (
             desbloquearConquista(
                 usuarioId,
                 'primeiroPasso'
             )
         ) {
+
             novasConquistas.push(
                 'primeiroPasso'
+            );
+        }
+    }
+
+    // ========================================================
+    // 💬 TAGARELA
+    // ========================================================
+
+    if (
+        Number(dadosUsuario.mensagens) >= 100 &&
+        !possuiConquista(
+            usuarioId,
+            'tagarela'
+        )
+    ) {
+
+        if (
+            desbloquearConquista(
+                usuarioId,
+                'tagarela'
+            )
+        ) {
+
+            novasConquistas.push(
+                'tagarela'
             );
         }
     }
