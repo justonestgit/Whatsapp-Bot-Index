@@ -2146,7 +2146,6 @@ async function obterIdsPessoa(contatoOuId) {
 // ============================================================
 // VERIFICAR SE O BOT É ADMIN
 // ============================================================
-
 async function ehBotAdmin(chat) {
     try {
         if (!chat || !chat.isGroup) {
@@ -2162,195 +2161,254 @@ async function ehBotAdmin(chat) {
             return false;
         }
 
-        const botId =
-    client.info &&
-    client.info.wid &&
-    client.info.wid._serialized;
+        // ========================================================
+        // OBTER IDS POSSÍVEIS DO BOT
+        // ========================================================
 
-console.log('========== DEBUG BOT ==========');
-console.log('BOT ID:', botId);
+        const botIds = new Set();
 
-const dadosBot =
-    await client.pupPage.evaluate(
-        botId => {
-            try {
-                const Store =
-                    window.require('WAWebCollections');
+        // ID principal informado pelo WhatsApp Web
+        const botIdPrincipal =
+            client.info?.wid?._serialized ||
+            client.info?.wid?.toString?.() ||
+            null;
 
-                const contato =
-                    Store.Contact?.get(botId);
+        if (botIdPrincipal) {
+            botIds.add(botIdPrincipal);
+        }
 
-                if (!contato) {
-                    return {
-                        encontrado: false
-                    };
+        // Tentar obter número/LID relacionados ao bot
+        try {
+            if (
+                botIdPrincipal &&
+                botIdPrincipal.endsWith('@c.us')
+            ) {
+                const resultado =
+                    await client.getContactLidAndPhone([
+                        botIdPrincipal
+                    ]);
+
+                if (
+                    resultado &&
+                    resultado.length > 0
+                ) {
+                    for (
+                        const contato of resultado
+                    ) {
+                        if (contato.lid) {
+                            botIds.add(
+                                contato.lid
+                            );
+                        }
+
+                        if (contato.pn) {
+                            botIds.add(
+                                contato.pn
+                            );
+                        }
+                    }
                 }
-
-                return {
-                    encontrado: true,
-
-                    id:
-                        contato.id?._serialized ||
-                        contato.id?.toString?.() ||
-                        null,
-
-                    lid:
-                        contato.lid?._serialized ||
-                        contato.lid?.toString?.() ||
-                        null,
-
-                    isMe:
-                        !!contato.isMe
-                };
-
-            } catch (erro) {
-
-                return {
-                    erro: String(
-                        erro?.message ||
-                        erro
-                    )
-                };
             }
-        },
-        botId
-    );
+        } catch (erroLid) {
+            console.log(
+                '⚠️ Não foi possível obter LID do bot:',
+                erroLid?.message ||
+                    erroLid
+            );
+        }
 
-console.log(
-    'DADOS DO BOT:',
-    dadosBot
-);
+        // ========================================================
+        // OBTER PARTICIPANTES DIRETAMENTE DO WHATSAPP WEB
+        // ========================================================
 
-console.log('================================');
+        const participantes =
+            await client.pupPage.evaluate(
+                chatId => {
+                    try {
+                        const Store =
+                            window.require(
+                                'WAWebCollections'
+                            );
 
-const botLid =
-    dadosBot &&
-    dadosBot.lid;
+                        if (
+                            !Store ||
+                            !Store.Chat
+                        ) {
+                            return {
+                                sucesso: false,
+                                erro:
+                                    'Coleção Chat não disponível.'
+                            };
+                        }
 
+                        const chatInterno =
+                            Store.Chat.get(
+                                chatId
+                            );
 
+                        if (!chatInterno) {
+                            return {
+                                sucesso: false,
+                                erro:
+                                    'Grupo não encontrado.'
+                            };
+                        }
 
-console.log('DADOS DO BOT:', dadosBot);
-console.log('================================');
-        
-        
-        const dadosChat = await client.pupPage.evaluate(
-            chatId => {
-                try {
-                    const Store =
-                        window.require('WAWebCollections');
+                        const lista =
+                            chatInterno
+                                .groupMetadata
+                                ?.participants;
 
-                    if (!Store || !Store.Chat) {
-                        return null;
+                        if (!lista) {
+                            return {
+                                sucesso: false,
+                                erro:
+                                    'Participantes do grupo não disponíveis.'
+                            };
+                        }
+
+                        let modelos = [];
+
+                        if (
+                            typeof lista.getModelsArray ===
+                            'function'
+                        ) {
+                            modelos =
+                                lista.getModelsArray();
+                        } else if (
+                            Array.isArray(
+                                lista.models
+                            )
+                        ) {
+                            modelos =
+                                lista.models;
+                        }
+
+                        return {
+                            sucesso: true,
+                            participantes:
+                                modelos.map(
+                                    participante => ({
+                                        id:
+                                            participante
+                                                .id
+                                                ?._serialized ||
+                                            participante
+                                                .id
+                                                ?.toString?.() ||
+                                            null,
+
+                                        isAdmin:
+                                            !!participante
+                                                .isAdmin,
+
+                                        isSuperAdmin:
+                                            !!participante
+                                                .isSuperAdmin,
+
+                                        isMe:
+                                            !!participante
+                                                .isMe
+                                    })
+                                )
+                        };
+
+                    } catch (erro) {
+                        return {
+                            sucesso: false,
+                            erro:
+                                String(
+                                    erro?.message ||
+                                    erro
+                                )
+                        };
                     }
+                },
+                chatId
+            );
 
-                    const chatInterno =
-                        Store.Chat.get(chatId);
+        if (
+            !participantes ||
+            !participantes.sucesso
+        ) {
+            console.log(
+                '⚠️ Não foi possível obter participantes:',
+                participantes?.erro ||
+                    'erro desconhecido'
+            );
 
-                    if (!chatInterno) {
-                        return null;
-                    }
-
-                    const participantes =
-                        chatInterno.groupMetadata?.participants;
-
-                    if (!participantes) {
-                        return null;
-                    }
-
-                    let modelos = [];
-
-                    if (
-                        typeof participantes.getModelsArray === 'function'
-                    ) {
-                        modelos =
-                            participantes.getModelsArray();
-                    } else if (
-                        Array.isArray(participantes.models)
-                    ) {
-                        modelos =
-                            participantes.models;
-                    }
-
-                    const bot =
-    contatos?.get('556182770049@c.us');
-
-return {
-
-    botId:
-        bot?.id?._serialized ||
-        bot?.id?.toString?.() ||
-        null,
-
-    botLid:
-        bot?.lid?._serialized ||
-        bot?.lid?.toString?.() ||
-        null,
-
-    participants:
-        modelos.map(
-            participante => ({
-                id:
-                    participante.id?._serialized ||
-                    participante.id?.toString?.() ||
-                    null,
-
-                isAdmin:
-                    !!participante.isAdmin,
-
-                isSuperAdmin:
-                    !!participante.isSuperAdmin,
-
-                isMe:
-                    !!participante.isMe
-            })
-        )
-};
-
-                } catch (erro) {
-                    return {
-                        erro: String(
-                            erro?.message || erro
-                        )
-                    };
-                }
-            },
-            chatId
-        );
-
-        if (!dadosChat || dadosChat.erro) {
             return false;
         }
 
-        console.log(
-    '========== CONTATO DO BOT =========='
-);
+        // ========================================================
+        // ENCONTRAR O BOT
+        // ========================================================
 
-console.log(
-    JSON.stringify(
-        dadosChat.botContatoDados,
-        null,
-        2
-    )
-);
+        const participanteBot =
+            participantes.participantes.find(
+                participante => {
 
-console.log(
-    '===================================='
-);
+                    // Melhor indicador:
+                    // o próprio WhatsApp marcou este participante
+                    // como sendo a conta atual.
+                    if (
+                        participante.isMe
+                    ) {
+                        return true;
+                    }
 
-        
+                    // Fallback pelos IDs conhecidos.
+                    for (
+                        const botId of botIds
+                    ) {
+                        if (
+                            idsIguais(
+                                participante.id,
+                                botId
+                            )
+                        ) {
+                            return true;
+                        }
+                    }
 
-        return !!(
-            participanteBot &&
-            (
+                    return false;
+                }
+            );
+
+        if (!participanteBot) {
+            console.log(
+                '⚠️ Bot não foi encontrado nos participantes do grupo.'
+            );
+
+            return false;
+        }
+
+        // ========================================================
+        // VERIFICAR ADMIN
+        // ========================================================
+
+        const botAdmin =
+            !!(
                 participanteBot.isAdmin ||
                 participanteBot.isSuperAdmin
-            )
+            );
+
+        console.log(
+            '🤖 Bot encontrado:',
+            participanteBot.id
         );
 
-    } catch (erro) {
         console.log(
-            '⚠️ Erro ao verificar se o bot é admin:',
-            erro.message
+            '👑 Bot é admin:',
+            botAdmin
+        );
+
+        return botAdmin;
+
+    } catch (erro) {
+        console.error(
+            '❌ Erro ao verificar se o bot é admin:',
+            erro
         );
 
         return false;
