@@ -16195,6 +16195,74 @@ function extensaoAudio(mimetype) {
 }
 
 async function baixarMidiaWhatsAppCompativel(mensagem) {
+    const raw = mensagem?.rawData || mensagem?._data || {};
+
+    // O WhatsApp Web atual pode quebrar Msg.get()/Msg.getMessagesById()
+    // por causa da migração de IDs (_serialized -> $1 / @lid). Como a
+    // Message já recebeu os dados criptográficos da mídia, tentamos primeiro
+    // baixar diretamente pelo DownloadManager, sem procurar o modelo Msg.
+    const dadosDiretos = {
+        directPath: raw.directPath,
+        encFilehash: raw.encFilehash,
+        filehash: raw.filehash,
+        mediaKey: raw.mediaKey || mensagem?.mediaKey,
+        mediaKeyTimestamp: raw.mediaKeyTimestamp,
+        type: raw.type || mensagem?.type,
+        mimetype: raw.mimetype,
+        filename: raw.filename,
+        filesize: raw.size,
+    };
+
+    if (
+        dadosDiretos.directPath &&
+        dadosDiretos.mediaKey &&
+        dadosDiretos.filehash &&
+        dadosDiretos.encFilehash
+    ) {
+        try {
+            const resultadoDireto = await client.pupPage.evaluate(async (dados) => {
+                const mockQpl = {
+                    addAnnotations() { return this; },
+                    addPoint() { return this; },
+                };
+
+                const decryptedMedia = await window
+                    .require('WAWebDownloadManager')
+                    .downloadManager
+                    .downloadAndMaybeDecrypt({
+                        directPath: dados.directPath,
+                        encFilehash: dados.encFilehash,
+                        filehash: dados.filehash,
+                        mediaKey: dados.mediaKey,
+                        mediaKeyTimestamp: dados.mediaKeyTimestamp,
+                        type: dados.type,
+                        signal: new AbortController().signal,
+                        downloadQpl: mockQpl,
+                    });
+
+                const data = await window.WWebJS.arrayBufferToBase64Async(decryptedMedia);
+
+                return {
+                    data,
+                    mimetype: dados.mimetype,
+                    filename: dados.filename,
+                    filesize: dados.filesize,
+                };
+            }, dadosDiretos);
+
+            if (resultadoDireto?.data) {
+                return new MessageMedia(
+                    resultadoDireto.mimetype || 'audio/ogg',
+                    resultadoDireto.data,
+                    resultadoDireto.filename,
+                    resultadoDireto.filesize,
+                );
+            }
+        } catch (erroDireto) {
+            // Se o download direto falhar, continua para os fallbacks abaixo.
+        }
+    }
+
     const id = mensagem?.id || {};
     const candidatos = [];
 
@@ -16228,8 +16296,7 @@ async function baixarMidiaWhatsAppCompativel(mensagem) {
                     (await collections.Msg.getMessagesById([id]))?.messages?.[0];
                 if (msg) break;
             } catch (_) {
-                // Alguns IDs inválidos fazem o IndexedDB do WhatsApp lançar
-                // erros minificados. Tenta o próximo formato de ID.
+                // Tenta o próximo formato de ID.
             }
         }
 
