@@ -16260,9 +16260,42 @@ async function comandoTTS(message, argumentos) {
         if (!resposta.ok) throw new Error(`Google TTS respondeu HTTP ${resposta.status}`);
         const dados = Buffer.from(await resposta.arrayBuffer());
         if (!dados.length) throw new Error('Google TTS não retornou áudio.');
-        const audio = new MessageMedia('audio/mpeg', dados.toString('base64'), 'tts.mp3');
-        await reagir(message, '🗣️');
-        await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+
+        // O Google TTS retorna MP3, mas o WhatsApp funciona de forma muito
+        // mais confiável com mensagem de voz em OGG/Opus. Enviar o MP3
+        // diretamente com sendAudioAsVoice pode resultar em "não foi possível
+        // baixar o áudio" no aplicativo.
+        const pasta = path.join(os.tmpdir(), 'justbot-voz');
+        await fs.promises.mkdir(pasta, { recursive: true });
+        const id = `tts-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const entrada = path.join(pasta, `${id}.mp3`);
+        const saida = path.join(pasta, `${id}.ogg`);
+
+        try {
+            await fs.promises.writeFile(entrada, dados);
+            await executarFFmpeg([
+                '-hide_banner', '-loglevel', 'error', '-y', '-i', entrada,
+                '-vn', '-c:a', 'libopus', '-b:a', '64k', '-vbr', 'on',
+                '-application', 'voip', '-ar', '48000', '-ac', '1', saida
+            ]);
+
+            const dadosOpus = await fs.promises.readFile(saida);
+            if (!dadosOpus.length) throw new Error('FFmpeg não gerou o áudio OGG.');
+
+            const audio = new MessageMedia(
+                'audio/ogg; codecs=opus',
+                dadosOpus.toString('base64'),
+                'tts.ogg'
+            );
+
+            await reagir(message, '🗣️');
+            await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+        } finally {
+            await Promise.allSettled([
+                fs.promises.unlink(entrada),
+                fs.promises.unlink(saida)
+            ]);
+        }
     } catch (erro) {
         console.error('❌ Erro no Google TTS:', erro.message);
         await reagir(message, '❌');
