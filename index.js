@@ -16302,85 +16302,134 @@ const CACHE_AUDIO_TTL = 30 * 60 * 1000;
 const CACHE_AUDIO_MAXIMO = 50;
 const cacheAudioLocal = new Map();
 
-function obterChaveMensagem(mensagem) {
+function obterChavesMensagem(mensagem) {
     const id = mensagem?.id || {};
-    if (id.$1) return String(id.$1);
-    if (id._serialized) return String(id._serialized);
+    const raw = mensagem?.rawData || mensagem?._data || {};
+    const chaves = [];
+
+    const adicionar = valor => {
+        if (valor === undefined || valor === null || valor === '') return;
+        const chave = String(valor);
+        if (!chaves.includes(chave)) chaves.push(chave);
+    };
+
+    // O id.id é o identificador interno da mensagem e normalmente permanece
+    // igual mesmo quando whatsapp-web.js expõe $1/_serialized de formas diferentes.
+    adicionar(id.id);
+    adicionar(id.$1);
+    adicionar(id._serialized);
+
     if (id.id && id.remote !== undefined) {
-        return `${id.fromMe ? '1' : '0'}_${id.remote}_${id.id}`;
+        adicionar(`${id.fromMe ? '1' : '0'}_${id.remote}_${id.id}`);
+        adicionar(`${id.fromMe ? 'true' : 'false'}_${id.remote}_${id.id}`);
+        adicionar(`${id.remote}_${id.id}`);
     }
-    return null;
+
+    adicionar(raw.id);
+    adicionar(raw.msgId);
+    adicionar(raw.key?.id);
+    adicionar(raw.key?._serialized);
+    adicionar(raw.key?.remoteJid && raw.key?.id ? `${raw.key.remoteJid}_${raw.key.id}` : null);
+
+    return chaves;
+}
+
+function obterChaveMensagem(mensagem) {
+    return obterChavesMensagem(mensagem)[0] || null;
 }
 
 async function limparCacheAudioLocal() {
     const agora = Date.now();
+    const itensUnicos = new Map();
 
     for (const [chave, item] of cacheAudioLocal) {
         if (!item?.caminho || item.expiraEm <= agora) {
-            if (item?.caminho) {
-                await fs.promises.unlink(item.caminho).catch(() => {});
-            }
+            if (item?.caminho) await fs.promises.unlink(item.caminho).catch(() => {});
             cacheAudioLocal.delete(chave);
+            continue;
         }
+        itensUnicos.set(item.caminho, item);
     }
 
-    while (cacheAudioLocal.size > CACHE_AUDIO_MAXIMO) {
-        const primeiro = cacheAudioLocal.entries().next().value;
-        if (!primeiro) break;
-        const [chave, item] = primeiro;
-        await fs.promises.unlink(item.caminho).catch(() => {});
-        cacheAudioLocal.delete(chave);
+    if (itensUnicos.size <= CACHE_AUDIO_MAXIMO) return;
+
+    const itensOrdenados = [...itensUnicos.entries()].sort((a, b) => a[1].criadoEm - b[1].criadoEm);
+    const remover = itensOrdenados.slice(0, itensOrdenados.length - CACHE_AUDIO_MAXIMO);
+
+    for (const [caminho, item] of remover) {
+        await fs.promises.unlink(caminho).catch(() => {});
+        for (const [chave, valor] of cacheAudioLocal) {
+            if (valor === item) cacheAudioLocal.delete(chave);
+        }
     }
 }
 
 async function obterAudioDoCache(mensagem) {
-    const chave = obterChaveMensagem(mensagem);
-    if (!chave) return null;
+    const chaves = obterChavesMensagem(mensagem);
+    if (!chaves.length) return null;
 
-    const item = cacheAudioLocal.get(chave);
-    if (!item) return null;
+    for (const chave of chaves) {
+        const item = cacheAudioLocal.get(chave);
+        if (!item) continue;
 
-    if (item.expiraEm <= Date.now()) {
-        await fs.promises.unlink(item.caminho).catch(() => {});
-        cacheAudioLocal.delete(chave);
-        return null;
+        if (item.expiraEm <= Date.now()) {
+            await fs.promises.unlink(item.caminho).catch(() => {});
+            for (const [chaveCache, valor] of cacheAudioLocal) {
+                if (valor === item) cacheAudioLocal.delete(chaveCache);
+            }
+            continue;
+        }
+
+        try {
+            await fs.promises.access(item.caminho);
+            return item.caminho;
+        } catch (_) {
+            for (const [chaveCache, valor] of cacheAudioLocal) {
+                if (valor === item) cacheAudioLocal.delete(chaveCache);
+            }
+        }
     }
 
-    try {
-        await fs.promises.access(item.caminho);
-        // Atualiza a posição no Map para manter os arquivos usados recentemente.
-        cacheAudioLocal.delete(chave);
-        cacheAudioLocal.set(chave, item);
-        return item.caminho;
-    } catch (_) {
-        cacheAudioLocal.delete(chave);
-        return null;
-    }
+    return null;
 }
 
 async function guardarAudioNoCache(mensagem, caminhoOrigem) {
-    const chave = obterChaveMensagem(mensagem);
-    if (!chave || !caminhoOrigem) return null;
+    const chaves = obterChavesMensagem(mensagem);
+    if (!chaves.length || !caminhoOrigem) return null;
 
     const pastaCache = path.join(os.tmpdir(), 'justbot-voz-cache');
     await fs.promises.mkdir(pastaCache, { recursive: true });
     await limparCacheAudioLocal();
 
-    const nomeSeguro = Buffer.from(chave).toString('base64').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const nomeSeguro = Buffer.from(chaves[0]).toString('base64').replace(/[^a-zA-Z0-9_-]/g, '_');
     const caminhoCache = path.join(pastaCache, `${nomeSeguro}-${Date.now()}.ogg`);
-
     await fs.promises.copyFile(caminhoOrigem, caminhoCache);
 
-    const anterior = cacheAudioLocal.get(chave);
-    if (anterior?.caminho) {
+    // Remove qualquer entrada anterior que corresponda a uma das representações
+    // deste mesmo ID, evitando arquivos duplicados no cache.
+    const anteriores = new Set();
+    for (const chave of chaves) {
+        const anterior = cacheAudioLocal.get(chave);
+        if (anterior) anteriores.add(anterior);
+    }
+    for (const anterior of anteriores) {
+        for (const [chave, valor] of cacheAudioLocal) {
+            if (valor === anterior) cacheAudioLocal.delete(chave);
+        }
         await fs.promises.unlink(anterior.caminho).catch(() => {});
     }
 
-    cacheAudioLocal.delete(chave);
-    cacheAudioLocal.set(chave, {
+    const item = {
         caminho: caminhoCache,
+        criadoEm: Date.now(),
         expiraEm: Date.now() + CACHE_AUDIO_TTL,
-    });
+    };
+
+    // Guarda todas as formas do ID. Assim, sendMessage() e getQuotedMessage()
+    // podem usar representações diferentes e ainda encontrar o mesmo arquivo.
+    for (const chave of chaves) {
+        cacheAudioLocal.set(chave, item);
+    }
 
     await limparCacheAudioLocal();
     return caminhoCache;
