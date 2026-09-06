@@ -16407,8 +16407,8 @@ async function modificarAudio(message, comando) {
         const pasta = path.join(os.tmpdir(), 'justbot-voz');
         await fs.promises.mkdir(pasta, { recursive: true });
         const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        const entrada = path.join(pasta, `${id}${extensaoAudio(midia.mimetype)}`);
-        const saida = path.join(pasta, `${id}.ogg`);
+        const entrada = path.join(pasta, `${id}-input${extensaoAudio(midia.mimetype)}`);
+        const saida = path.join(pasta, `${id}-output.ogg`);
 
         try {
             await fs.promises.writeFile(entrada, Buffer.from(midia.data, 'base64'));
