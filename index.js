@@ -16176,12 +16176,60 @@ async function executarFFmpeg(args) {
     });
 }
 
+function objetoMensagemComMidia(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+
+    const mimetype = raw.mimetype || raw.mediaData?.mimetype || '';
+    const temCaminho = Boolean(raw.directPath || raw.mediaData?.directPath);
+    const temChave = Boolean(raw.mediaKey || raw.mediaData?.mediaKey);
+    const pareceAudio = String(mimetype).toLowerCase().startsWith('audio/');
+
+    if (!temCaminho && !(temChave && pareceAudio)) return null;
+
+    return {
+        _data: raw,
+        rawData: raw,
+        id: raw.id || {},
+        hasMedia: temCaminho || temChave,
+        mediaKey: raw.mediaKey || raw.mediaData?.mediaKey,
+        type: raw.type,
+        mimetype,
+        directPath: raw.directPath || raw.mediaData?.directPath,
+        encFilehash: raw.encFilehash || raw.mediaData?.encFilehash,
+        filehash: raw.filehash || raw.mediaData?.filehash,
+        mediaKeyTimestamp: raw.mediaKeyTimestamp || raw.mediaData?.mediaKeyTimestamp,
+        filename: raw.filename,
+        filesize: raw.size,
+    };
+}
+
 async function obterMensagemDeAudio(message) {
-    if (message.hasMedia) return message;
-    if (message.hasQuotedMsg) {
-        const citada = await message.getQuotedMessage();
-        if (citada && citada.hasMedia) return citada;
+    // Primeiro usamos a própria mensagem. Isso também cobre mensagens de voz
+    // enviadas pelo bot quando elas chegam com a mídia já resolvida.
+    const propria = objetoMensagemComMidia(message?.rawData || message?._data) ||
+        (message?.hasMedia ? message : null);
+    if (propria) return propria;
+
+    // Em versões recentes do WhatsApp Web, getQuotedMessage() pode falhar
+    // por causa da troca de _serialized para $1. Quando a mensagem é uma
+    // resposta a um áudio do bot, o objeto quotedMsg normalmente já está
+    // dentro do payload recebido e podemos usá-lo diretamente.
+    const raw = message?.rawData || message?._data || {};
+    const quotedRaw = raw.quotedMsg || raw.quotedMessage || message?.quotedMsg;
+    const citadaDireta = objetoMensagemComMidia(quotedRaw);
+    if (citadaDireta) return citadaDireta;
+
+    if (message?.hasQuotedMsg && typeof message.getQuotedMessage === 'function') {
+        try {
+            const citada = await message.getQuotedMessage();
+            const audioCitado = objetoMensagemComMidia(citada?.rawData || citada?._data) ||
+                (citada?.hasMedia ? citada : null);
+            if (audioCitado) return audioCitado;
+        } catch (_) {
+            // O fallback acima não depende do getQuotedMessage().
+        }
     }
+
     return null;
 }
 
