@@ -9388,20 +9388,41 @@ async function banirPessoa(message) {
             return;
         }
 
-        // O WhatsApp Web pode falhar momentaneamente ao executar getChatById
-        // (erro interno `r: r`). Como message.getChat() usa essa mesma camada,
-        // fazemos algumas tentativas antes de desistir do ban.
-        let chat = null;
+        // O message.getChat() usa Client.getChatById(), que está apresentando
+        // o erro interno `r: r` em versões recentes do WhatsApp Web.
+        // Para o ban, acessamos o chat diretamente no contexto do WhatsApp Web.
+        let dadosGrupo = null;
         let ultimoErroChat = null;
 
         for (let tentativa = 1; tentativa <= 3; tentativa++) {
             try {
-                chat = await message.getChat();
-                if (chat) break;
+                dadosGrupo = await client.pupPage.evaluate(async (chatId) => {
+                    const chat = await window.WWebJS.getChat(chatId, {
+                        getAsModel: false,
+                    });
+
+                    if (!chat) {
+                        return null;
+                    }
+
+                    const participantes =
+                        chat.groupMetadata?.participants?.getModelsArray?.() || [];
+
+                    return {
+                        isGroup: chat.id?.server === 'g.us' || !!chat.isGroup,
+                        participants: participantes.map(participante => ({
+                            id: participante.id?._serialized || null,
+                            isAdmin: !!participante.isAdmin,
+                            isSuperAdmin: !!participante.isSuperAdmin,
+                        })),
+                    };
+                }, message.from);
+
+                if (dadosGrupo) break;
             } catch (erroChat) {
                 ultimoErroChat = erroChat;
                 console.log(
-                    `⚠️ Não foi possível obter o grupo para o ban (tentativa ${tentativa}/3):`,
+                    `⚠️ Não foi possível acessar o grupo diretamente para o ban (tentativa ${tentativa}/3):`,
                     erroChat.message
                 );
 
@@ -9411,19 +9432,18 @@ async function banirPessoa(message) {
             }
         }
 
-        if (!chat) {
+        if (!dadosGrupo) {
             throw ultimoErroChat || new Error('Não foi possível acessar o grupo.');
         }
 
-        if (!chat.isGroup) {
+        if (!dadosGrupo.isGroup) {
             await reagir(message, '❌');
             await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
             return;
         }
 
-        const participante = chat.participants?.find(item => {
-            const idAtual = item.id?._serialized || item.id?.toString?.();
-            return idAtual && idsIguais(idAtual, idPessoa);
+        const participante = dadosGrupo.participants?.find(item => {
+            return item.id && idsIguais(item.id, idPessoa);
         });
 
         if (participante?.isAdmin || participante?.isSuperAdmin) {
@@ -9439,7 +9459,40 @@ async function banirPessoa(message) {
 
         for (const id of idsParaTentar) {
             try {
-                await chat.removeParticipants([id]);
+                await client.pupPage.evaluate(async (chatId, participantIds) => {
+                    const chat = await window.WWebJS.getChat(chatId, {
+                        getAsModel: false,
+                    });
+
+                    if (!chat || chat.id?.server !== 'g.us') {
+                        throw new Error('O chat informado não é um grupo.');
+                    }
+
+                    const participantes = (
+                        await Promise.all(
+                            participantIds.map(async participanteId => {
+                                const { lid, phone } =
+                                    await window.WWebJS.enforceLidAndPnRetrieval(participanteId);
+
+                                return (
+                                    chat.groupMetadata.participants.get(lid?._serialized) ||
+                                    chat.groupMetadata.participants.get(phone?._serialized)
+                                );
+                            })
+                        )
+                    ).filter(Boolean);
+
+                    if (!participantes.length) {
+                        throw new Error('A pessoa não foi encontrada entre os participantes do grupo.');
+                    }
+
+                    await window
+                        .require('WAWebModifyParticipantsGroupAction')
+                        .removeParticipants(chat, participantes);
+
+                    return { status: 200 };
+                }, message.from, [id]);
+
                 removido = true;
                 break;
             } catch (erroRemocao) {
