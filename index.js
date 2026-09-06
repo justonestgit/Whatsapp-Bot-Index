@@ -16296,6 +16296,96 @@ function formatarErroDownload(erro) {
     }
 }
 
+// Cache local para áudios gerados pelo próprio bot.
+// Isso evita depender de um novo download do WhatsApp a cada efeito aplicado.
+const CACHE_AUDIO_TTL = 30 * 60 * 1000;
+const CACHE_AUDIO_MAXIMO = 50;
+const cacheAudioLocal = new Map();
+
+function obterChaveMensagem(mensagem) {
+    const id = mensagem?.id || {};
+    if (id.$1) return String(id.$1);
+    if (id._serialized) return String(id._serialized);
+    if (id.id && id.remote !== undefined) {
+        return `${id.fromMe ? '1' : '0'}_${id.remote}_${id.id}`;
+    }
+    return null;
+}
+
+async function limparCacheAudioLocal() {
+    const agora = Date.now();
+
+    for (const [chave, item] of cacheAudioLocal) {
+        if (!item?.caminho || item.expiraEm <= agora) {
+            if (item?.caminho) {
+                await fs.promises.unlink(item.caminho).catch(() => {});
+            }
+            cacheAudioLocal.delete(chave);
+        }
+    }
+
+    while (cacheAudioLocal.size > CACHE_AUDIO_MAXIMO) {
+        const primeiro = cacheAudioLocal.entries().next().value;
+        if (!primeiro) break;
+        const [chave, item] = primeiro;
+        await fs.promises.unlink(item.caminho).catch(() => {});
+        cacheAudioLocal.delete(chave);
+    }
+}
+
+async function obterAudioDoCache(mensagem) {
+    const chave = obterChaveMensagem(mensagem);
+    if (!chave) return null;
+
+    const item = cacheAudioLocal.get(chave);
+    if (!item) return null;
+
+    if (item.expiraEm <= Date.now()) {
+        await fs.promises.unlink(item.caminho).catch(() => {});
+        cacheAudioLocal.delete(chave);
+        return null;
+    }
+
+    try {
+        await fs.promises.access(item.caminho);
+        // Atualiza a posição no Map para manter os arquivos usados recentemente.
+        cacheAudioLocal.delete(chave);
+        cacheAudioLocal.set(chave, item);
+        return item.caminho;
+    } catch (_) {
+        cacheAudioLocal.delete(chave);
+        return null;
+    }
+}
+
+async function guardarAudioNoCache(mensagem, caminhoOrigem) {
+    const chave = obterChaveMensagem(mensagem);
+    if (!chave || !caminhoOrigem) return null;
+
+    const pastaCache = path.join(os.tmpdir(), 'justbot-voz-cache');
+    await fs.promises.mkdir(pastaCache, { recursive: true });
+    await limparCacheAudioLocal();
+
+    const nomeSeguro = Buffer.from(chave).toString('base64').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const caminhoCache = path.join(pastaCache, `${nomeSeguro}-${Date.now()}.ogg`);
+
+    await fs.promises.copyFile(caminhoOrigem, caminhoCache);
+
+    const anterior = cacheAudioLocal.get(chave);
+    if (anterior?.caminho) {
+        await fs.promises.unlink(anterior.caminho).catch(() => {});
+    }
+
+    cacheAudioLocal.delete(chave);
+    cacheAudioLocal.set(chave, {
+        caminho: caminhoCache,
+        expiraEm: Date.now() + CACHE_AUDIO_TTL,
+    });
+
+    await limparCacheAudioLocal();
+    return caminhoCache;
+}
+
 async function baixarMidiaWhatsAppCompativel(mensagem) {
     const raw = mensagem?.rawData || mensagem?._data || {};
 
@@ -16487,53 +16577,77 @@ async function modificarAudio(message, comando) {
             return true;
         }
 
-        let midia = null;
-        let ultimoErroDownload = null;
-
-        for (let tentativa = 1; tentativa <= 3; tentativa++) {
-            try {
-                // Não usamos mensagemAudio.reload() nas tentativas seguintes.
-                // A implementação atual de whatsapp-web.js ainda usa id._serialized
-                // internamente e pode falhar antes mesmo de tentar baixar a mídia.
-                midia = await baixarMidiaWhatsAppCompativel(mensagemAudio);
-                if (midia) break;
-            } catch (erroDownload) {
-                ultimoErroDownload = erroDownload;
-                if (tentativa < 3) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
-        }
-
-        if (!midia) {
-            throw new Error(`Não foi possível baixar o áudio do WhatsApp após 3 tentativas: ${ultimoErroDownload?.message || 'mídia indisponível'}`);
-        }
-        if (!midia || !String(midia.mimetype || '').toLowerCase().startsWith('audio/')) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ _A mídia selecionada não é um áudio válido._');
-            return true;
-        }
-
         const pasta = path.join(os.tmpdir(), 'justbot-voz');
         await fs.promises.mkdir(pasta, { recursive: true });
         const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        const entrada = path.join(pasta, `${id}-input${extensaoAudio(midia.mimetype)}`);
+        const entrada = path.join(pasta, `${id}-input${extensaoAudio(mensagemAudio?.mimetype)}`);
         const saida = path.join(pasta, `${id}-output.ogg`);
+        let entradaEhDoCache = false;
 
         try {
-            await fs.promises.writeFile(entrada, Buffer.from(midia.data, 'base64'));
-            await executarFFmpeg([
-                '-hide_banner', '-loglevel', 'error', '-y', '-i', entrada,
-                '-t', '60', '-af', efeito.filtro, '-vn',
-                '-c:a', 'libopus', '-b:a', '64k', '-vbr', 'on', '-application', 'voip', saida
-            ]);
+            // Primeiro tenta usar o arquivo local. Isso é especialmente importante
+            // para TTS e para cadeias de vários efeitos enviados pelo próprio bot.
+            const caminhoCache = await obterAudioDoCache(mensagemAudio);
+
+            if (caminhoCache) {
+                entradaEhDoCache = true;
+                await executarFFmpeg([
+                    '-hide_banner', '-loglevel', 'error', '-y', '-i', caminhoCache,
+                    '-t', '60', '-af', efeito.filtro, '-vn',
+                    '-c:a', 'libopus', '-b:a', '64k', '-vbr', 'on',
+                    '-application', 'voip', saida
+                ]);
+            } else {
+                let midia = null;
+                let ultimoErroDownload = null;
+
+                for (let tentativa = 1; tentativa <= 3; tentativa++) {
+                    try {
+                        midia = await baixarMidiaWhatsAppCompativel(mensagemAudio);
+                        if (midia) break;
+                    } catch (erroDownload) {
+                        ultimoErroDownload = erroDownload;
+                        if (tentativa < 3) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                }
+
+                if (!midia) {
+                    throw new Error(`Não foi possível baixar o áudio do WhatsApp após 3 tentativas: ${ultimoErroDownload?.message || 'mídia indisponível'}`);
+                }
+                if (!String(midia.mimetype || '').toLowerCase().startsWith('audio/')) {
+                    await reagir(message, '❌');
+                    await responderCitando(message, '❌ _A mídia selecionada não é um áudio válido._');
+                    return true;
+                }
+
+                await fs.promises.writeFile(entrada, Buffer.from(midia.data, 'base64'));
+                await executarFFmpeg([
+                    '-hide_banner', '-loglevel', 'error', '-y', '-i', entrada,
+                    '-t', '60', '-af', efeito.filtro, '-vn',
+                    '-c:a', 'libopus', '-b:a', '64k', '-vbr', 'on',
+                    '-application', 'voip', saida
+                ]);
+            }
+
             const dados = await fs.promises.readFile(saida);
+            if (!dados.length) throw new Error('FFmpeg não gerou o áudio processado.');
+
             const audio = new MessageMedia('audio/ogg; codecs=opus', dados.toString('base64'), `${comando}.ogg`);
             await reagir(message, '🎙️');
             await responderCitando(message, `┏═•❃༺🎙️༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ ${efeito.nome}\n│   _Áudio processado com sucesso!_\n│\n┗═•❃༺🎙️༻❃•═┓`);
-            await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+
+            const mensagemEnviada = await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+
+            // Guarda o resultado pelo ID da mensagem enviada. O próximo efeito
+            // encontrará este arquivo localmente e não precisará baixá-lo do WhatsApp.
+            await guardarAudioNoCache(mensagemEnviada, saida);
         } finally {
-            await Promise.allSettled([fs.promises.unlink(entrada), fs.promises.unlink(saida)]);
+            if (!entradaEhDoCache) {
+                await fs.promises.unlink(entrada).catch(() => {});
+            }
+            await fs.promises.unlink(saida).catch(() => {});
         }
     } catch (erro) {
         console.error(`❌ Erro no efeito de voz ${comando}:`, erro);
@@ -16552,7 +16666,7 @@ async function comandoTTS(message, argumentos) {
     }
     if (texto.length > 10000) {
         await reagir(message, '⚠️');
-        await responderCitando(message, `┏═•❃༺⚠️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ ⚠️ _O texto para TTS deve ter no máximo 200 caracteres._\n│\n┗═•❃༺⚠️༻❃•═┓`);
+        await responderCitando(message, `┏═•❃༺⚠️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ ⚠️ _O texto para TTS deve ter no máximo 10.000 caracteres._\n│\n┗═•❃༺⚠️༻❃•═┓`);
         return;
     }
 
@@ -16564,9 +16678,7 @@ async function comandoTTS(message, argumentos) {
         if (!dados.length) throw new Error('Google TTS não retornou áudio.');
 
         // O Google TTS retorna MP3, mas o WhatsApp funciona de forma muito
-        // mais confiável com mensagem de voz em OGG/Opus. Enviar o MP3
-        // diretamente com sendAudioAsVoice pode resultar em "não foi possível
-        // baixar o áudio" no aplicativo.
+        // mais confiável com mensagem de voz em OGG/Opus.
         const pasta = path.join(os.tmpdir(), 'justbot-voz');
         await fs.promises.mkdir(pasta, { recursive: true });
         const id = `tts-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -16592,7 +16704,12 @@ async function comandoTTS(message, argumentos) {
 
             await reagir(message, '🗣️');
             await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Voz gerada com sucesso!_\n│   _Seu áudio está logo abaixo._\n│\n┗═•❃༺🗣️༻❃•═┓`);
-            await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+
+            const mensagemEnviada = await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+
+            // Mantém o OGG localmente para que efeitos aplicados por resposta
+            // possam usar o arquivo original sem fazer novo download do WhatsApp.
+            await guardarAudioNoCache(mensagemEnviada, saida);
         } finally {
             await Promise.allSettled([
                 fs.promises.unlink(entrada),
