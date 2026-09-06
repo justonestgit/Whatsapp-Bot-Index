@@ -2624,7 +2624,7 @@ async function responderCitando(message, conteudo, opcoes = {}) {
                 message.from
             );
 
-        return await client.sendMessage(
+        return await enviarComMencoes(
             message.from,
             conteudoFinal,
             configuracao
@@ -2697,6 +2697,11 @@ function mencaoDaPessoa(contato) {
         return '@alguém';
     }
 
+    // O texto da menção deve usar o número de telefone, não o LID interno.
+    if (contato.number) {
+        return `@${String(contato.number).replace(/\D/g, '')}`;
+    }
+
     if (
         contato.id &&
         contato.id.user
@@ -2704,19 +2709,176 @@ function mencaoDaPessoa(contato) {
         return `@${contato.id.user}`;
     }
 
-    if (
-        contato.number
-    ) {
-        return `@${contato.number}`;
-    }
-
     return '@alguém';
 }
 
-// NOVO SISTEMA DE MENÇÃO
-// O whatsapp-web.js não recomenda mais enviar Contact[]
-// diretamente em "mentions". Agora usamos os IDs serializados.
+// ============================================================
+// NORMALIZAÇÃO DE MENÇÕES
+// ============================================================
+// O WhatsApp Web também trabalha com LIDs. Quando um LID é
+// colocado diretamente no texto, ele pode aparecer como @123...
+// em vez de virar uma menção real. Antes de enviar, convertemos
+// LID -> número telefônico e usamos o JID @c.us.
 
+async function normalizarIdDeMencao(idOuContato) {
+    if (!idOuContato) {
+        return null;
+    }
+
+    if (
+        typeof idOuContato === 'object' &&
+        idOuContato.number
+    ) {
+        return `${String(idOuContato.number).replace(/\D/g, '')}@c.us`;
+    }
+
+    const id = String(
+        typeof idOuContato === 'object'
+            ? (
+                idOuContato.id?._serialized ||
+                idOuContato.id?.$1 ||
+                ''
+            )
+            : idOuContato
+    );
+
+    if (!id) {
+        return null;
+    }
+
+    if (id.endsWith('@c.us')) {
+        return id;
+    }
+
+    try {
+        const resultado =
+            await client.getContactLidAndPhone([id]);
+
+        const contato = resultado?.[0];
+
+        if (contato?.pn) {
+            return contato.pn;
+        }
+    } catch (erro) {
+        console.log(
+            '⚠️ Não foi possível converter LID para número na menção:',
+            erro.message
+        );
+    }
+
+    return id;
+}
+
+async function prepararMencoesParaEnvio(texto, mentions) {
+    if (!Array.isArray(mentions) || mentions.length === 0) {
+        return { texto, mentions };
+    }
+
+    let textoFinal = texto;
+    const mentionsFinais = [];
+
+    for (const mention of mentions) {
+        const idOriginal =
+            typeof mention === 'object'
+                ? (
+                    mention.id?._serialized ||
+                    mention.id?.$1 ||
+                    ''
+                )
+                : String(mention || '');
+
+        const idFinal =
+            await normalizarIdDeMencao(mention);
+
+        if (!idFinal) {
+            continue;
+        }
+
+        mentionsFinais.push(idFinal);
+
+        const numeroOriginal =
+            idOriginal.split('@')[0];
+        const numeroFinal =
+            idFinal.split('@')[0];
+
+        if (
+            numeroOriginal &&
+            numeroFinal &&
+            numeroOriginal !== numeroFinal
+        ) {
+            textoFinal =
+                textoFinal.split(`@${numeroOriginal}`).join(
+                    `@${numeroFinal}`
+                );
+        }
+    }
+
+    return {
+        texto: textoFinal,
+        mentions: [...new Set(mentionsFinais)]
+    };
+}
+
+async function enviarComMencoes(destino, conteudo, opcoes = {}) {
+    const configuracao = { ...opcoes };
+
+    const textoOriginal =
+        typeof conteudo === 'string'
+            ? conteudo
+            : configuracao.caption;
+
+    if (
+        typeof textoOriginal === 'string' &&
+        Array.isArray(configuracao.mentions) &&
+        configuracao.mentions.length > 0
+    ) {
+        const preparado =
+            await prepararMencoesParaEnvio(
+                textoOriginal,
+                configuracao.mentions
+            );
+
+        configuracao.mentions = preparado.mentions;
+
+        if (typeof conteudo === 'string') {
+            conteudo = preparado.texto;
+        } else {
+            configuracao.caption = preparado.texto;
+        }
+    }
+
+    return await client.sendMessage(
+        destino,
+        conteudo,
+        configuracao
+    );
+}
+
+async function responderComMencoes(message, conteudo, chatIdOuOpcoes, opcoes = {}) {
+    let chatId = chatIdOuOpcoes;
+    let configuracao = opcoes;
+
+    if (
+        chatIdOuOpcoes &&
+        typeof chatIdOuOpcoes === 'object' &&
+        !Array.isArray(chatIdOuOpcoes)
+    ) {
+        chatId = message.from;
+        configuracao = chatIdOuOpcoes;
+    }
+
+    return await enviarComMencoes(
+        chatId || message.from,
+        conteudo,
+        {
+            ...configuracao,
+            quotedMessageId: obterIdMensagem(message)
+        }
+    );
+}
+
+// O ID usado pelos outros sistemas continua sendo o ID interno original.
+// A conversão para menção real acontece somente no momento do envio.
 function idDaPessoa(contato) {
     if (!contato || !contato.id) {
         return null;
@@ -5955,7 +6117,7 @@ try {
 
         if (imagemPerfil) {
 
-            await client.sendMessage(
+            await enviarComMencoes(
                 message.from,
                 imagemPerfil,
                 opcoesEnvio
@@ -5963,7 +6125,7 @@ try {
 
         } else {
 
-            await client.sendMessage(
+            await enviarComMencoes(
                 message.from,
                 textoPerfil,
                 {
@@ -9221,7 +9383,7 @@ salvarMutados();
     // 9. AVISO
     // ============================================================
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *🔇 𝐌𝐔𝐓𝐄*
@@ -9844,7 +10006,7 @@ _Exemplo:_
         './imagens/casamento.webp'
     );
     
-await client.sendMessage(
+await enviarComMencoes(
     message.from,
     imagemCasamento,
     {
@@ -9919,7 +10081,8 @@ async function divorcioPessoa(message) {
         data: new Date().toISOString()
     });
 
-    await message.reply(
+    await responderComMencoes(
+    message,
     `┏═•❃༺💔༻❃•═┓
 │   *💔 𝐃𝐈𝐕Ó𝐑𝐂𝐈𝐎*
 ├✯
@@ -10012,7 +10175,8 @@ async function aceitarDivorcio(message) {
     const mencaoParceiro =
         `@${idParceiro.split('@')[0]}`;
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺💔༻❃•═┓
 │   *💔 𝐃𝐈𝐕Ó𝐑𝐂𝐈𝐎 𝐂𝐎𝐍𝐂𝐋𝐔Í𝐃𝐎*
 ├✯
@@ -10075,7 +10239,8 @@ async function recusarDivorcio(message) {
     const mencaoParceiro =
         `@${idParceiro.split('@')[0]}`;
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺❤️༻❃•═┓
 │   *❤️ 𝐃𝐈𝐕Ó𝐑𝐂𝐈𝐎 𝐂𝐀𝐍𝐂𝐄𝐋𝐀𝐃𝐎*
 ├✯
@@ -10304,7 +10469,8 @@ if (
     // 👶 MENSAGEM
     // ============================================================
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺👶༻❃•═┓
 │   *👶 𝐏𝐑𝐎𝐏𝐎𝐒𝐓𝐀 𝐃𝐄 𝐀𝐃𝐎ÇÃ𝐎*
 ├✯
@@ -10482,7 +10648,8 @@ async function aceitarAdocao(message) {
     // 👶 ADOÇÃO REALIZADA
     // ============================================================
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺👶༻❃•═┓
 │   *👶 𝐀𝐃𝐎ÇÃ𝐎 𝐑𝐄𝐀𝐋𝐈𝐙𝐀𝐃𝐀*
 ├✯
@@ -10561,7 +10728,8 @@ async function recusarAdocao(message) {
     // ❌ RECUSOU
     // ============================================================
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺👶༻❃•═┓
 │   *❌ 𝐀𝐃𝐎ÇÃ𝐎 𝐑𝐄𝐂𝐔𝐒𝐀𝐃𝐀*
 ├✯
@@ -10804,7 +10972,8 @@ async function mostrarFamilia(message) {
                     foto
                 );
 
-            await message.reply(
+            await responderComMencoes(
+                message,
                 imagem,
                 undefined,
                 {
@@ -10825,7 +10994,8 @@ async function mostrarFamilia(message) {
     }
 
     // Caso não tenha foto disponível
-    await message.reply(
+    await responderComMencoes(
+        message,
         textoFamilia,
         undefined,
         {
@@ -11350,7 +11520,8 @@ async function formarCasalAleatorio(message) {
     // 💘 RESULTADO
     // ============================================================
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺💘༻❃•═┓
 │   *💘 𝐂𝐀𝐒𝐀𝐋 𝐃𝐎 𝐃𝐈𝐀*
 ├✯
@@ -11461,7 +11632,8 @@ async function shiparPessoas(message) {
     // 💘 RESULTADO
     // ============================================================
 
-    await message.reply(
+    await responderComMencoes(
+        message,
         `┏═•❃༺💘༻❃•═┓
 │   *💘 𝐒𝐇𝐈𝐏 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
 ├✯
@@ -13078,7 +13250,8 @@ async function mandarCantada(message) {
         mencionados.length === 1
     ) {
 
-        await message.reply(
+        await responderComMencoes(
+            message,
             `💘 @${mencionados[0].split('@')[0]}\n\n` +
             cantada,
             undefined,
@@ -13407,7 +13580,7 @@ async function sortearMoedas(message, argumentos) {
     const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
     await reagir(message, '🎉');
-    await client.sendMessage(message.from, `┏═•❃༺🎉༻❃•═┓
+    await enviarComMencoes(message.from, `┏═•❃༺🎉༻❃•═┓
 │       *𝐒𝐎𝐑𝐓𝐄𝐈𝐎 𝐃𝐄 𝐌𝐎𝐄𝐃𝐀𝐒*
 ├✯
 │
@@ -13461,7 +13634,7 @@ async function rankingDinheiro(message) {
 │
 ┗═•❃༺🏆༻❃•═┛`;
     await reagir(message, '🏆');
-    await client.sendMessage(message.from, texto, { mentions: lista.map(x => x.id) });
+    await enviarComMencoes(message.from, texto, { mentions: lista.map(x => x.id) });
 }
 
 // ============================================================
@@ -13651,7 +13824,7 @@ async function jogarBatataQuente(message) {
         const mencao = `@${String(azarado).split('@')[0]}`;
 
         await reagir(message, '🥔');
-        await client.sendMessage(
+        await enviarComMencoes(
             message.from,
             `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ A batata passou de mão em mão...\n├➤ E explodiu na mão de *${mencao}*! 💥\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🥔༻❃•═┛`,
             { mentions: [azarado] }
@@ -13663,7 +13836,7 @@ async function jogarBatataQuente(message) {
         jogosEliminacao.delete(message.from);
 
         if (!remocao.sucesso) {
-            await client.sendMessage(
+            await enviarComMencoes(
                 message.from,
                 `⚠️ A batata acertou em cheio, mas não consegui expulsar @${String(azarado).split('@')[0]}.\n\n❌ ${remocao.erro}`,
                 { mentions: [azarado] }
@@ -13717,7 +13890,7 @@ async function jogarRoletaRussa(message) {
         const mencao = `@${String(azarado).split('@')[0]}`;
 
         await reagir(message, '🔫');
-        await client.sendMessage(
+        await enviarComMencoes(
             message.from,
             `┏═•❃༺🔫༻❃•═┓\n│\n│  *𝐑𝐎𝐋𝐄𝐓𝐀 𝐑𝐔𝐒𝐒𝐀!*\n│\n├➤ A roleta girou... 🔄\n├➤ O destino escolheu *${mencao}*! 💀\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🔫༻❃•═┛`,
             { mentions: [azarado] }
@@ -13729,7 +13902,7 @@ async function jogarRoletaRussa(message) {
         jogosEliminacao.delete(message.from);
 
         if (!remocao.sucesso) {
-            await client.sendMessage(
+            await enviarComMencoes(
                 message.from,
                 `⚠️ A roleta escolheu @${String(azarado).split('@')[0]}, mas não consegui expulsá-lo.\n\n❌ ${remocao.erro}`,
                 { mentions: [azarado] }
@@ -14700,7 +14873,7 @@ async function jogoPPP(message) {
 ┗═•❃༺✿༻❃•═┓`;
 
         // Envia a mensagem do PPP
-        await client.sendMessage(
+        await enviarComMencoes(
             chatId,
             textoPPP,
             {
@@ -14897,7 +15070,7 @@ async function comandoOiAuto(message) {
 
             await reagir(message, '🟢');
 
-            await client.sendMessage(
+            await enviarComMencoes(
                 chatId,
                 `┏═•❃༺✿༻❃•═┓
 ├✯ *𝐎𝐈 𝐀𝐔𝐓𝐎*
@@ -15696,7 +15869,7 @@ if (
                             idRemetente
                         ).split('@')[0]}`;
 
-                    await client.sendMessage(
+                    await enviarComMencoes(
                         message.from,
 
                         `┏═•❃༺🎖️༻❃•═┓
@@ -15745,7 +15918,7 @@ if (
                         idRemetente
                     ).split('@')[0]}`;
 
-                await client.sendMessage(
+                await enviarComMencoes(
                     message.from,
                     `┏═•❃༺⭐༻❃•═┓
 │   *🎉 𝐍𝐈́𝐕𝐄𝐋 𝐀𝐔𝐌𝐄𝐍𝐓𝐎𝐔!*
@@ -16139,6 +16312,7 @@ if (
 
 💤 _Este usuário está temporariamente
 ausente._`
+            , { mentions: [idMencionado] }
             );
 
         }
@@ -16206,6 +16380,7 @@ ausente._`
 
 💤 _Este usuário está temporariamente
 ausente._`
+                    , { mentions: [idAutorResposta] }
                     );
 
                 }
