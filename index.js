@@ -16550,7 +16550,7 @@ async function comandoTTS(message, argumentos) {
         await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Informe o texto que devo falar._\n│\n├➤ Exemplo: *${PREFIXO}tts Olá pessoal, tudo bem?*\n│\n┗═•❃༺🗣️༻❃•═┓`);
         return;
     }
-    if (texto.length > 200) {
+    if (texto.length > 10000) {
         await reagir(message, '⚠️');
         await responderCitando(message, `┏═•❃༺⚠️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ ⚠️ _O texto para TTS deve ter no máximo 200 caracteres._\n│\n┗═•❃༺⚠️༻❃•═┓`);
         return;
