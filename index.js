@@ -1320,6 +1320,8 @@ function registrarTransacao(tipo, de, para, valor, detalhes = '') {
     }
 }
 
+const economiaIdentidades = new Map();
+
 function salvarMoedas() {
     try {
         const usuarios = {};
@@ -1339,7 +1341,7 @@ function salvarMoedas() {
 
         fs.writeFileSync(
             arquivoMoedas,
-            JSON.stringify({ usuarios, inventarios, transacoes: historicoEconomia }, null, 2),
+            JSON.stringify({ usuarios, inventarios, transacoes: historicoEconomia, identidades: Object.fromEntries(economiaIdentidades) }, null, 2),
             'utf8'
         );
     } catch (erro) {
@@ -1355,6 +1357,13 @@ function carregarMoedas() {
         moedasUsuarios.clear();
         inventariosEconomia.clear();
         historicoEconomia.length = 0;
+        economiaIdentidades.clear();
+
+        if (dados?.identidades && typeof dados.identidades === 'object') {
+            for (const [alias, canonico] of Object.entries(dados.identidades)) {
+                if (alias && canonico) economiaIdentidades.set(alias, canonico);
+            }
+        }
 
         const usuarios = dados?.usuarios && typeof dados.usuarios === 'object'
             ? dados.usuarios
@@ -1393,17 +1402,135 @@ function carregarMoedas() {
             historicoEconomia.push(...dados.transacoes.slice(-500));
         }
 
+        for (const [alias, canonico] of economiaIdentidades.entries()) {
+            if (alias !== canonico) migrarCarteiraEconomia(alias, canonico);
+        }
+
         console.log('💰 Economia carregada:', moedasUsuarios.size, 'usuários');
     } catch (erro) {
         console.error('❌ Erro ao carregar economia:', erro);
     }
 }
 
+// ============================================================
+// 🪪 IDENTIDADE DAS CARTEIRAS
+// Mantém LID e JID da mesma pessoa na mesma carteira.
+// Nunca assume que dois números são iguais sem confirmação do WhatsApp.
+// ============================================================
+
+function normalizarIdEconomia(id) {
+    if (!id) return null;
+    if (typeof id === 'object') {
+        return id.id?._serialized || id.id?.$1 || id._serialized || null;
+    }
+    return String(id);
+}
+
+function escolherIdEconomia(ids, preferido = null) {
+    const lista = [...new Set((ids || []).map(normalizarIdEconomia).filter(Boolean))];
+    const telefone = lista.find(id => id.endsWith('@c.us'));
+    if (telefone) return telefone;
+    const preferidoNormalizado = normalizarIdEconomia(preferido);
+    if (preferidoNormalizado) return preferidoNormalizado;
+    return lista[0] || null;
+}
+
+function encontrarCarteiraEconomia(usuarioId) {
+    const id = normalizarIdEconomia(usuarioId);
+    if (!id) return null;
+    const canonico = economiaIdentidades.get(id) || id;
+    if (moedasUsuarios.has(canonico)) return canonico;
+    if (moedasUsuarios.has(id)) return id;
+    return null;
+}
+
+function migrarCarteiraEconomia(origem, destino) {
+    if (!origem || !destino || origem === destino) return;
+
+    const carteiraOrigem = moedasUsuarios.get(origem);
+    const carteiraDestino = moedasUsuarios.get(destino);
+
+    if (carteiraOrigem) {
+        if (carteiraDestino) {
+            carteiraDestino.saldo = Math.max(0, Number(carteiraDestino.saldo) || 0) + Math.max(0, Number(carteiraOrigem.saldo) || 0);
+            carteiraDestino.mineracoes = (Number(carteiraDestino.mineracoes) || 0) + (Number(carteiraOrigem.mineracoes) || 0);
+            carteiraDestino.roubosSucesso = (Number(carteiraDestino.roubosSucesso) || 0) + (Number(carteiraOrigem.roubosSucesso) || 0);
+            moedasUsuarios.delete(origem);
+        } else {
+            moedasUsuarios.set(destino, carteiraOrigem);
+            moedasUsuarios.delete(origem);
+        }
+    }
+
+    const inventarioOrigem = inventariosEconomia.get(origem);
+    const inventarioDestino = inventariosEconomia.get(destino);
+
+    if (inventarioOrigem) {
+        if (inventarioDestino) {
+            for (const [item, quantidade] of Object.entries(inventarioOrigem)) {
+                inventarioDestino[item] = (Number(inventarioDestino[item]) || 0) + (Number(quantidade) || 0);
+            }
+            inventariosEconomia.delete(origem);
+        } else {
+            inventariosEconomia.set(destino, inventarioOrigem);
+            inventariosEconomia.delete(origem);
+        }
+    }
+}
+
+function registrarIdentidadeEconomia(ids, preferido = null) {
+    const lista = [...new Set((ids || []).map(normalizarIdEconomia).filter(Boolean))];
+    const canonico = escolherIdEconomia(lista, preferido);
+    if (!canonico) return null;
+
+    for (const id of lista) {
+        const antigoCanonico = economiaIdentidades.get(id);
+        if (antigoCanonico && antigoCanonico !== canonico) {
+            migrarCarteiraEconomia(antigoCanonico, canonico);
+        }
+        if (id !== canonico && moedasUsuarios.has(id)) {
+            migrarCarteiraEconomia(id, canonico);
+        }
+        economiaIdentidades.set(id, canonico);
+    }
+
+    economiaIdentidades.set(canonico, canonico);
+    return canonico;
+}
+
+async function resolverIdEconomia(usuarioIdOuContato) {
+    const original = normalizarIdEconomia(usuarioIdOuContato);
+    if (!original) return null;
+
+    const conhecido = economiaIdentidades.get(original);
+    if (conhecido) return conhecido;
+
+    let ids = new Set([original]);
+
+    try {
+        if (typeof usuarioIdOuContato === 'object') {
+            ids = await obterIdsPessoa(usuarioIdOuContato);
+        } else if (original.endsWith('@c.us')) {
+            ids = await obterIdsPessoa(original);
+        } else {
+            const contato = await client.getContactById(original);
+            if (contato) ids = await obterIdsPessoa(contato);
+        }
+    } catch (erro) {
+        console.log('⚠️ Não foi possível resolver identidade da carteira:', erro?.message || erro);
+    }
+
+    return registrarIdentidadeEconomia([...ids], original);
+}
+
 function garantirCarteira(usuarioId) {
     if (!usuarioId) return null;
 
-    if (!moedasUsuarios.has(usuarioId)) {
-        moedasUsuarios.set(usuarioId, {
+    const id = economiaIdentidades.get(normalizarIdEconomia(usuarioId)) || normalizarIdEconomia(usuarioId);
+    if (!id) return null;
+
+    if (!moedasUsuarios.has(id)) {
+        moedasUsuarios.set(id, {
             saldo: MOEDAS_INICIAIS,
             ultimoDiario: 0,
             mineracoes: 0,
@@ -1411,11 +1538,11 @@ function garantirCarteira(usuarioId) {
         });
     }
 
-    const carteira = moedasUsuarios.get(usuarioId);
+    const carteira = moedasUsuarios.get(id);
     carteira.saldo = Math.max(0, Math.floor(Number(carteira.saldo) || 0));
     carteira.mineracoes = Number(carteira.mineracoes) || 0;
     carteira.roubosSucesso = Number(carteira.roubosSucesso) || 0;
-    obterInventario(usuarioId);
+    obterInventario(id);
     return carteira;
 }
 
@@ -5077,8 +5204,8 @@ async function roubar(message) {
         const pessoa = await exigirPessoa(message);
         if (!pessoa) return;
 
-        const ladrao = obterIdRemetente(message);
-        const vitima = idDaPessoa(pessoa);
+        const ladrao = await resolverIdEconomia(obterIdRemetente(message));
+        const vitima = await resolverIdEconomia(pessoa);
         if (!ladrao || !vitima || idsIguais(ladrao, vitima)) {
             await reagir(message, '❌');
             await responderCitando(message, '❌ _Você não pode roubar a si mesmo._');
@@ -5094,7 +5221,7 @@ async function roubar(message) {
             const horas = Math.floor(restanteAlvo / 3600000);
             const minutos = Math.ceil((restanteAlvo % 3600000) / 60000);
             await reagir(message, '⏳');
-            await responderCitando(message, `⏳ _Você já tentou roubar ${mencaoDaPessoa(pessoa)} recentemente._\n\nVolte em aproximadamente *${horas}h ${minutos}min*.`);
+            await responderCitando(message, `⏳ _Você já tentou roubar ${mencaoDaPessoa(pessoa)} recentemente._\n\nVolte em aproximadamente *${horas}h ${minutos}min*.`, { mentions: [vitima] });
             return;
         }
 
@@ -13240,7 +13367,8 @@ async function mandarCantada(message) {
 
 async function minerar(message) {
     try {
-        const usuarioId = obterIdRemetente(message);
+        const remetenteOriginal = obterIdRemetente(message);
+        const usuarioId = await resolverIdEconomia(remetenteOriginal);
         if (!usuarioId) return;
 
         const agora = Date.now();
@@ -13315,7 +13443,7 @@ async function mostrarLoja(message) {
 }
 
 async function comprarItem(message, argumentos) {
-    const usuarioId = obterIdRemetente(message);
+    const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
     const escolha = String(argumentos || '').trim().toLowerCase().split(/\s+/)[0];
     const item = ITENS_LOJA[escolha];
 
@@ -13351,7 +13479,7 @@ async function comprarItem(message, argumentos) {
 }
 
 async function mostrarInventario(message) {
-    const usuarioId = obterIdRemetente(message);
+    const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
     garantirCarteira(usuarioId);
     let texto = `┏═•❃༺🎒༻❃•═┓
 ├✯ *𝐒𝐄𝐔 𝐈𝐍𝐕𝐄𝐍𝐓𝐀́𝐑𝐈𝐎*
@@ -13368,7 +13496,7 @@ async function mostrarInventario(message) {
 
 async function mostrarSaldo(message) {
     try {
-        const usuarioId = obterIdRemetente(message);
+        const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
         if (!usuarioId) return;
         const carteira = garantirCarteira(usuarioId);
         salvarMoedas();
@@ -13394,7 +13522,7 @@ async function mostrarSaldo(message) {
 
 async function jogarSlots(message, argumento) {
     try {
-        const usuarioId = obterIdRemetente(message);
+        const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
         const aposta = parseInt(String(argumento || '').trim(), 10);
         if (!usuarioId || isNaN(aposta) || aposta < 10) {
             await reagir(message, '❌');
@@ -13448,10 +13576,10 @@ async function jogarSlots(message, argumento) {
 }
 
 async function doarMoedas(message, argumentos) {
-    const remetente = obterIdRemetente(message);
+    const remetente = await resolverIdEconomia(obterIdRemetente(message));
     const pessoa = await exigirPessoa(message);
     if (!pessoa) return;
-    const destinatario = idDaPessoa(pessoa);
+    const destinatario = await resolverIdEconomia(pessoa);
     const partes = String(argumentos || '').trim().split(/\s+/);
     const valor = parseInt(partes[0], 10);
 
@@ -13534,7 +13662,8 @@ async function sortearMoedas(message, argumentos) {
         return;
     }
 
-    const vencedor = dados.jogadores[Math.floor(Math.random() * dados.jogadores.length)];
+    const vencedorOriginal = dados.jogadores[Math.floor(Math.random() * dados.jogadores.length)];
+    const vencedor = await resolverIdEconomia(vencedorOriginal);
     const carteira = garantirCarteira(vencedor);
     carteira.saldo += valor;
     registrarTransacao('sorteio_admin', null, vencedor, valor, `Sorteio realizado por administrador ${obterIdRemetente(message)}`);
@@ -13575,11 +13704,17 @@ async function rankingDinheiro(message) {
         } catch (erro) { return []; }
     }, message.from);
 
-    const lista = (dados || []).map(id => ({ id, saldo: garantirCarteira(id).saldo }))
+    const idsEconomia = [];
+    for (const id of (dados || [])) {
+        const resolvido = await resolverIdEconomia(id);
+        if (resolvido) idsEconomia.push(resolvido);
+    }
+
+    const lista = [...new Set(idsEconomia)].map(id => ({ id, saldo: garantirCarteira(id).saldo }))
         .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).slice(0,10);
 
-    const eu = obterIdRemetente(message);
-    const posicao = (dados || []).map(id => ({id, saldo: garantirCarteira(id).saldo}))
+    const eu = await resolverIdEconomia(obterIdRemetente(message));
+    const posicao = [...new Set(idsEconomia)].map(id => ({id, saldo: garantirCarteira(id).saldo}))
         .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).findIndex(x => idsIguais(x.id, eu)) + 1;
 
     let texto = `┏═•❃༺🏆༻❃•═┓
