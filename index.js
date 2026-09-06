@@ -5816,6 +5816,291 @@ async function mostrarRanking(message) {
 }
 
 // ============================================================
+// ============================================================
+// 👶 MOSTRAR RANKING DE FILHOS
+// ============================================================
+
+async function mostrarRankingFilhos(message) {
+
+    try {
+
+        if (
+            !message.from ||
+            !message.from.endsWith('@g.us')
+        ) {
+
+            await reagir(
+                message,
+                '❌'
+            );
+
+            await responderCitando(
+                message,
+                `┏═•❃༺👶༻❃•═┓
+│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
+├✯
+│
+├➤ ❌ Este comando só pode
+│   ser usado em grupos.
+│
+┗═•❃༺👶༻❃•═┛`
+            );
+
+            return;
+        }
+
+        const grupoXP =
+            dadosXP.get(
+                message.from
+            );
+
+        if (
+            !grupoXP ||
+            grupoXP.size === 0
+        ) {
+
+            await reagir(
+                message,
+                '📊'
+            );
+
+            await responderCitando(
+                message,
+                `┏═•❃༺👶༻❃•═┓
+│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
+├✯
+│
+├➤ 📊 Ainda não existem
+│   dados de XP neste grupo.
+│
+├➤ _Conversem para começar a
+│   ganhar XP!_ ⭐
+│
+┗═•❃༺👶༻❃•═┛`
+            );
+
+            return;
+        }
+
+        const idsFilhos = new Set();
+
+        for (
+            const familia of familias.values()
+        ) {
+
+            if (
+                !familia ||
+                !Array.isArray(
+                    familia.filhos
+                )
+            ) {
+                continue;
+            }
+
+            for (
+                const idFilho of familia.filhos
+            ) {
+
+                if (idFilho) {
+                    idsFilhos.add(
+                        String(idFilho)
+                    );
+                }
+            }
+        }
+
+        const filhos =
+            [...grupoXP.entries()]
+                .filter(
+                    ([usuarioId]) =>
+                        [...idsFilhos].some(
+                            idFilho =>
+                                idsIguais(
+                                    idFilho,
+                                    usuarioId
+                                )
+                        )
+                )
+                .map(
+                    ([usuarioId, dados]) => ({
+
+                        id:
+                            usuarioId,
+
+                        xp:
+                            Number(
+                                dados.xp
+                            ) || 0,
+
+                        mensagens:
+                            Number(
+                                dados.mensagens
+                            ) || 0,
+
+                        nivel:
+                            Number(
+                                dados.nivel
+                            ) ||
+                            calcularNivel(
+                                Number(
+                                    dados.xp
+                                ) || 0
+                            )
+                    })
+                );
+
+        if (
+            filhos.length === 0
+        ) {
+
+            await reagir(
+                message,
+                '👶'
+            );
+
+            await responderCitando(
+                message,
+                `┏═•❃༺👶༻❃•═┓
+│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
+├✯
+│
+├➤ 👶 Nenhum filho com XP
+│   foi encontrado neste grupo.
+│
+├➤ _Adote alguém e participe
+│   das conversas para aparecer!_ ⭐
+│
+┗═•❃༺👶༻❃•═┛`
+            );
+
+            return;
+        }
+
+        filhos.sort(
+            (a, b) => {
+
+                if (
+                    b.xp !==
+                    a.xp
+                ) {
+                    return b.xp - a.xp;
+                }
+
+                if (
+                    b.mensagens !==
+                    a.mensagens
+                ) {
+                    return b.mensagens - a.mensagens;
+                }
+
+                return String(
+                    a.id
+                ).localeCompare(
+                    String(b.id)
+                );
+            }
+        );
+
+        const top10 =
+            filhos.slice(
+                0,
+                10
+            );
+
+        const medalhas = [
+            '🥇',
+            '🥈',
+            '🥉'
+        ];
+
+        let textoRanking =
+            `┏═•❃༺👶༻❃•═┓
+│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
+├✯
+│
+`;
+
+        const idsMencao = [];
+
+        for (
+            let i = 0;
+            i < top10.length;
+            i++
+        ) {
+
+            const filho =
+                top10[i];
+
+            const posicao =
+                i + 1;
+
+            const emojiPosicao =
+                medalhas[i] ||
+                `${posicao}️⃣`;
+
+            const mencao =
+                `@${String(
+                    filho.id
+                ).split('@')[0]}`;
+
+            idsMencao.push(
+                filho.id
+            );
+
+            textoRanking +=
+                `├➤ ${emojiPosicao} *${posicao}º* ${mencao}
+│   ⭐ Nível *${filho.nivel}* • *${filho.xp} XP*
+│   💬 ${filho.mensagens} mensagem${filho.mensagens === 1 ? '' : 'ns'}
+│
+`;
+        }
+
+        textoRanking +=
+            `└──────────────────`;
+
+        textoRanking +=
+            `
+
+👶 *Total de filhos no ranking:* ${filhos.length}`;
+
+        textoRanking +=
+            `
+
+┗═•❃༺👶༻❃•═┛`;
+
+        await reagir(
+            message,
+            '👶'
+        );
+
+        await responderCitando(
+            message,
+            textoRanking,
+            {
+                mentions:
+                    idsMencao
+            }
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao mostrar ranking de filhos:',
+            erro
+        );
+
+        await reagir(
+            message,
+            '❌'
+        );
+
+        await responderCitando(
+            message,
+            '❌ _Ocorreu um erro ao carregar o ranking de filhos._'
+        );
+    }
+}
+
 // 🎖️ MOSTRAR CONQUISTAS
 // ============================================================
 
@@ -13852,6 +14137,12 @@ case 'recusar':
 
     case 'ranking':
     await mostrarRanking(message);
+    break;
+
+case 'rankingfilhos':
+case 'rankingfilho':
+case 'filhosranking':
+    await mostrarRankingFilhos(message);
     break;
 
 
