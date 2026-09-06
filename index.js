@@ -13390,13 +13390,9 @@ async function jogarRoletaRussa(message) {
             return;
         }
 
-        // 🔐 A roleta russa é exclusiva para administradores
-        const ehAdmin = await ehBotAdmin(message.from);
-        if (!ehAdmin) {
-            await reagir(message, '❌');
-            await message.reply(
-                '❌ Apenas administradores do grupo podem usar a roleta russa!'
-            );
+        // 🔐 Verificação padrão de administrador
+        // Usa o mesmo sistema dos outros comandos de administração.
+        if (!(await exigirAdmin(message))) {
             return;
         }
 
