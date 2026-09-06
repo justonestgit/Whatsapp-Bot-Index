@@ -26,12 +26,13 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.14';;
+const VERSAO = '3.15';
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
 const mutados = new Map();
 const blacklistMute = new Set();
+const soAdmGrupos = new Set();
 const casamentos = new Map();
 const propostasCasamento = new Map();
 const confirmacoesDivorcio = new Map();
@@ -115,6 +116,9 @@ const arquivoMutados =
 
 const arquivoBlacklist =
     `${pastaDados}/blacklist.json`;
+
+const arquivoSoAdm =
+    `${pastaDados}/soadm.json`;
     
 const arquivoCasamentos =
     `${pastaDados}/casamentos.json`;
@@ -1078,6 +1082,188 @@ async function listarPersonalidades(message) {
 carregarPersonalidades();
 
 // Carrega tudo ao iniciar
+// ============================================================
+// 🔒 SISTEMA SOMENTE ADM
+// ============================================================
+
+function carregarSoAdm() {
+    try {
+        if (!fs.existsSync(arquivoSoAdm)) return;
+
+        const dados = JSON.parse(
+            fs.readFileSync(arquivoSoAdm, 'utf8')
+        );
+
+        for (const grupoId of dados) {
+            if (typeof grupoId === 'string' && grupoId.endsWith('@g.us')) {
+                soAdmGrupos.add(grupoId);
+            }
+        }
+
+        console.log(
+            '🔒 Grupos em modo somente ADM carregados:',
+            soAdmGrupos.size
+        );
+    } catch (erro) {
+        console.error('⚠️ Erro ao carregar modo somente ADM:', erro.message);
+    }
+}
+
+function salvarSoAdm() {
+    try {
+        fs.writeFileSync(
+            arquivoSoAdm,
+            JSON.stringify([...soAdmGrupos], null, 2),
+            'utf8'
+        );
+
+        console.log('💾 Modo somente ADM salvo!');
+    } catch (erro) {
+        console.error('❌ Erro ao salvar modo somente ADM:', erro.message);
+    }
+}
+
+carregarSoAdm();
+
+async function usuarioEhAdminDoGrupo(message) {
+    try {
+        const chatId = message?.from;
+
+        if (!chatId || !chatId.endsWith('@g.us')) {
+            return false;
+        }
+
+        const idRemetente = obterIdRemetente(message);
+        if (!idRemetente) return false;
+
+        const dadosChat = await client.pupPage.evaluate((grupoId) => {
+            try {
+                const Store = window.require('WAWebCollections');
+
+                if (!Store?.Chat) {
+                    return null;
+                }
+
+                const chat = Store.Chat.get(grupoId);
+                if (!chat) {
+                    return null;
+                }
+
+                const participantes = chat.groupMetadata?.participants;
+                if (!participantes) {
+                    return null;
+                }
+
+                let modelos = [];
+
+                if (typeof participantes.getModelsArray === 'function') {
+                    modelos = participantes.getModelsArray();
+                } else if (Array.isArray(participantes.models)) {
+                    modelos = participantes.models;
+                }
+
+                return modelos.map(participante => ({
+                    id:
+                        participante.id?._serialized ||
+                        participante.id?.toString?.() ||
+                        null,
+                    isAdmin: !!participante.isAdmin,
+                    isSuperAdmin: !!participante.isSuperAdmin
+                }));
+            } catch (erro) {
+                return null;
+            }
+        }, chatId);
+
+        if (!Array.isArray(dadosChat)) {
+            return false;
+        }
+
+        const participante = dadosChat.find(item =>
+            item.id && idsIguais(item.id, idRemetente)
+        );
+
+        return !!(
+            participante &&
+            (participante.isAdmin || participante.isSuperAdmin)
+        );
+    } catch (erro) {
+        console.error(
+            '❌ Erro ao verificar administrador no modo somente ADM:',
+            erro
+        );
+        return false;
+    }
+}
+
+async function soAdm(message) {
+    try {
+        const chatId = message?.from;
+
+        if (!chatId || !chatId.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(
+                message,
+                '❌ _O ;soadm só funciona em grupos._'
+            );
+            return;
+        }
+
+        const admin = await usuarioEhAdminDoGrupo(message);
+
+        if (!admin) {
+            await reagir(message, '❌');
+            await responderCitando(
+                message,
+                '❌ _Apenas administradores do grupo podem ativar ou desativar o modo somente ADM._'
+            );
+            return;
+        }
+
+        if (soAdmGrupos.has(chatId)) {
+            soAdmGrupos.delete(chatId);
+            salvarSoAdm();
+
+            await reagir(message, '🔓');
+            await responderCitando(
+                message,
+                `┏═•❃༺🔓༻❃•═┓
+├✯ *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌 𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐃𝐎*
+│
+├➤ _Todos os membros podem usar os comandos novamente._
+│
+├➤ 👑 _Administradores continuam sujeitos às permissões específicas de cada comando._
+│
+┗═•❃༺🔓༻❃•═┛`
+            );
+            return;
+        }
+
+        soAdmGrupos.add(chatId);
+        salvarSoAdm();
+
+        await reagir(message, '🔒');
+        await responderCitando(
+            message,
+            `┏═•❃༺🔒༻❃•═┓
+├✯ *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌 𝐀𝐓𝐈𝐕𝐀𝐃𝐎*
+│
+├➤ 👑 _Agora apenas administradores do grupo podem usar os comandos._
+│
+├➤ 🔁 _Use ${PREFIXO}soadm novamente para desativar._
+│
+┗═•❃༺🔒༻❃•═┛`
+        );
+    } catch (erro) {
+        console.error('❌ Erro no modo somente ADM:', erro);
+        await reagir(message, '❌');
+        await responderCitando(
+            message,
+            '❌ _Não foi possível alterar o modo somente ADM._'
+        );
+    }
+}
+
 carregarDados();
 
 // ============================================================
@@ -4337,6 +4523,9 @@ async function menuModeracao(message) {
 │ 📋 ;listaviso
 │    Lista os avisos do grupo.
 │
+├➤ 🔒 *${PREFIXO}soadm*
+│   _Alternar modo somente administradores_
+│
 ├✯
 │
 │  👑 _O bot precisa ser_
@@ -4450,8 +4639,15 @@ async function changelog(message) {
 │
 ├✯
 │
-│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟒*
+│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟓*
 │
+│  🔒 *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌*
+│
+│  ├➤ *${PREFIXO}soadm*
+│  │   Alterna o grupo entre modo normal
+│  │   e modo em que apenas administradores
+│  │   podem usar os comandos.
+│  │
 │  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎 E ALVOS POR RESPOSTA*
 │
 │  ├➤ *${PREFIXO}ban @pessoa*
@@ -4523,7 +4719,7 @@ async function changelog(message) {
 │
 ┗═•❃༺📜༻❃•═┛
 
-*𝐕𝐄𝐑𝐒𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋: 𝟑.𝟏𝟒*`
+*𝐕𝐄𝐑𝐒𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋: 𝟑.𝟏𝟓*`
     );
 }
 
@@ -4774,6 +4970,9 @@ async function listarComandos(message) {
 ├✯
 │
 │  📋 *𝐌𝐄𝐍𝐔𝐒*
+│
+├➤ 🔒 *${PREFIXO}soadm*
+│   _Alternar modo somente administradores_
 │
 ├➤ 📋 *${PREFIXO}menu*
 │   _Menu principal_
@@ -15517,11 +15716,36 @@ async function processarComando(
     argumentos
 ) {
 
+    // 🔒 MODO SOMENTE ADM
+    // O próprio ;soadm fica liberado para que um administrador
+    // possa alternar o modo. Todos os demais comandos passam
+    // pela verificação global quando o modo está ativo.
+    if (
+        message?.from?.endsWith('@g.us') &&
+        soAdmGrupos.has(message.from) &&
+        comando !== 'soadm'
+    ) {
+        const admin = await usuarioEhAdminDoGrupo(message);
+
+        if (!admin) {
+            await reagir(message, '🔒');
+            await responderCitando(
+                message,
+                '🔒 _Este grupo está no modo somente ADM. Apenas administradores podem usar os comandos._'
+            );
+            return;
+        }
+    }
+
     switch (comando) {
 
         // ============================================================
 // MENUS
 // ============================================================
+
+case 'soadm':
+    await soAdm(message);
+    break;
 
 case 'menu':
     await menuPrincipal(message);
