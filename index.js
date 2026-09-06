@@ -15059,6 +15059,10 @@ async function jogarBatataQuente(message) {
             return;
         }
 
+        if (!(await exigirAdmin(message))) {
+            return;
+        }
+
         if (jogosEliminacao.has(message.from)) {
             await reagir(message, '❌');
             await responderCitando(message, `🥔 Já existe uma *batata quente* ou outro jogo de eliminação em andamento neste grupo.`);
