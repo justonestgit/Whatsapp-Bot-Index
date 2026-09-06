@@ -1,4 +1,4 @@
-const { Client, LocalAuth, MessageMedia, Poll } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia, Poll, Buttons } = require('whatsapp-web.js');
 const fs = require('fs');
 const qrcode = require('qrcode-terminal');
 const sharp = require('sharp');
