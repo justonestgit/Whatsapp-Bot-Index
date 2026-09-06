@@ -26,7 +26,7 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.11';
+const VERSAO = '3.12';
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -48,6 +48,7 @@ const confirmacoesRemoverAviso = new Map();
 const dadosXP = new Map();
 const moedasUsuarios = new Map();
 const jogosEliminacao = new Map();
+const personalidadesGrupos = new Map();
 
 // ============================================================
 // 🎖️ SISTEMA DE CONQUISTAS
@@ -134,6 +135,9 @@ const arquivoXP = `${pastaDados}/xp.json`;
 const arquivoMoedas = `${pastaDados}/moedas.json`;
 const arquivoControleXP =
     `${pastaDados}/xp-controle.json`;
+
+const arquivoPersonalidades =
+    `${pastaDados}/personalidades.json`;
 
 const arquivoConquistas =
     `${pastaDados}/conquistas.json`;
@@ -920,6 +924,153 @@ function salvarParticipantesGrupos() {
         );
     }
 }
+
+// ============================================================
+// 🎭 SISTEMA DE PERSONALIDADES
+// ============================================================
+
+const PERSONALIDADES = {
+    normal: {
+        nome: 'Normal',
+        emoji: '🤖',
+        descricao: 'Comportamento padrão do JUST BOT.',
+        frase: ''
+    },
+    amigavel: {
+        nome: 'Amigável',
+        emoji: '😊',
+        descricao: 'Mais simpático e acolhedor.',
+        frase: '😊 _Tamo junto!_'
+    },
+    fofa: {
+        nome: 'Fofa',
+        emoji: '🥰',
+        descricao: 'Carinhosa, doce e cheia de emojis.',
+        frase: '🥰 _Espero ter ajudado! 💖_'
+    },
+    sarcastica: {
+        nome: 'Sarcástica',
+        emoji: '😏',
+        descricao: 'Respostas com uma pitada de ironia.',
+        frase: '😏 _Pronto. Agora pode fingir que não sabia._'
+    },
+    caotica: {
+        nome: 'Caótica',
+        emoji: '🤪',
+        descricao: 'Energia imprevisível e respostas absurdas.',
+        frase: '🤪 _Não faço ideia do que aconteceu, mas gostei._'
+    },
+    seria: {
+        nome: 'Séria',
+        emoji: '🧐',
+        descricao: 'Mais direta, formal e objetiva.',
+        frase: '🧐 _Operação concluída._'
+    }
+};
+
+function salvarPersonalidades() {
+    try {
+        const dados = {};
+        for (const [grupoId, personalidade] of personalidadesGrupos.entries()) {
+            if (PERSONALIDADES[personalidade]) {
+                dados[grupoId] = personalidade;
+            }
+        }
+        fs.writeFileSync(arquivoPersonalidades, JSON.stringify(dados, null, 2), 'utf8');
+    } catch (erro) {
+        console.error('❌ Erro ao salvar personalidades:', erro);
+    }
+}
+
+function carregarPersonalidades() {
+    try {
+        if (!fs.existsSync(arquivoPersonalidades)) return;
+        const dados = JSON.parse(fs.readFileSync(arquivoPersonalidades, 'utf8'));
+        personalidadesGrupos.clear();
+        for (const [grupoId, personalidade] of Object.entries(dados)) {
+            if (PERSONALIDADES[personalidade]) {
+                personalidadesGrupos.set(grupoId, personalidade);
+            }
+        }
+        console.log('🎭 Personalidades carregadas:', personalidadesGrupos.size, 'grupos');
+    } catch (erro) {
+        console.error('❌ Erro ao carregar personalidades:', erro);
+    }
+}
+
+function obterPersonalidadeGrupo(grupoId) {
+    if (!grupoId || !grupoId.endsWith('@g.us')) return 'normal';
+    return personalidadesGrupos.get(grupoId) || 'normal';
+}
+
+function aplicarPersonalidade(conteudo, grupoId) {
+    const personalidade = PERSONALIDADES[obterPersonalidadeGrupo(grupoId)];
+    if (!personalidade || !personalidade.frase) return conteudo;
+    return `${conteudo}\n\n${personalidade.frase}`;
+}
+
+async function definirPersonalidade(message, argumentos) {
+    try {
+        if (!message.from || !message.from.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ _Esse comando só funciona em grupos._\n│\n┗═•❃༺🎭༻❃•═┓`);
+            return;
+        }
+
+        if (!(await exigirAdmin(message))) return;
+
+        const escolha = String(argumentos || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        if (!escolha) {
+            const atual = obterPersonalidadeGrupo(message.from);
+            const atualDados = PERSONALIDADES[atual];
+            let lista = '';
+            for (const [id, personalidade] of Object.entries(PERSONALIDADES)) {
+                lista += `├➤ ${personalidade.emoji} *${id}* — ${personalidade.descricao}\n`;
+            }
+            await reagir(message, '🎭');
+            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n├✯\n│\n├➤ 🎭 Atual: *${atualDados.nome}*\n│\n${lista}\n├✯\n│\n├➤ *𝐔𝐒𝐀𝐑:*\n│   *${PREFIXO}personalidade <nome>*\n│\n├➤ *𝐄𝐗𝐄𝐌𝐏𝐋𝐎:*\n│   *${PREFIXO}personalidade sarcastica*\n│\n┗═•❃༺🎭༻❃•═┛`);
+            return;
+        }
+
+        if (['desligar', 'desativar', 'off'].includes(escolha)) {
+            personalidadesGrupos.delete(message.from);
+            salvarPersonalidades();
+            await reagir(message, '🔴');
+            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ 🔴 _Personalidade desativada._\n├➤ O JUST BOT voltou ao comportamento *Normal*.\n│\n┗═•❃༺🎭༻❃•═┓`);
+            return;
+        }
+
+        const personalidade = PERSONALIDADES[escolha];
+        if (!personalidade) {
+            await reagir(message, '❌');
+            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐈𝐍𝐕𝐀́𝐋𝐈𝐃𝐀*\n│\n├➤ _Essa personalidade não existe._\n│\n├➤ Use *${PREFIXO}personalidades* para ver as opções.\n│\n┗═•❃༺🎭༻❃•═┓`);
+            return;
+        }
+
+        personalidadesGrupos.set(message.from, escolha);
+        salvarPersonalidades();
+        await reagir(message, personalidade.emoji);
+        await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐀𝐓𝐈𝐕𝐀*\n│\n├➤ ${personalidade.emoji} *${personalidade.nome}*\n│\n├➤ _${personalidade.descricao}_\n│\n├➤ Essa personalidade agora está ativa neste grupo.\n│\n┗═•❃༺🎭༻❃•═┓`);
+    } catch (erro) {
+        console.error('❌ Erro ao definir personalidade:', erro);
+        await reagir(message, '❌');
+    }
+}
+
+async function listarPersonalidades(message) {
+    const atual = obterPersonalidadeGrupo(message.from);
+    const atualDados = PERSONALIDADES[atual];
+    let lista = '';
+    for (const [id, personalidade] of Object.entries(PERSONALIDADES)) {
+        const marcador = id === atual ? '✅' : '▫️';
+        lista += `├➤ ${marcador} ${personalidade.emoji} *${id}*\n│   _${personalidade.descricao}_\n`;
+    }
+    await reagir(message, '🎭');
+    await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄𝐒*\n├✯\n│\n├➤ 🎭 Atual: *${atualDados.nome}*\n│\n${lista}\n├✯\n│\n├➤ Para alterar, um administrador deve usar:\n│   *${PREFIXO}personalidade <nome>*\n│\n┗═•❃༺🎭༻❃•═┓`);
+}
+
+carregarPersonalidades();
 
 // Carrega tudo ao iniciar
 carregarDados();
@@ -2431,9 +2582,15 @@ async function responderCitando(message, conteudo, opcoes = {}) {
             configuracao.quotedMessageId = idMensagem;
         }
 
+        const conteudoFinal =
+            aplicarPersonalidade(
+                conteudo,
+                message.from
+            );
+
         return await client.sendMessage(
             message.from,
-            conteudo,
+            conteudoFinal,
             configuracao
         );
 
@@ -3876,6 +4033,12 @@ async function menuBot(message) {
 ├➤ ⚙️ *${PREFIXO}info*
 │   _Informações do sistema_
 │
+├➤ 🎭 *${PREFIXO}personalidades*
+│   _Ver as personalidades disponíveis_
+│
+├➤ ⚙️ *${PREFIXO}personalidade <nome>*
+│   _Alterar a personalidade do grupo_
+│
 ├✯
 │
 │  🤖 *𝐒𝐓𝐀𝐓𝐔𝐒*
@@ -4208,7 +4371,7 @@ async function listarComandos(message) {
 │
 ├✯
 │
-│  🤖 *𝐁𝐎𝐓*
+│  🎭 *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ 🎭 *${PREFIXO}personalidades*\n│   _Ver personalidades disponíveis_\n│\n├➤ ⚙️ *${PREFIXO}personalidade <nome>*\n│   _Alterar a personalidade do grupo_\n│\n├✯\n│\n│  🤖 *𝐁𝐎𝐓*
 │
 ├➤ 📋 *${PREFIXO}comandos*
 │   _Lista completa de comandos_
@@ -14674,6 +14837,16 @@ case 'menuutil':
 case 'bot':
 case 'menubot':
     await menuBot(message);
+    break;
+
+case 'personalidade':
+case 'persona':
+    await definirPersonalidade(message, argumentos);
+    break;
+
+case 'personalidades':
+case 'personas':
+    await listarPersonalidades(message);
     break;
 
 case 'conquistas':
