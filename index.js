@@ -9388,8 +9388,34 @@ async function banirPessoa(message) {
             return;
         }
 
-        const chat = await message.getChat();
-        if (!chat?.isGroup) {
+        // O WhatsApp Web pode falhar momentaneamente ao executar getChatById
+        // (erro interno `r: r`). Como message.getChat() usa essa mesma camada,
+        // fazemos algumas tentativas antes de desistir do ban.
+        let chat = null;
+        let ultimoErroChat = null;
+
+        for (let tentativa = 1; tentativa <= 3; tentativa++) {
+            try {
+                chat = await message.getChat();
+                if (chat) break;
+            } catch (erroChat) {
+                ultimoErroChat = erroChat;
+                console.log(
+                    `⚠️ Não foi possível obter o grupo para o ban (tentativa ${tentativa}/3):`,
+                    erroChat.message
+                );
+
+                if (tentativa < 3) {
+                    await new Promise(resolve => setTimeout(resolve, tentativa * 1000));
+                }
+            }
+        }
+
+        if (!chat) {
+            throw ultimoErroChat || new Error('Não foi possível acessar o grupo.');
+        }
+
+        if (!chat.isGroup) {
             await reagir(message, '❌');
             await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
             return;
