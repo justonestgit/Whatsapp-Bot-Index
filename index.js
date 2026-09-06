@@ -1,1 +1,2 @@
-__PLACEHOLDER__
+import pathlib
+print('')
