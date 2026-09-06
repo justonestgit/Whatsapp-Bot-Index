@@ -1,4 +1,4 @@
-const { Client, LocalAuth, MessageMedia, Poll, Buttons } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia, Poll } = require('whatsapp-web.js');
 const fs = require('fs');
 const qrcode = require('qrcode-terminal');
 const sharp = require('sharp');
@@ -17386,26 +17386,6 @@ async function comandoTTS(message, argumentos) {
 // PROCESSADOR DE COMANDOS
 // ============================================================
 
-async function testeUI(message) {
-    try {
-        const botoes = new Buttons(
-            `┏═•❃༺🤖༻❃•═┓\n│      *𝐓𝐄𝐒𝐓𝐄 𝐃𝐄 𝐈𝐍𝐓𝐄𝐑𝐀𝐓𝐈𝐕𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ _Escolha uma das opções abaixo:_\n┗═•❃༺🤖༻❃•═┓`,
-            [
-                { id: 'testeui_opcao1', body: '🟢 Opção 1' },
-                { id: 'testeui_opcao2', body: '🔵 Opção 2' },
-                { id: 'testeui_opcao3', body: '🔴 Opção 3' }
-            ],
-            'JUST BOT',
-            'Teste de botões interativos'
-        );
-
-        await message.reply(botoes);
-    } catch (erro) {
-        console.error('❌ ERRO NO TESTE DE UI:', erro);
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│ *𝐓𝐄𝐒𝐓𝐄 𝐃𝐄 𝐔𝐈*\n│\n├➤ _Não foi possível enviar os botões._\n┗═•❃༺❌༻❃•═┓`);
-    }
-}
-
 async function processarComando(
     message,
     comando,
@@ -17445,10 +17425,6 @@ case 'soadm':
 
 case 'menu':
     await menuPrincipal(message);
-    break;
-
-case 'testeui':
-    await testeUI(message);
     break;
 
 case 'relacionamentos':
