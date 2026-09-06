@@ -26,7 +26,7 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.9';
+const VERSAO = '3.10';
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -46,6 +46,7 @@ const avisos = new Map();
 const confirmacoesRemoverAviso = new Map();
 
 const dadosXP = new Map();
+const moedasUsuarios = new Map();
 
 // ============================================================
 // 🎖️ SISTEMA DE CONQUISTAS
@@ -129,6 +130,7 @@ const arquivoAFK =
 const arquivoAvisos = `${pastaDados}/avisos.json`;
 const arquivoOiAuto = `${pastaDados}/oi-auto.json`;
 const arquivoXP = `${pastaDados}/xp.json`;
+const arquivoMoedas = `${pastaDados}/moedas.json`;
 const arquivoControleXP =
     `${pastaDados}/xp-controle.json`;
 
@@ -1116,6 +1118,162 @@ function carregarXP() {
         );
     }
 }
+
+function salvarMoedas() {
+
+    try {
+
+        const dados = {};
+
+        for (
+            const [usuarioId, carteira]
+            of moedasUsuarios.entries()
+        ) {
+            dados[usuarioId] = {
+                saldo:
+                    Number(carteira.saldo) || 0,
+
+                ultimoDiario:
+                    Number(carteira.ultimoDiario) || 0
+            };
+        }
+
+        fs.writeFileSync(
+            arquivoMoedas,
+            JSON.stringify(
+                dados,
+                null,
+                2
+            ),
+            'utf8'
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao salvar moedas:',
+            erro
+        );
+    }
+}
+
+function carregarMoedas() {
+
+    try {
+
+        if (!fs.existsSync(arquivoMoedas)) {
+            return;
+        }
+
+        const dados =
+            JSON.parse(
+                fs.readFileSync(
+                    arquivoMoedas,
+                    'utf8'
+                )
+            );
+
+        moedasUsuarios.clear();
+
+        for (
+            const [usuarioId, carteira]
+            of Object.entries(dados)
+        ) {
+
+            if (typeof carteira === 'number') {
+                moedasUsuarios.set(
+                    usuarioId,
+                    {
+                        saldo: Math.max(0, carteira),
+                        ultimoDiario: 0
+                    }
+                );
+                continue;
+            }
+
+            if (
+                carteira &&
+                typeof carteira === 'object'
+            ) {
+                moedasUsuarios.set(
+                    usuarioId,
+                    {
+                        saldo: Math.max(
+                            0,
+                            Number(carteira.saldo) || 0
+                        ),
+                        ultimoDiario:
+                            Number(carteira.ultimoDiario) || 0
+                    }
+                );
+            }
+        }
+
+        console.log(
+            '💰 Sistema de moedas carregado:',
+            moedasUsuarios.size,
+            'usuários'
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao carregar moedas:',
+            erro
+        );
+    }
+}
+
+function garantirCarteira(usuarioId) {
+
+    if (!usuarioId) {
+        return null;
+    }
+
+    if (!moedasUsuarios.has(usuarioId)) {
+        moedasUsuarios.set(
+            usuarioId,
+            {
+                saldo: MOEDAS_INICIAIS,
+                ultimoDiario: 0
+            }
+        );
+    }
+
+    const carteira =
+        moedasUsuarios.get(usuarioId);
+
+    if (typeof carteira === 'number') {
+        const novaCarteira = {
+            saldo: carteira,
+            ultimoDiario: 0
+        };
+
+        moedasUsuarios.set(
+            usuarioId,
+            novaCarteira
+        );
+
+        return novaCarteira;
+    }
+
+    carteira.saldo = Math.max(
+        0,
+        Number(carteira.saldo) || 0
+    );
+
+    carteira.ultimoDiario =
+        Number(carteira.ultimoDiario) || 0;
+
+    return carteira;
+}
+
+const MOEDAS_INICIAIS = 1000;
+const RECOMPENSA_DIARIA = 500;
+const INTERVALO_DIARIO =
+    24 * 60 * 60 * 1000;
+
+carregarMoedas();
 
 carregarXP();
 
@@ -12617,6 +12775,400 @@ async function mandarCantada(message) {
 // ============================================================
 // MENU JOGOS
 // ============================================================
+// ============================================================
+// 🎰 SLOTS
+// ============================================================
+
+async function jogarSlots(
+    message,
+    argumento
+) {
+
+    try {
+
+        const usuarioId =
+            obterIdRemetente(
+                message
+            );
+
+        if (!usuarioId) {
+            await reagir(message, '❌');
+            return;
+        }
+
+        const aposta =
+            parseInt(
+                argumento.trim(),
+                10
+            );
+
+        if (
+            isNaN(aposta) ||
+            aposta < 10
+        ) {
+
+            await reagir(message, '❌');
+
+            await responderCitando(
+                message,
+                `┏═•❃༺🎰༻❃•═┓
+│
+│  *🎰 𝐒𝐋𝐎𝐓𝐒*
+│
+├➤ Escolha uma aposta de
+│   pelo menos *10 moedas*.
+│
+│  💡 Exemplo:
+│  *${PREFIXO}slots 100*
+│
+┗═•❃༺🎰༻❃•═┛`
+            );
+
+            return;
+        }
+
+        const carteira =
+            garantirCarteira(
+                usuarioId
+            );
+
+        if (
+            aposta > carteira.saldo
+        ) {
+
+            await reagir(message, '💸');
+
+            await responderCitando(
+                message,
+                `┏═•❃༺💸༻❃•═┓
+│
+│  *💸 𝐒𝐀𝐋𝐃𝐎 𝐈𝐍𝐒𝐔𝐅𝐈𝐂𝐈𝐄𝐍𝐓𝐄*
+│
+├➤ Sua aposta: *${aposta} moedas*
+├➤ Seu saldo: *${carteira.saldo} moedas*
+│
+├➤ Use *${PREFIXO}saldo* para conferir
+│   suas moedas.
+│
+┗═•❃༺💸༻❃•═┛`
+            );
+
+            return;
+        }
+
+        carteira.saldo -= aposta;
+
+        const simbolos = [
+            '🍒',
+            '🍋',
+            '🍉',
+            '🔔',
+            '⭐',
+            '💎',
+            '7️⃣'
+        ];
+
+        const rolos = [
+            simbolos[
+                Math.floor(
+                    Math.random() * simbolos.length
+                )
+            ],
+            simbolos[
+                Math.floor(
+                    Math.random() * simbolos.length
+                )
+            ],
+            simbolos[
+                Math.floor(
+                    Math.random() * simbolos.length
+                )
+            ]
+        ];
+
+        let multiplicador = 0;
+
+        if (
+            rolos[0] === '7️⃣' &&
+            rolos[1] === '7️⃣' &&
+            rolos[2] === '7️⃣'
+        ) {
+            multiplicador = 50;
+
+        } else if (
+            rolos.every(
+                simbolo => simbolo === '💎'
+            )
+        ) {
+            multiplicador = 25;
+
+        } else if (
+            rolos.every(
+                simbolo => simbolo === '⭐'
+            )
+        ) {
+            multiplicador = 15;
+
+        } else if (
+            rolos.every(
+                simbolo => simbolo === '🔔'
+            )
+        ) {
+            multiplicador = 10;
+
+        } else if (
+            rolos.every(
+                simbolo => simbolo === '🍉'
+            )
+        ) {
+            multiplicador = 7;
+
+        } else if (
+            rolos.every(
+                simbolo => simbolo === '🍋'
+            )
+        ) {
+            multiplicador = 5;
+
+        } else if (
+            rolos.every(
+                simbolo => simbolo === '🍒'
+            )
+        ) {
+            multiplicador = 3;
+
+        } else if (
+            rolos[0] === rolos[1] ||
+            rolos[1] === rolos[2] ||
+            rolos[0] === rolos[2]
+        ) {
+            multiplicador = 2;
+        }
+
+        const premio =
+            aposta * multiplicador;
+
+        carteira.saldo += premio;
+
+        salvarMoedas();
+
+        await reagir(
+            message,
+            multiplicador > 0
+                ? '🎉'
+                : '🎰'
+        );
+
+        let resultado =
+            '💀 *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐃𝐄𝐒𝐒𝐀 𝐕𝐄𝐙...*';
+
+        if (multiplicador > 0) {
+            resultado =
+                `🎉 *𝐏𝐑𝐄𝐌𝐈𝐀𝐃𝐎!*\n├➤ Multiplicador: *${multiplicador}x*\n├➤ 🪙 Prêmio: *${premio} moedas*`;
+        }
+
+        await responderCitando(
+            message,
+            `┏═•❃༺🎰༻❃•═┓
+│
+│      *🎰 𝐉𝐔𝐒𝐓 𝐒𝐋𝐎𝐓𝐒*
+│
+├✯
+│
+│      ${rolos.join(' │ ')}
+│
+├✯
+│
+├➤ 🎲 Aposta: *${aposta} moedas*
+│
+├➤ ${resultado}
+│
+├➤ 💰 Saldo: *${carteira.saldo} moedas*
+│
+┗═•❃༺🎰༻❃•═┛`
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro no comando slots:',
+            erro
+        );
+
+        await reagir(
+            message,
+            '❌'
+        );
+
+        await responderCitando(
+            message,
+            '❌ _Ocorreu um erro ao executar os slots._'
+        );
+    }
+}
+
+// ============================================================
+// 💰 SALDO
+// ============================================================
+
+async function mostrarSaldo(message) {
+
+    try {
+
+        const usuarioId =
+            obterIdRemetente(
+                message
+            );
+
+        if (!usuarioId) {
+            await reagir(message, '❌');
+            return;
+        }
+
+        const carteira =
+            garantirCarteira(
+                usuarioId
+            );
+
+        salvarMoedas();
+
+        await reagir(
+            message,
+            '💰'
+        );
+
+        await responderCitando(
+            message,
+            `┏═•❃༺💰༻❃•═┓
+│
+│    *💰 𝐒𝐄𝐔 𝐒𝐀𝐋𝐃𝐎*
+│
+├✯
+│
+├➤ 🪙 Moedas: *${carteira.saldo}*
+│
+├➤ 🎰 Use *${PREFIXO}slots 100*
+│   para apostar.
+│
+├➤ 🎁 Use *${PREFIXO}diario*
+│   para receber sua recompensa.
+│
+┗═•❃༺💰༻❃•═┛`
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao mostrar saldo:',
+            erro
+        );
+    }
+}
+
+// ============================================================
+// 🎁 RECOMPENSA DIÁRIA
+// ============================================================
+
+async function recompensaDiaria(message) {
+
+    try {
+
+        const usuarioId =
+            obterIdRemetente(
+                message
+            );
+
+        if (!usuarioId) {
+            await reagir(message, '❌');
+            return;
+        }
+
+        const carteira =
+            garantirCarteira(
+                usuarioId
+            );
+
+        const agora =
+            Date.now();
+
+        const restante =
+            INTERVALO_DIARIO -
+            (agora - carteira.ultimoDiario);
+
+        if (
+            carteira.ultimoDiario > 0 &&
+            restante > 0
+        ) {
+
+            const horas =
+                Math.floor(
+                    restante / (60 * 60 * 1000)
+                );
+
+            const minutos =
+                Math.floor(
+                    (restante % (60 * 60 * 1000)) /
+                    (60 * 1000)
+                );
+
+            await reagir(
+                message,
+                '⏳'
+            );
+
+            await responderCitando(
+                message,
+                `┏═•❃༺🎁༻❃•═┓
+│
+│   *🎁 𝐑𝐄𝐂𝐎𝐌𝐏𝐄𝐍𝐒𝐀 𝐃𝐈𝐀́𝐑𝐈𝐀*
+│
+├➤ Você já recebeu sua recompensa hoje!
+│
+├➤ ⏳ Volte em aproximadamente *${horas}h ${minutos}min*.
+│
+┗═•❃༺🎁༻❃•═┛`
+            );
+
+            return;
+        }
+
+        carteira.saldo +=
+            RECOMPENSA_DIARIA;
+
+        carteira.ultimoDiario =
+            agora;
+
+        salvarMoedas();
+
+        await reagir(
+            message,
+            '🎁'
+        );
+
+        await responderCitando(
+            message,
+            `┏═•❃༺🎁༻❃•═┓
+│
+│   *🎁 𝐑𝐄𝐂𝐎𝐌𝐏𝐄𝐍𝐒𝐀 𝐃𝐈𝐀́𝐑𝐈𝐀!*
+│
+├➤ 🪙 Você recebeu *${RECOMPENSA_DIARIA} moedas*.
+│
+├➤ 💰 Saldo atual: *${carteira.saldo} moedas*
+│
+├➤ Volte amanhã para receber novamente!
+│
+┗═•❃༺🎁༻❃•═┛`
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro na recompensa diária:',
+            erro
+        );
+    }
+}
+
 async function menuJogos(message) {
 
     await reagir(
@@ -12652,6 +13204,15 @@ async function menuJogos(message) {
 │
 ├➤ ❤️ *${PREFIXO}ppp @pessoa*
 │   _Pega, pensa ou passa?_
+│
+├➤ 🎰 *${PREFIXO}slots 100*
+│   _Aposte suas moedas_
+│
+├➤ 💰 *${PREFIXO}saldo*
+│   _Veja suas moedas_
+│
+├➤ 🎁 *${PREFIXO}diario*
+│   _Pegue sua recompensa diária_
 │
 ┗═•❃༺🎮༻❃•═┛`
     );
@@ -13924,6 +14485,24 @@ case 'sobre':
         case 'ppp':
     await jogoPPP(message);
     break;
+
+        case 'slots':
+        case 'slot':
+            await jogarSlots(
+                message,
+                argumentos
+            );
+            break;
+
+        case 'saldo':
+        case 'carteira':
+            await mostrarSaldo(message);
+            break;
+
+        case 'diario':
+        case 'diaria':
+            await recompensaDiaria(message);
+            break;
 
 
         // ============================================================
