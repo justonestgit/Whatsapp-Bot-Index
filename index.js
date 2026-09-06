@@ -1780,39 +1780,61 @@ async function mostrarConfiguracoesRanks(message) {
         return;
     }
     if (!(await exigirAdmin(message))) return;
+
     const c = obterConfiguracaoRank(message.from);
-    const modoExibicao = c.exibicao === 'top' ? `🏆 TOP ${c.quantidadeTop} DO GRUPO` : '👤 APENAS VOCÊ';
-    const modoSorteio = c.modo === 'fixo' ? '📌 FIXO' : '🎲 ALEATÓRIO';
-    const porcentagem = c.mostrarPorcentagem ? '✅ ATIVADA' : '❌ DESATIVADA';
+    const exibicao = c.exibicao === 'top' ? `🏆 TOP ${c.quantidadeTop} DO GRUPO` : '👤 APENAS VOCÊ';
+    const sorteio = c.modo === 'fixo' ? '📌 FIXO' : '🎲 ALEATÓRIO';
+    const porcentagem = c.mostrarPorcentagem ? '🟢 ATIVADA' : '🔴 DESATIVADA';
+
     await reagir(message, '⚙️');
     await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
-│      *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐄 𝐑𝐀𝐍𝐊𝐒*
+│       *𝐏𝐀𝐈𝐍𝐄𝐋 𝐃𝐄 𝐑𝐀𝐍𝐊𝐈𝐍𝐆𝐒*
 ├✯
 │
-├➤ 🏆 Exibição: *${modoExibicao}*
-├➤ 🎲 Sorteio: *${modoSorteio}*
-├➤ 🔢 Quantidade no TOP: *${c.quantidadeTop}*
+│  📋 *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀Ç𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋*
+│
+├➤ 🏆 Exibição: *${exibicao}*
+├➤ 🔢 Tamanho do TOP: *${c.quantidadeTop}*
+├➤ 🎲 Resultados: *${sorteio}*
 ├➤ 📊 Porcentagem: *${porcentagem}*
 │
-├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒 𝐃𝐄 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎*
+├✯
 │
-├➤ ${PREFIXO}srank top
-│   _Ranks mostram os melhores do grupo._
-├➤ ${PREFIXO}srank pessoal
-│   _Rank mostra apenas você._
-├➤ ${PREFIXO}srank qtd 10
-│   _Define o tamanho do TOP (1 a 50)._ 
-├➤ ${PREFIXO}srank porcentagem on
-│   _Mostra os percentuais._
-├➤ ${PREFIXO}srank porcentagem off
-│   _Oculta os percentuais._
-├➤ ${PREFIXO}srank fixo
+│  🛠️ *𝐄𝐗𝐈𝐁𝐈Ç𝐀̃𝐎*
+│
+├➤ 🏆 *${PREFIXO}srank top*
+│   _Mostra os melhores do grupo._
+│
+├➤ 👤 *${PREFIXO}srank pessoal*
+│   _Mostra apenas o seu resultado._
+│
+├➤ 🔢 *${PREFIXO}srank qtd 10*
+│   _Define o TOP entre 1 e 50._
+│
+├✯
+│
+│  🎲 *𝐑𝐄𝐒𝐔𝐋𝐓𝐀𝐃𝐎𝐒*
+│
+├➤ 📌 *${PREFIXO}srank fixo*
 │   _Mantém os resultados salvos._
-├➤ ${PREFIXO}srank aleatorio
+│
+├➤ 🎲 *${PREFIXO}srank aleatorio*
 │   _Sorteia novamente a cada uso._
 │
-├➤ 💾 _As configurações ficam salvas por grupo._
-├➤ 👑 _Somente administradores podem alterá-las._
+├✯
+│
+│  📊 *𝐏𝐎𝐑𝐂𝐄𝐍𝐓𝐀𝐆𝐄𝐌*
+│
+├➤ 🟢 *${PREFIXO}srank porcentagem on*
+│   _Exibe a porcentagem._
+│
+├➤ 🔴 *${PREFIXO}srank porcentagem off*
+│   _Oculta a porcentagem._
+│
+├✯
+│
+├➤ 💾 _Configurações salvas por grupo._
+├➤ 👑 _Somente administradores podem alterar._
 │
 ┗═•❃༺⚙️༻❃•═┓`);
 }
