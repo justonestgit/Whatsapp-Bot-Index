@@ -1383,6 +1383,31 @@ function verificarConquistas(
     return novasConquistas;
 }
 
+// ========================================================
+// 🗣️ FALADOR PROFISSIONAL
+// ========================================================
+
+if (
+    Number(dadosUsuario.mensagens) >= 1000 &&
+    !possuiConquista(
+        usuarioId,
+        'faladorProfissional'
+    )
+) {
+
+    if (
+        desbloquearConquista(
+            usuarioId,
+            'faladorProfissional'
+        )
+    ) {
+
+        novasConquistas.push(
+            'faladorProfissional'
+        );
+    }
+}
+
 // ============================================================
 // 💤 CONTROLE DE XP OFFLINE
 // ============================================================
