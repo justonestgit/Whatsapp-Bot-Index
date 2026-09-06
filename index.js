@@ -4373,6 +4373,45 @@ async function menuDiversao(message) {
 │  _Comando de humor do bot._
 │
 ├✯
+│  🎲 *𝐍𝐎𝐕𝐀𝐒 𝐃𝐈𝐕𝐄𝐑𝐒𝐎̃𝐄𝐒*
+│
+│  *${PREFIXO}verdade*
+│  _Receber uma pergunta de verdade._
+│
+│  *${PREFIXO}desafio*
+│  _Receber um desafio._
+│
+│  *${PREFIXO}vidente pergunta*
+│  _Consultar o futuro._
+│
+│  *${PREFIXO}8ball pergunta*
+│  _Perguntar à Magic 8 Ball._
+│
+│  *${PREFIXO}decidir opção 1 ou opção 2*
+│  _Deixar o bot decidir._
+│
+│  *${PREFIXO}crush @pessoa*
+│  _Medir o crush._
+│
+│  *${PREFIXO}amizade @pessoa*
+│  _Medir a amizade._
+│
+│  *${PREFIXO}inimigos @pessoa*
+│  _Medir a rivalidade._
+│
+│  *${PREFIXO}fbi @pessoa*
+│  _Gerar um relatório fictício do FBI._
+│
+│  *${PREFIXO}laudo @pessoa*
+│  _Gerar um laudo completamente fictício._
+│
+│  *${PREFIXO}curriculo @pessoa*
+│  _Gerar um currículo aleatório._
+│
+│  *${PREFIXO}nota @pessoa*
+│  _Dar uma nota aleatória._
+│
+├✯
 │
 │  💡 Para voltar ao menu:
 │  *${PREFIXO}menu*
@@ -4614,6 +4653,41 @@ async function menuUtil(message) {
 │
 ├➤ 🌦️ *${PREFIXO}clima <cidade>*
 │   _Consultar o clima atual_
+│
+├➤ ⏱️ *${PREFIXO}uptime*
+│   _Ver há quanto tempo o bot está online_
+├➤ 📊 *${PREFIXO}status*
+│   _Ver o status técnico do bot_
+├➤ 🖼️ *${PREFIXO}avatar @pessoa*
+│   _Ver a foto de perfil_
+├➤ 👑 *${PREFIXO}admins*
+│   _Listar os administradores do grupo_
+├➤ 🆔 *${PREFIXO}id*
+│   _Ver seu ID_
+├➤ 🎯 *${PREFIXO}escolher opção 1 | opção 2*
+│   _Escolher uma opção aleatoriamente_
+├➤ ⏳ *${PREFIXO}contador 10*
+│   _Fazer uma contagem regressiva_
+├➤ ⏱️ *${PREFIXO}cronometro 30s*
+│   _Criar um cronômetro_
+├➤ 🧮 *${PREFIXO}calculadora 2 + 2*
+│   _Fazer cálculos_
+├➤ 📊 *${PREFIXO}porcentagem 20 de 500*
+│   _Calcular porcentagens_
+├➤ 📐 *${PREFIXO}regra3 2 10 5*
+│   _Resolver regra de três_
+├➤ 🔄 *${PREFIXO}converter 10 km mi*
+│   _Converter unidades_
+├➤ 💱 *${PREFIXO}cotacao USD BRL 100*
+│   _Consultar cotação de moedas_
+├➤ 🌐 *${PREFIXO}traduzir en pt texto*
+│   _Traduzir um texto_
+├➤ 🔗 *${PREFIXO}encurtar https://...*
+│   _Encurtar um link_
+├➤ ⭐ *${PREFIXO}level*
+│   _Ver seu nível de XP_
+├➤ 🏆 *${PREFIXO}rank*
+│   _Ver o ranking de XP_
 │
 ┗═•❃༺⚙️༻❃•═┛`
     );
@@ -17382,6 +17456,472 @@ async function comandoTTS(message, argumentos) {
     }
 }
 
+
+// ============================================================
+// 🧰 NOVAS UTILIDADES E DIVERSÃO
+// ============================================================
+
+const timersUtilidade = new Map();
+
+function formatarDuracao(segundos) {
+    const total = Math.max(0, Math.floor(Number(segundos) || 0));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    return h > 0
+        ? `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`
+        : `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
+function formatarPessoaAlvo(pessoa) {
+    return pessoa ? `@${String(idDaPessoa(pessoa) || '').split('@')[0]}` : 'você';
+}
+
+async function obterAlvoComContato(message, obrigatorio = false) {
+    try {
+        const mencoes = await message.getMentions();
+        if (mencoes?.length) return mencoes[0];
+    } catch {}
+
+    if (message.hasQuotedMsg) {
+        try {
+            const citada = await message.getQuotedMessage();
+            const id = citada?.author || citada?.from;
+            if (id) {
+                try {
+                    const contato = await client.getContactById(id);
+                    if (contato) return contato;
+                } catch {}
+            }
+        } catch {}
+    }
+
+    if (obrigatorio) {
+        await reagir(message, '❌');
+        await responderCitando(
+            message,
+            `┏═•❃༺👤༻❃•═┓\n├✯ *𝐀𝐋𝐕𝐎 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐎*\n│\n├➤ _Mencione alguém ou responda à mensagem da pessoa._\n│\n├➤ *Exemplo:* *${PREFIXO}nota @pessoa*\n┗═•❃༺👤༻❃•═┓`
+        );
+    }
+    return null;
+}
+
+async function responderAlvoComMencao(message, texto, pessoa) {
+    const id = pessoa ? idDaPessoa(pessoa) : null;
+    if (id) {
+        return enviarComMencoes(message.from, texto, {
+            mentions: [id],
+            quotedMessageId: obterIdMensagem(message)
+        });
+    }
+    return responderCitando(message, texto);
+}
+
+async function comandoUptime(message) {
+    await reagir(message, '⏱️');
+    await responderCitando(message, `┏═•❃༺⏱️༻❃•═┓\n│      *𝐔𝐏𝐓𝐈𝐌𝐄*\n├✯\n│\n├➤ 🤖 Bot online há: *${formatarDuracao(process.uptime())}*\n├➤ 🟢 Processo ativo e respondendo.\n│\n┗═•❃༺⏱️༻❃•═┓`);
+}
+
+async function comandoStatus(message) {
+    const memoria = process.memoryUsage();
+    const usoMB = (memoria.rss / 1024 / 1024).toFixed(1);
+    const heapMB = (memoria.heapUsed / 1024 / 1024).toFixed(1);
+    const versao = typeof VERSAO !== 'undefined' ? VERSAO : 'atual';
+    await reagir(message, '📊');
+    await responderCitando(message, `┏═•❃༺📊༻❃•═┓\n│       *𝐒𝐓𝐀𝐓𝐔𝐒*\n├✯\n│\n├➤ 🟢 *Online*\n├➤ ⏱️ Uptime: *${formatarDuracao(process.uptime())}*\n├➤ 💾 RAM: *${usoMB} MB*\n├➤ 🧠 Heap: *${heapMB} MB*\n├➤ 🔢 Versão: *${versao}*\n│\n┗═•❃༺📊༻❃•═┓`);
+}
+
+async function comandoAvatar(message) {
+    const pessoa = await obterAlvoComContato(message, false);
+    const contato = pessoa || await client.getContactById(obterIdRemetente(message));
+    if (!contato) {
+        await reagir(message, '❌');
+        return;
+    }
+    try {
+        const url = await contato.getProfilePicUrl();
+        if (!url) {
+            await reagir(message, '👤');
+            await responderCitando(message, '👤 _Essa pessoa não possui uma foto de perfil pública._');
+            return;
+        }
+        const midia = await MessageMedia.fromUrl(url, { unsafeMime: true });
+        await reagir(message, '🖼️');
+        await client.sendMessage(message.from, midia, {
+            caption: `🖼️ *𝐀𝐕𝐀𝐓𝐀𝐑*\n\n👤 ${contato.pushname || contato.name || 'Usuário'}`
+        });
+    } catch (erro) {
+        console.error('❌ Erro no avatar:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui obter a foto de perfil agora._');
+    }
+}
+
+async function comandoAdmins(message) {
+    if (!message.from?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        return;
+    }
+    try {
+        const admins = await client.pupPage.evaluate((grupoId) => {
+            try {
+                const Store = window.require('WAWebCollections');
+                const chat = Store?.Chat?.get(grupoId);
+                const participantes = chat?.groupMetadata?.participants;
+                if (!participantes) return [];
+                const modelos = typeof participantes.getModelsArray === 'function'
+                    ? participantes.getModelsArray()
+                    : (Array.isArray(participantes.models) ? participantes.models : []);
+                return modelos
+                    .filter(p => p.isAdmin || p.isSuperAdmin)
+                    .map(p => p.id?._serialized || p.id?.$1 || String(p.id || ''))
+                    .filter(Boolean);
+            } catch { return []; }
+        }, message.from);
+        if (!admins.length) throw new Error('Nenhum administrador encontrado.');
+        await reagir(message, '👑');
+        const texto = `┏═•❃༺👑༻❃•═┓\n│      *𝐀𝐃𝐌𝐈𝐍𝐈𝐒𝐓𝐑𝐀𝐃𝐎𝐑𝐄𝐒*\n├✯\n│\n${admins.map((id, i) => `├➤ 👑 ${i + 1}. @${String(id).split('@')[0]}`).join('\n')}\n│\n┗═•❃༺👑༻❃•═┓`;
+        await enviarComMencoes(message.from, texto, { mentions: admins, quotedMessageId: obterIdMensagem(message) });
+    } catch (erro) {
+        console.error('❌ Erro ao listar admins:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui consultar os administradores deste grupo._');
+    }
+}
+
+async function comandoId(message) {
+    const id = obterIdRemetente(message);
+    await reagir(message, '🆔');
+    await responderCitando(message, `┏═•❃༺🆔༻❃•═┓\n│          *𝐈𝐃*\n├✯\n│\n├➤ 👤 Seu ID:\n│   *${id || 'indisponível'}*\n│\n┗═•❃༺🆔༻❃•═┓`);
+}
+
+async function comandoEscolher(message, argumentos) {
+    const opcoes = String(argumentos || '').split(/\s*(?:\||\/|,|;|\bou\b)\s*/i).map(v => v.trim()).filter(Boolean);
+    if (opcoes.length < 2) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe pelo menos duas opções._\n\nExemplo: *${PREFIXO}escolher pizza | hambúrguer | sushi*`);
+        return;
+    }
+    const escolhida = escolherAleatorioSeguro(opcoes);
+    await reagir(message, '🎯');
+    await responderCitando(message, `┏═•❃༺🎯༻❃•═┓\n│       *𝐄𝐒𝐂𝐎𝐋𝐇𝐈*\n├✯\n│\n├➤ 🎲 Entre *${opcoes.length}* opções...\n│\n├➤ 🏆 *${escolhida}*\n│\n┗═•❃༺🎯༻❃•═┓`);
+}
+
+async function comandoContador(message, argumentos) {
+    const numero = Number.parseInt(String(argumentos || '').trim(), 10);
+    if (!Number.isInteger(numero) || numero < 1 || numero > 60) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Use um número entre 1 e 60._\n\nExemplo: *${PREFIXO}contador 10*`);
+        return;
+    }
+    const chatId = message.from;
+    const anterior = timersUtilidade.get(`contador:${chatId}`);
+    if (anterior) clearInterval(anterior);
+    let atual = numero;
+    await reagir(message, '⏳');
+    await responderCitando(message, `⏳ *𝐂𝐎𝐍𝐓𝐀𝐃𝐎𝐑 𝐈𝐍𝐈𝐂𝐈𝐀𝐃𝐎*\n\nContando de *${numero}* até *0*...`);
+    const intervalo = setInterval(async () => {
+        atual -= 1;
+        if (atual <= 0) {
+            clearInterval(intervalo);
+            timersUtilidade.delete(`contador:${chatId}`);
+            await responderCitando(message, '🔔 *𝐙𝐄𝐑𝐎!*\n\n⏰ Contagem finalizada.');
+            return;
+        }
+        if (atual <= 5) await client.sendMessage(chatId, `⏳ *${atual}*`);
+    }, 1000);
+    timersUtilidade.set(`contador:${chatId}`, intervalo);
+}
+
+async function comandoCronometro(message, argumentos) {
+    const entrada = String(argumentos || '').trim().toLowerCase();
+    const match = entrada.match(/^(\d+(?:\.\d+)?)\s*(s|seg|segundos?|m|min|minutos?|h|horas?)$/i);
+    if (!match) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe o tempo, por exemplo:_ *${PREFIXO}cronometro 30s* _ou_ *${PREFIXO}cronometro 2m*`);
+        return;
+    }
+    const valor = Number(match[1]);
+    const unidade = match[2];
+    const multiplicador = /^h|hora/i.test(unidade) ? 3600 : (/^m|min/i.test(unidade) ? 60 : 1);
+    const segundos = Math.floor(valor * multiplicador);
+    if (segundos < 1 || segundos > 86400) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _O cronômetro deve ficar entre 1 segundo e 24 horas._');
+        return;
+    }
+    const chave = `cronometro:${message.from}`;
+    const anterior = timersUtilidade.get(chave);
+    if (anterior) clearTimeout(anterior);
+    await reagir(message, '⏱️');
+    await responderCitando(message, `⏱️ *𝐂𝐑𝐎𝐍𝐎̂𝐌𝐄𝐓𝐑𝐎 𝐈𝐍𝐈𝐂𝐈𝐀𝐃𝐎*\n\n🔔 Vou avisar quando passarem *${formatarDuracao(segundos)}*.`);
+    const timeout = setTimeout(async () => {
+        timersUtilidade.delete(chave);
+        await responderCitando(message, `🔔 *𝐓𝐄𝐌𝐏𝐎 𝐄𝐒𝐆𝐎𝐓𝐀𝐃𝐎!*\n\n⏱️ O cronômetro de *${formatarDuracao(segundos)}* terminou.`);
+    }, segundos * 1000);
+    timersUtilidade.set(chave, timeout);
+}
+
+function avaliarExpressaoSegura(expressao) {
+    const limpa = String(expressao || '').replace(/,/g, '.').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').trim();
+    if (!limpa || !/^[0-9+\-*/().%\s]+$/.test(limpa)) throw new Error('expressão inválida');
+    if (/\.{2,}|\/{2,}|\*{2,}|%{2,}/.test(limpa)) throw new Error('expressão inválida');
+    const resultado = Function(`"use strict"; return (${limpa})`)();
+    if (!Number.isFinite(resultado)) throw new Error('resultado inválido');
+    return resultado;
+}
+
+async function comandoCalculadora(message, argumentos) {
+    try {
+        const resultado = avaliarExpressaoSegura(argumentos);
+        await reagir(message, '🧮');
+        await responderCitando(message, `┏═•❃༺🧮༻❃•═┓\n│      *𝐂𝐀𝐋𝐂𝐔𝐋𝐀𝐃𝐎𝐑𝐀*\n├✯\n│\n├➤ 📝 *${String(argumentos).trim()}*\n├➤ 🟰 *${resultado}*\n│\n┗═•❃༺🧮༻❃•═┓`);
+    } catch {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Expressão inválida._\n\nExemplo: *${PREFIXO}calculadora (10 + 5) × 2*`);
+    }
+}
+
+async function comandoPorcentagem(message, argumentos) {
+    const partes = String(argumentos || '').replace(/,/g, '.').trim().split(/\s+/);
+    if (partes.length < 2) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Use:_ *${PREFIXO}porcentagem 20% de 500*`);
+        return;
+    }
+    const numeros = partes.map(Number).filter(Number.isFinite);
+    const p = numeros[0];
+    const valor = numeros[numeros.length - 1];
+    if (!Number.isFinite(p) || !Number.isFinite(valor)) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui entender os números informados._');
+        return;
+    }
+    const resultado = valor * p / 100;
+    await reagir(message, '📊');
+    await responderCitando(message, `📊 *${p}% de ${valor} = ${resultado}*`);
+}
+
+async function comandoRegra3(message, argumentos) {
+    const numeros = String(argumentos || '').replace(/,/g, '.').match(/-?\d+(?:\.\d+)?/g)?.map(Number) || [];
+    if (numeros.length !== 3) {
+        await reagir(message, `❌ _Use três números: A B C._\n\nExemplo: *${PREFIXO}regra3 2 10 5*`);
+        return;
+    }
+    const [a, b, c] = numeros;
+    if (a === 0 || b === 0) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Os dois primeiros valores não podem ser zero._');
+        return;
+    }
+    const x = (b * c) / a;
+    await reagir(message, '📐');
+    await responderCitando(message, `📐 *𝐑𝐄𝐆𝐑𝐀 𝐃𝐄 𝟑*\n\n${a} → ${b}\n${c} → *${x}*`);
+}
+
+async function comandoConverter(message, argumentos) {
+    const partes = String(argumentos || '').replace(/,/g, '.').trim().split(/\s+/);
+    if (partes.length < 3) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Use:_ *${PREFIXO}converter 10 km mi*\n\nSuporta km↔mi, m↔ft, kg↔lb, c↔f e f↔c.`);
+        return;
+    }
+    const valor = Number(partes[0]);
+    const de = partes[1].toLowerCase();
+    const para = partes[2].toLowerCase();
+    if (!Number.isFinite(valor)) {
+        await reagir(message, '❌');
+        return;
+    }
+    const conversoes = {
+        'km:mi': v => v * 0.621371, 'mi:km': v => v / 0.621371,
+        'm:ft': v => v * 3.28084, 'ft:m': v => v / 3.28084,
+        'kg:lb': v => v * 2.2046226218, 'lb:kg': v => v / 2.2046226218,
+        'c:f': v => v * 9 / 5 + 32, 'f:c': v => (v - 32) * 5 / 9
+    };
+    const chave = `${de}:${para}`;
+    if (!conversoes[chave]) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Conversão não suportada. Use km/mi, m/ft, kg/lb ou °C/°F._');
+        return;
+    }
+    const resultado = conversoes[chave](valor);
+    await reagir(message, '🔄');
+    await responderCitando(message, `🔄 *𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐀̃𝐎*\n\n*${valor} ${de}* = *${Number(resultado.toFixed(6))} ${para}*`);
+}
+
+async function comandoCotacao(message, argumentos) {
+    const partes = String(argumentos || '').trim().toUpperCase().split(/\s+/).filter(Boolean);
+    const origem = partes[0] || 'USD';
+    const destino = partes[1] || 'BRL';
+    const valor = partes[2] ? Number(partes[2].replace(',', '.')) : 1;
+    if (!/^[A-Z]{3}$/.test(origem) || !/^[A-Z]{3}$/.test(destino) || !Number.isFinite(valor)) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Use:_ *${PREFIXO}cotacao USD BRL 100*`);
+        return;
+    }
+    try {
+        const dados = await buscarJsonAPI(`https://open.er-api.com/v6/latest/${origem}`);
+        const taxa = dados?.rates?.[destino];
+        if (!Number.isFinite(taxa)) throw new Error('moeda não encontrada');
+        await reagir(message, '💱');
+        await responderCitando(message, `┏═•❃༺💱༻❃•═┓\n│       *𝐂𝐎𝐓𝐀𝐂̧𝐀̃𝐎*\n├✯\n│\n├➤ 💵 *${valor} ${origem}*\n├➤ 💰 *${(valor * taxa).toFixed(2)} ${destino}*\n├➤ 📈 Taxa: *1 ${origem} = ${taxa.toFixed(6)} ${destino}*\n│\n┗═•❃༺💱༻❃•═┓`);
+    } catch (erro) {
+        console.error('❌ Erro na cotação:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui consultar a cotação agora._');
+    }
+}
+
+async function comandoTraduzir(message, argumentos) {
+    const partes = String(argumentos || '').trim().split(/\s+/);
+    const de = (partes.shift() || '').toLowerCase();
+    const para = (partes.shift() || '').toLowerCase();
+    const texto = partes.join(' ').trim();
+    if (!/^[a-z]{2}$/.test(de) || !/^[a-z]{2}$/.test(para) || !texto) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Use:_ *${PREFIXO}traduzir en pt Hello world*`);
+        return;
+    }
+    try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${encodeURIComponent(de)}|${encodeURIComponent(para)}`;
+        const dados = await buscarJsonAPI(url);
+        const traducao = dados?.responseData?.translatedText;
+        if (!traducao) throw new Error('tradução vazia');
+        await reagir(message, '🌐');
+        await responderCitando(message, `┏═•❃༺🌐༻❃•═┓\n│       *𝐓𝐑𝐀𝐃𝐔𝐂̧𝐀̃𝐎*\n├✯\n│\n├➤ 📝 Original: _${texto}_\n├➤ 🌍 *${traducao}*\n├➤ 🔤 ${de.toUpperCase()} → ${para.toUpperCase()}\n│\n┗═•❃༺🌐༻❃•═┓`);
+    } catch (erro) {
+        console.error('❌ Erro na tradução:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui traduzir esse texto agora._');
+    }
+}
+
+async function comandoEncurtar(message, argumentos) {
+    const url = String(argumentos || '').trim();
+    if (!/^https?:\/\//i.test(url)) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe um link começando com http:// ou https://._\n\nExemplo: *${PREFIXO}encurtar https://exemplo.com*`);
+        return;
+    }
+    try {
+        const resposta = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`);
+        const curto = (await resposta.text()).trim();
+        if (!resposta.ok || !/^https?:\/\//i.test(curto)) throw new Error(curto || 'falha');
+        await reagir(message, '🔗');
+        await responderCitando(message, `🔗 *𝐋𝐈𝐍𝐊 𝐄𝐍𝐂𝐔𝐑𝐓𝐀𝐃𝐎*\n\n${curto}`);
+    } catch (erro) {
+        console.error('❌ Erro ao encurtar:', erro.message);
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ _Não consegui encurtar esse link agora._');
+    }
+}
+
+const VERDADES = [
+    'Qual foi a última mentira boba que você contou?', 'Qual hábito seu você esconderia de um novo amigo?',
+    'Quem do grupo você chamaria para uma aventura?', 'Qual foi sua maior vergonha na escola?',
+    'Qual coisa você finge gostar para não contrariar alguém?', 'Qual foi a decisão mais impulsiva que você já tomou?'
+];
+const DESAFIOS = [
+    'Envie o próximo emoji que aparecer no seu teclado.', 'Fale uma frase séria usando apenas emojis.',
+    'Mande uma mensagem começando com "Eu confesso que...".', 'Escolha alguém e faça um elogio sincero.',
+    'Escreva seu nome de trás para frente.', 'Fique 30 segundos sem usar a letra A nas mensagens.'
+];
+const RESPOSTAS_8BALL = ['🎱 Com certeza!', '🎱 Provavelmente sim.', '🎱 Os astros dizem que sim.', '🎱 Melhor não contar com isso.', '🎱 Provavelmente não.', '🎱 Impossível saber agora.', '🎱 Pergunte novamente depois.', '🎱 O destino ainda está decidindo.'];
+
+async function comandoVerdade(message) {
+    await reagir(message, '🎭');
+    await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n│       *𝐕𝐄𝐑𝐃𝐀𝐃𝐄*\n├✯\n│\n├➤ ❓ *${escolherAleatorioSeguro(VERDADES)}*\n│\n┗═•❃༺🎭༻❃•═┓`);
+}
+
+async function comandoDesafio(message) {
+    await reagir(message, '🔥');
+    await responderCitando(message, `┏═•❃༺🔥༻❃•═┓\n│       *𝐃𝐄𝐒𝐀𝐅𝐈𝐎*\n├✯\n│\n├➤ 🎯 *${escolherAleatorioSeguro(DESAFIOS)}*\n│\n┗═•❃༺🔥༻❃•═┓`);
+}
+
+async function comandoVidente(message, argumentos) {
+    if (!String(argumentos || '').trim()) {
+        await reagir(message, '🔮');
+        await responderCitando(message, `🔮 _Faça uma pergunta para a vidente._\n\nExemplo: *${PREFIXO}vidente vou ganhar?*`);
+        return;
+    }
+    const respostas = ['🌟 Sim, as chances são altas.', '🌙 Talvez. O destino está nebuloso.', '☄️ Não parece provável.', '🔮 O futuro guarda uma surpresa.', '✨ Os sinais são muito positivos.', '🌀 Tente novamente quando a lua mudar.'];
+    await reagir(message, '🔮');
+    await responderCitando(message, `🔮 *𝐕𝐈𝐃𝐄𝐍𝐓𝐄*\n\n❓ _${String(argumentos).trim()}_\n\n➤ *${escolherAleatorioSeguro(respostas)}*`);
+}
+
+async function comando8Ball(message, argumentos) {
+    if (!String(argumentos || '').trim()) {
+        await reagir(message, '🎱');
+        await responderCitando(message, `🎱 _Faça uma pergunta._\n\nExemplo: *${PREFIXO}8ball vou passar de fase?*`);
+        return;
+    }
+    await reagir(message, '🎱');
+    await responderCitando(message, `🎱 *𝐌𝐀𝐆𝐈𝐂 𝟖 𝐁𝐀𝐋𝐋*\n\n❓ _${String(argumentos).trim()}_\n\n➤ *${escolherAleatorioSeguro(RESPOSTAS_8BALL)}*`);
+}
+
+async function comandoDecidir(message, argumentos) {
+    const opcoes = String(argumentos || '').split(/\s*(?:\||\/|,|;|\bou\b)\s*/i).map(v => v.trim()).filter(Boolean);
+    if (opcoes.length < 2) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe duas ou mais opções._\n\nExemplo: *${PREFIXO}decidir cinema ou praia*`);
+        return;
+    }
+    await reagir(message, '⚖️');
+    await responderCitando(message, `⚖️ *𝐃𝐄𝐂𝐈𝐃𝐈𝐃𝐎!*\n\n🎯 Minha escolha: *${escolherAleatorioSeguro(opcoes)}*`);
+}
+
+async function comandoRelacaoAleatoria(message, tipo) {
+    const pessoa = await obterAlvoComContato(message, false);
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const valores = { crush: [0, 100], amizade: [20, 100], inimigos: [0, 100] };
+    const [min, max] = valores[tipo];
+    const porcentagem = crypto.randomInt(min, max + 1);
+    const emojis = { crush: '💘', amizade: '🤝', inimigos: '⚔️' };
+    const titulos = { crush: '𝐂𝐑𝐔𝐒𝐇', amizade: '𝐀𝐌𝐈𝐙𝐀𝐃𝐄', inimigos: '𝐈𝐍𝐈𝐌𝐈𝐆𝐎𝐒' };
+    const frase = tipo === 'crush' ? 'nível de crush' : tipo === 'amizade' ? 'nível de amizade' : 'nível de rivalidade';
+    await reagir(message, emojis[tipo]);
+    await responderAlvoComMencao(message, `${emojis[tipo]} *${titulos[tipo]}*\n\n👤 Alvo: ${nome}\n📊 ${frase}: *${porcentagem}%*`, pessoa);
+}
+
+async function comandoFBI(message) {
+    const pessoa = await obterAlvoComContato(message, false);
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const suspeita = crypto.randomInt(1, 101);
+    const crimes = ['roubo de biscoitos', 'excesso de memes', 'perturbação da paz com áudios', 'contrabando de figurinhas', 'abandono de responsabilidades'];
+    await reagir(message, '🕵️');
+    await responderAlvoComMencao(message, `┏═•❃༺🕵️༻❃•═┓\n│         *𝐅𝐁𝐈*\n├✯\n│\n├➤ 👤 Alvo: ${nome}\n├➤ 🚨 Suspeita: *${suspeita}%*\n├➤ 🗂️ Acusação: _${escolherAleatorioSeguro(crimes)}_\n├➤ 🔎 Status: *${suspeita >= 75 ? 'PROCURADO' : suspeita >= 40 ? 'EM INVESTIGAÇÃO' : 'LIBERADO'}*\n│\n┗═•❃༺🕵️༻❃•═┓`, pessoa);
+}
+
+async function comandoLaudo(message) {
+    const pessoa = await obterAlvoComContato(message, false);
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const humor = ['caótico', 'questionável', 'surpreendentemente normal', '100% aleatório', 'perigosamente engraçado'];
+    const estado = ['funcionando normalmente', 'precisa de café', 'em modo turbo', 'sob observação dos cientistas'];
+    await reagir(message, '🧪');
+    await responderAlvoComMencao(message, `┏═•❃༺🧪༻❃•═┓\n│          *𝐋𝐀𝐔𝐃𝐎*\n├✯\n│\n├➤ 👤 Paciente: ${nome}\n├➤ 🧠 Estado mental: *${escolherAleatorioSeguro(humor)}*\n├➤ ⚙️ Estado operacional: *${escolherAleatorioSeguro(estado)}*\n├➤ 📋 Diagnóstico: _A ciência ainda não explica._\n│\n┗═•❃༺🧪༻❃•═┓`, pessoa);
+}
+
+async function comandoCurriculo(message) {
+    const pessoa = await obterAlvoComContato(message, false);
+    const nome = pessoa?.pushname || pessoa?.name || 'Candidato(a)';
+    const cargos = ['Especialista em memes', 'Analista de grupos', 'Profissional em procrastinação', 'Engenheiro de caos digital', 'Gerente de figurinhas'];
+    const habilidades = ['memes avançados', 'responder rápido', 'sobreviver a grupos', 'usar emojis com precisão', 'tomar decisões questionáveis'];
+    await reagir(message, '📄');
+    await responderAlvoComMencao(message, `┏═•❃༺📄༻❃•═┓\n│       *𝐂𝐔𝐑𝐑𝐈́𝐂𝐔𝐋𝐎*\n├✯\n│\n├➤ 👤 *${nome}*\n├➤ 💼 Cargo: _${escolherAleatorioSeguro(cargos)}_\n├➤ 🛠️ Habilidade: _${escolherAleatorioSeguro(habilidades)}_\n├➤ ⭐ Experiência: *${crypto.randomInt(1, 11)} anos*\n├➤ 💰 Pretensão: *${crypto.randomInt(1200, 12001)} moedas*\n│\n┗═•❃༺📄༻❃•═┓`, pessoa);
+}
+
+async function comandoNota(message) {
+    const pessoa = await obterAlvoComContato(message, false);
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const nota = crypto.randomInt(0, 101) / 10;
+    const avaliacao = nota >= 9 ? 'LENDÁRIO 🏆' : nota >= 7 ? 'Muito bom ⭐' : nota >= 5 ? 'Dá para melhorar 📚' : 'Precisamos conversar com o professor 😭';
+    await reagir(message, '📝');
+    await responderAlvoComMencao(message, `📝 *𝐍𝐎𝐓𝐀*\n\n👤 ${nome}\n📊 Nota: *${nota.toFixed(1)}/10*\n🏫 Avaliação: *${avaliacao}*`, pessoa);
+}
+
+
 // ============================================================
 // PROCESSADOR DE COMANDOS
 // ============================================================
@@ -17987,6 +18527,99 @@ case 'filhosranking':
     );
     break;
 
+
+
+        // ============================================================
+        // 🧰 NOVAS UTILIDADES E DIVERSÃO
+        // ============================================================
+
+        case 'uptime':
+            await comandoUptime(message);
+            break;
+        case 'status':
+            await comandoStatus(message);
+            break;
+        case 'avatar':
+            await comandoAvatar(message);
+            break;
+        case 'admins':
+            await comandoAdmins(message);
+            break;
+        case 'id':
+            await comandoId(message);
+            break;
+        case 'escolher':
+            await comandoEscolher(message, argumentos);
+            break;
+        case 'contador':
+            await comandoContador(message, argumentos);
+            break;
+        case 'cronometro':
+            await comandoCronometro(message, argumentos);
+            break;
+        case 'calculadora':
+            await comandoCalculadora(message, argumentos);
+            break;
+        case 'porcentagem':
+            await comandoPorcentagem(message, argumentos);
+            break;
+        case 'regra3':
+            await comandoRegra3(message, argumentos);
+            break;
+        case 'converter':
+            await comandoConverter(message, argumentos);
+            break;
+        case 'cotacao':
+            await comandoCotacao(message, argumentos);
+            break;
+        case 'traduzir':
+            await comandoTraduzir(message, argumentos);
+            break;
+        case 'encurtar':
+            await comandoEncurtar(message, argumentos);
+            break;
+        case 'verdade':
+            await comandoVerdade(message);
+            break;
+        case 'desafio':
+            await comandoDesafio(message);
+            break;
+        case 'vidente':
+            await comandoVidente(message, argumentos);
+            break;
+        case '8ball':
+            await comando8Ball(message, argumentos);
+            break;
+        case 'decidir':
+            await comandoDecidir(message, argumentos);
+            break;
+        case 'crush':
+            await comandoRelacaoAleatoria(message, 'crush');
+            break;
+        case 'amizade':
+            await comandoRelacaoAleatoria(message, 'amizade');
+            break;
+        case 'inimigos':
+            await comandoRelacaoAleatoria(message, 'inimigos');
+            break;
+        case 'fbi':
+            await comandoFBI(message);
+            break;
+        case 'laudo':
+            await comandoLaudo(message);
+            break;
+        case 'curriculo':
+            await comandoCurriculo(message);
+            break;
+        case 'nota':
+            await comandoNota(message);
+            break;
+        case 'level':
+            await mostrarPerfil(message, argumentos);
+            break;
+        case 'rank':
+            await mostrarRanking(message);
+            break;
 
         // ============================================================
         // COMANDO DESCONHECIDO
