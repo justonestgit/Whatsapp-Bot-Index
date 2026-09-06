@@ -26,7 +26,7 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.15';
+const VERSAO = '3.16';
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -4347,7 +4347,15 @@ async function menuDiversao(message) {
 │  _Importe piadas através de um .txt._
 │
 ├✯
+│  🌐 *𝐀𝐏𝐈𝐒*
 │
+│  *${PREFIXO}piada*
+│  _Buscar uma piada em API pública._
+│
+│  *${PREFIXO}anime <nome>*
+│  _Consultar informações de um anime._
+│
+├✯
 │  💘 *𝐑𝐎𝐌𝐀𝐍𝐂𝐄*
 │
 │  *${PREFIXO}cantada*
@@ -4544,6 +4552,9 @@ async function menuUtil(message) {
 ├➤ 👤 *${PREFIXO}info*
 │   _Mostrar informações_
 │
+├➤ 🌦️ *${PREFIXO}clima <cidade>*
+│   _Consultar o clima atual_
+│
 ┗═•❃༺⚙️༻❃•═┛`
     );
 }
@@ -4621,7 +4632,24 @@ async function changelog(message) {
 │
 ├✯
 │
-│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟓*
+│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟔*
+│
+│  🌐 *𝐈𝐍𝐓𝐄𝐆𝐑𝐀𝐂̧𝐀̃𝐎 𝐂𝐎𝐌 𝐀𝐏𝐈𝐒*
+│
+│  ├➤ *${PREFIXO}pokemon <nome>*
+│  │   Consulta dados de Pokémon.
+│  │
+│  ├➤ *${PREFIXO}piada*
+│  │   Busca uma piada em API pública.
+│  │
+│  ├➤ *${PREFIXO}anime <nome>*
+│  │   Consulta informações de anime.
+│  │
+│  ├➤ *${PREFIXO}quiz*
+│  │   Agora usa perguntas aleatórias da Open Trivia DB.
+│  │
+│  └➤ *${PREFIXO}clima <cidade>*
+│      Consulta o clima atual.
 │
 │  🔒 *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌*
 │
@@ -4776,6 +4804,12 @@ async function listarComandos(message) {
 ├➤ 😏 *${PREFIXO}cantada*
 │   _Receber uma cantada_
 │
+├➤ 😂 *${PREFIXO}piada*
+│   _Buscar uma piada em API pública_
+│
+├➤ 🍥 *${PREFIXO}anime <nome>*
+│   _Consultar informações de um anime_
+│
 ├➤ ☠️ *${PREFIXO}suicidio*
 │   _Comando de humor_
 │
@@ -4809,6 +4843,9 @@ async function listarComandos(message) {
 │
 ├➤ 🧠 *${PREFIXO}quiz resposta*
 │   _Responder o quiz_
+│
+├➤ ⚡ *${PREFIXO}pokemon <nome>*
+│   _Consultar um Pokémon_
 │
 ├➤ ❤️ *${PREFIXO}ppp*
 │   _Pega,pensa ou passa?_
@@ -5869,76 +5906,96 @@ _O número é_ *${numeroEscolhido < numeroCorreto
 
 
 // ============================================================
+// 🌐 COMANDOS DE APIS PÚBLICAS
+// ============================================================
+
+async function buscarJsonAPI(url, opcoes = {}) {
+    const controlador = new AbortController();
+    const timeout = setTimeout(() => controlador.abort(), opcoes.timeout || 12000);
+    try {
+        const resposta = await fetch(url, { headers: { 'Accept': 'application/json' }, signal: controlador.signal });
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+        return await resposta.json();
+    } finally { clearTimeout(timeout); }
+}
+
+function limparTextoAPI(texto) {
+    return String(texto || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+}
+
+function limitarTextoAPI(texto, limite = 500) {
+    const valor = limparTextoAPI(texto);
+    return valor.length <= limite ? valor : `${valor.slice(0, limite - 3).trim()}...`;
+}
+
+function nomeFormatadoAPI(nome) {
+    return String(nome || '').split('-').map(parte => parte ? parte.charAt(0).toUpperCase() + parte.slice(1) : parte).join(' ');
+}
+
+async function comandoPokemon(message, argumentos) {
+    const nome = String(argumentos || '').trim().toLowerCase();
+    if (!nome) { await reagir(message, '❌'); await responderCitando(message, `❌ _Informe um Pokémon._\n\nExemplo: *${PREFIXO}pokemon pikachu*`); return; }
+    try {
+        const pokemon = await buscarJsonAPI(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(nome)}`);
+        const tipos = (pokemon.types || []).sort((a,b) => a.slot-b.slot).map(item => nomeFormatadoAPI(item.type?.name)).join(' / ');
+        const habilidades = (pokemon.abilities || []).filter(item => item.ability?.name).map(item => nomeFormatadoAPI(item.ability.name)).slice(0,3).join(', ');
+        const stats = Object.fromEntries((pokemon.stats || []).map(item => [item.stat?.name, item.base_stat]));
+        const texto = `┏═•❃༺⚡༻❃•═┓\n│      *𝐏𝐎𝐊𝐄́𝐌𝐎𝐍*\n├✯\n│\n├➤ 🆔 *#${String(pokemon.id).padStart(4,'0')}*\n├➤ 🐾 *${nomeFormatadoAPI(pokemon.name)}*\n├➤ 🔥 Tipo: *${tipos || 'Desconhecido'}*\n├➤ 📏 Altura: *${(pokemon.height/10).toFixed(1)} m*\n├➤ ⚖️ Peso: *${(pokemon.weight/10).toFixed(1)} kg*\n│\n├➤ ❤️ HP: *${stats.hp ?? '?'}*\n├➤ ⚔️ Ataque: *${stats.attack ?? '?'}*\n├➤ 🛡️ Defesa: *${stats.defense ?? '?'}*\n├➤ ✨ Ataque Esp.: *${stats['special-attack'] ?? '?'}*\n├➤ 🌀 Defesa Esp.: *${stats['special-defense'] ?? '?'}*\n├➤ 💨 Velocidade: *${stats.speed ?? '?'}*\n│\n├➤ 🧬 Habilidades: *${habilidades || 'Desconhecidas'}*\n│\n┗═•❃༺⚡༻❃•═┛`;
+        await reagir(message,'⚡'); await responderCitando(message,texto);
+    } catch (erro) { console.error('❌ Erro na API do Pokémon:',erro.message); await reagir(message,'❌'); await responderCitando(message,`❌ _Não encontrei o Pokémon_ *${nome}* _na PokéAPI._`); }
+}
+
+async function comandoPiadaAPI(message) {
+    try {
+        const dados = await buscarJsonAPI('https://v2.jokeapi.dev/joke/Any?lang=pt&blacklistFlags=nsfw,religious,political,racist,sexist,explicit');
+        if (dados.error) throw new Error(dados.message || 'API sem piada.');
+        const piada = dados.type === 'twopart' ? `${limparTextoAPI(dados.setup)}\n\n${limparTextoAPI(dados.delivery)}` : limparTextoAPI(dados.joke);
+        if (!piada) throw new Error('Piada vazia.');
+        await reagir(message,'😂'); await responderCitando(message,`┏═•❃༺😂༻❃•═┓\n│      *𝐏𝐈𝐀𝐃𝐀 𝐃𝐀 𝐀𝐏𝐈*\n├✯\n│\n├➤ ${piada}\n│\n┗═•❃༺😂༻❃•═┛`);
+    } catch (erro) { console.error('❌ Erro na API de piadas:',erro.message); await reagir(message,'❌'); await responderCitando(message,'❌ _Não consegui buscar uma piada agora. Tente novamente em alguns segundos._'); }
+}
+
+async function comandoAnime(message, argumentos) {
+    const busca = String(argumentos || '').trim();
+    if (!busca) { await reagir(message,'❌'); await responderCitando(message,`❌ _Informe o nome de um anime._\n\nExemplo: *${PREFIXO}anime naruto*`); return; }
+    try {
+        const dados = await buscarJsonAPI(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(busca)}&limit=1`); const anime = dados?.data?.[0];
+        if (!anime) throw new Error('Anime não encontrado.');
+        const ano = anime.year || anime.aired?.prop?.from?.slice?.(0,4) || 'N/A'; const generos = (anime.genres || []).slice(0,5).map(g => g.name).join(', ') || 'N/A';
+        const texto = `┏═•❃༺🍥༻❃•═┓\n│        *𝐀𝐍𝐈𝐌𝐄*\n├✯\n│\n├➤ 🎬 *${limparTextoAPI(anime.title)}*\n├➤ ⭐ Nota: *${anime.score ?? 'N/A'}*\n├➤ 📺 Episódios: *${anime.episodes ?? 'N/A'}*\n├➤ 📅 Ano: *${ano}*\n├➤ 📌 Status: *${limparTextoAPI(anime.status || 'N/A')}*\n├➤ 🏷️ Gêneros: *${limparTextoAPI(generos)}*\n│\n├➤ 📝 *Sinopse:*\n│   ${limitarTextoAPI(anime.synopsis || 'Sinopse não disponível.',650)}\n│\n┗═•❃༺🍥༻❃•═┛`;
+        await reagir(message,'🍥'); await responderCitando(message,texto);
+    } catch (erro) { console.error('❌ Erro na API de anime:',erro.message); await reagir(message,'❌'); await responderCitando(message,`❌ _Não consegui encontrar o anime_ *${busca}* _agora._`); }
+}
+
+function embaralharAPI(lista) { const copia=[...lista]; for(let i=copia.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copia[i],copia[j]]=[copia[j],copia[i]];} return copia; }
+
+async function comandoQuizAPI(message) {
+    try {
+        const dados=await buscarJsonAPI('https://opentdb.com/api.php?amount=1&type=multiple&encode=url3986');
+        if(!dados?.results?.length || dados.response_code!==0) throw new Error(`Open Trivia DB response_code=${dados?.response_code}`);
+        const bruto=dados.results[0]; const pergunta=limparTextoAPI(decodeURIComponent(bruto.question)); const correta=limparTextoAPI(decodeURIComponent(bruto.correct_answer));
+        const alternativas=embaralharAPI([correta,...(bruto.incorrect_answers||[]).map(x=>limparTextoAPI(decodeURIComponent(x)))]); const letras=['a','b','c','d']; const respostaCorreta=letras[alternativas.findIndex(x=>x===correta)];
+        const opcoes=alternativas.map((x,i)=>`${letras[i].toUpperCase()}) ${x}`).join('\n'); quizzes.set(message.from,{pergunta,opcoes,resposta:respostaCorreta});
+        await reagir(message,'🧠'); await responderCitando(message,`┏═•❃༺🧠༻❃•═┓\n│      *𝐐𝐔𝐈𝐙 𝐃𝐀 𝐀𝐏𝐈*\n├✯\n│\n├➤ _${pergunta}_\n│\n${opcoes}\n│\n├➤ *📝 ${PREFIXO}quiz a/b/c/d*\n│   _Escolha uma alternativa._\n│\n┗═•❃༺🧠༻❃•═┛`);
+    } catch (erro) { console.error('❌ Erro na API do quiz:',erro.message); await reagir(message,'❌'); await responderCitando(message,'❌ _Não consegui buscar uma pergunta agora. Tente novamente em alguns segundos._'); }
+}
+
+async function comandoClima(message, argumentos) {
+    const cidade=String(argumentos||'').trim(); if(!cidade){await reagir(message,'❌');await responderCitando(message,`❌ _Informe uma cidade._\n\nExemplo: *${PREFIXO}clima São Paulo*`);return;}
+    try {
+        const geo=await buscarJsonAPI(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`); const local=geo?.results?.[0]; if(!local) throw new Error('Cidade não encontrada.');
+        const clima=await buscarJsonAPI(`https://api.open-meteo.com/v1/forecast?latitude=${local.latitude}&longitude=${local.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone=auto`);
+        const codigos={0:'☀️ Céu limpo',1:'🌤️ Principalmente limpo',2:'⛅ Parcialmente nublado',3:'☁️ Nublado',45:'🌫️ Nevoeiro',48:'🌫️ Nevoeiro com geada',51:'🌦️ Chuvisco leve',53:'🌦️ Chuvisco moderado',55:'🌧️ Chuvisco intenso',61:'🌦️ Chuva leve',63:'🌧️ Chuva moderada',65:'🌧️ Chuva forte',71:'🌨️ Neve leve',73:'🌨️ Neve moderada',75:'❄️ Neve forte',80:'🌦️ Pancadas de chuva',81:'🌧️ Pancadas moderadas',82:'⛈️ Pancadas fortes',95:'⛈️ Trovoada',96:'⛈️ Trovoada com granizo',99:'⛈️ Trovoada forte com granizo'}; const atual=clima.current||{}; const diaria=clima.daily||{}; const regiao=[local.admin1,local.country].filter(Boolean).join(', ');
+        const texto=`┏═•❃༺🌦️༻❃•═┓\n│       *𝐂𝐋𝐈𝐌𝐀*\n├✯\n│\n├➤ 📍 *${local.name||cidade}*\n├➤ 🌎 ${regiao}\n│\n├➤ ${codigos[atual.weather_code]||'🌡️ Condição desconhecida'}\n├➤ 🌡️ Temperatura: *${atual.temperature_2m??'?'}°C*\n├➤ 🤒 Sensação: *${atual.apparent_temperature??'?'}°C*\n├➤ 💧 Umidade: *${atual.relative_humidity_2m??'?'}%*\n├➤ 💨 Vento: *${atual.wind_speed_10m??'?'} km/h*\n│\n├➤ 🔺 Máxima: *${diaria.temperature_2m_max?.[0]??'?'}°C*\n├➤ 🔻 Mínima: *${diaria.temperature_2m_min?.[0]??'?'}°C*\n├➤ ☔ Chance de chuva: *${diaria.precipitation_probability_max?.[0]??'?'}%*\n│\n┗═•❃༺🌦️༻❃•═┛`; await reagir(message,'🌦️'); await responderCitando(message,texto);
+    } catch(erro){console.error('❌ Erro na API de clima:',erro.message);await reagir(message,'❌');await responderCitando(message,`❌ _Não consegui consultar o clima de_ *${cidade}* _agora._`);}
+}
+
+// ============================================================
 // QUIZ
 // ============================================================
 
-const perguntasQuiz = [
-    {
-        pergunta:
-            'Qual é o maior planeta do Sistema Solar?',
-        opcoes:
-            'A) Terra\nB) Marte\nC) Júpiter\nD) Saturno',
-        resposta: 'c'
-    },
-    {
-        pergunta:
-            'Quantos lados tem um hexágono?',
-        opcoes:
-            'A) 5\nB) 6\nC) 7\nD) 8',
-        resposta: 'b'
-    },
-    {
-        pergunta:
-            'Qual é o resultado de 7 × 8?',
-        opcoes:
-            'A) 54\nB) 56\nC) 64\nD) 48',
-        resposta: 'b'
-    },
-    {
-        pergunta:
-            'Qual é a capital do Brasil?',
-        opcoes:
-            'A) São Paulo\nB) Rio de Janeiro\nC) Brasília\nD) Salvador',
-        resposta: 'c'
-    },
-    {
-        pergunta:
-            'Qual destes é um mamífero?',
-        opcoes:
-            'A) Tubarão\nB) Golfinho\nC) Jacaré\nD) Pinguim',
-        resposta: 'b'
-    }
-];
-
 async function iniciarQuiz(message) {
-    const pergunta =
-        perguntasQuiz[
-            Math.floor(
-                Math.random() *
-                perguntasQuiz.length
-            )
-        ];
-
-    quizzes.set(
-        message.from,
-        pergunta
-    );
-
-    await reagir(message, '🧠');
-
-    await responderCitando(
-        message,
-        `┏═•❃༺✿༻❃•═┓
-│   *🧠 𝐐𝐔𝐈𝐙*
-├✯
-├➤ _${pergunta.pergunta}_
-│
-${pergunta.opcoes}
-│
-├➤ *📝 ${PREFIXO}quiz a/b/c/d*
-│   _Escolha uma alternativa._
-┗═•❃༺✿༻❃•═┛`
-    );
+    return comandoQuizAPI(message);
 }
 
 async function responderQuiz(
@@ -15865,6 +15922,25 @@ case 'sobre':
                 await iniciarQuiz(message);
             }
 
+            break;
+
+        case 'pokemon':
+        case 'poke':
+            await comandoPokemon(message, argumentos);
+            break;
+
+        case 'piada':
+        case 'joke':
+            await comandoPiadaAPI(message);
+            break;
+
+        case 'anime':
+            await comandoAnime(message, argumentos);
+            break;
+
+        case 'clima':
+        case 'tempo':
+            await comandoClima(message, argumentos);
             break;
 
         case 'ppp':
