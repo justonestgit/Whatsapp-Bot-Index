@@ -1273,6 +1273,9 @@ function obterConfiguracaoRank(grupoId) {
     if (!configuracoesRanks.has(grupoId)) {
         configuracoesRanks.set(grupoId, {
             modo: 'aleatorio',
+            exibicao: 'individual',
+            quantidadeTop: 5,
+            mostrarPorcentagem: true,
             fixos: {}
         });
     }
@@ -1302,6 +1305,9 @@ function carregarConfiguracoesRanks() {
             if (!grupoId || !grupoId.endsWith('@g.us')) continue;
             configuracoesRanks.set(grupoId, {
                 modo: configuracao?.modo === 'fixo' ? 'fixo' : 'aleatorio',
+                exibicao: configuracao?.exibicao === 'top' ? 'top' : 'individual',
+                quantidadeTop: Math.min(50, Math.max(1, Number(configuracao?.quantidadeTop) || 5)),
+                mostrarPorcentagem: configuracao?.mostrarPorcentagem !== false,
                 fixos: configuracao?.fixos && typeof configuracao.fixos === 'object'
                     ? configuracao.fixos
                     : {}
@@ -1438,29 +1444,64 @@ async function comandoRankVariado(message, tipo) {
 
         const definicao = DEFINICOES_RANK[tipo];
         if (!definicao) return;
+        const configuracao = obterConfiguracaoRank(message.from);
+
+        if (configuracao.exibicao === 'top') {
+            const ids = await obterParticipantesDoGrupoParaRank(message);
+            if (!ids.length) {
+                await reagir(message, '❌');
+                await responderCitando(message, `┏═•❃༺❌༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
+│
+├➤ _Não consegui obter os participantes do grupo agora._
+│
+┗═•❃༺❌༻❃•═┓`);
+                return;
+            }
+
+            const resultados = ids.map(id => ({ id, valor: obterValorRank(message.from, tipo, id) }));
+            resultados.sort((a, b) => b.valor - a.valor || a.id.localeCompare(b.id));
+            const top = resultados.slice(0, configuracao.quantidadeTop);
+            const idsMencao = top.map(item => item.id);
+            const medalhas = ['🥇', '🥈', '🥉'];
+            let texto = `┏═•❃༺${definicao.emoji}༻❃•═┓
+│       *${definicao.titulo}*
+├✯
+│
+├➤ 🏆 *TOP ${top.length} DO GRUPO*
+│
+`;
+            top.forEach((item, i) => {
+                const medalha = medalhas[i] || `${i + 1}º`;
+                const percentual = configuracao.mostrarPorcentagem ? ` *${item.valor}%*` : '';
+                texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}${percentual}
+│   ${definicao.comentario(item.valor)}
+│
+`;
+            });
+            texto += `┗═•❃༺${definicao.emoji}༻❃•═┓`;
+            await reagir(message, definicao.emoji);
+            await enviarComMencoes(message.from, texto, { mentions: idsMencao });
+            return;
+        }
 
         const pessoa = await obterAlvoComContato(message, false);
         const idPessoa = pessoa ? idDaPessoa(pessoa) : obterIdRemetente(message);
         if (!idPessoa) return;
-
         const valor = obterValorRank(message.from, tipo, idPessoa);
         const nome = pessoa ? mencaoDaPessoa(pessoa) : mencaoDaPessoa(idPessoa);
-
+        const percentual = configuracao.mostrarPorcentagem ? ` *${valor}%*` : '';
         await reagir(message, definicao.emoji);
-        await responderComMencoes(
-            message,
-            `┏═•❃༺${definicao.emoji}༻❃•═┓
+        await responderComMencoes(message, `┏═•❃༺${definicao.emoji}༻❃•═┓
 │       *${definicao.titulo}*
 ├✯
 │
 ├➤ 👤 ${nome}
-├➤ 📊 ${definicao.descricao}: *${valor}%*
+├➤ 📊 ${definicao.descricao}:${percentual}
 │
 ├➤ ${definicao.comentario(valor)}
 │
-┗═•❃༺${definicao.emoji}༻❃•═┓`,
-            { mentions: [idPessoa] }
-        );
+┗═•❃༺${definicao.emoji}༻❃•═┓`, { mentions: [idPessoa] });
     } catch (erro) {
         console.error(`❌ Erro no ${tipo}:`, erro);
         await reagir(message, '❌');
@@ -1471,6 +1512,19 @@ async function comandoRankVariado(message, tipo) {
 │
 ┗═•❃༺❌༻❃•═┓`);
     }
+}
+
+function obterValorRankCustomizado(grupoId, criterio, idPessoa) {
+    const configuracao = obterConfiguracaoRank(grupoId);
+    const chave = `custom:${normalizarChaveRank(criterio)}:${idPessoa}`;
+    if (configuracao.modo === 'fixo') {
+        if (!Number.isFinite(Number(configuracao.fixos[chave]))) {
+            configuracao.fixos[chave] = crypto.randomInt(0, 101);
+            salvarConfiguracoesRanks();
+        }
+        return Number(configuracao.fixos[chave]);
+    }
+    return crypto.randomInt(0, 101);
 }
 
 async function comandoRankCustomizado(message, argumentos) {
@@ -1487,47 +1541,75 @@ async function comandoRankCustomizado(message, argumentos) {
 ┗═•❃༺🎨༻❃•═┓`);
         return;
     }
-
-    const pessoa = await obterAlvoComContato(message, false);
-    const idPessoa = pessoa ? idDaPessoa(pessoa) : obterIdRemetente(message);
-    if (!idPessoa) return;
-
-    const chave = `custom:${normalizarChaveRank(textoRank)}:${idPessoa}`;
-    const configuracao = obterConfiguracaoRank(message.from);
-    let valor;
-    if (configuracao.modo === 'fixo') {
-        if (!Number.isFinite(Number(configuracao.fixos[chave]))) {
-            configuracao.fixos[chave] = crypto.randomInt(0, 101);
-            salvarConfiguracoesRanks();
-        }
-        valor = Number(configuracao.fixos[chave]);
-    } else {
-        valor = crypto.randomInt(0, 101);
+    if (!message?.from?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺🎨༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺🎨༻❃•═┓`);
+        return;
     }
 
-    const comentarios = [
-        v => v >= 90 ? 'Nível absurdo. O bot ficou impressionado. 🤯' : v >= 70 ? 'Resultado forte. 📈' : v >= 50 ? 'Resultado mediano, mas respeitável. 😎' : 'O algoritmo não quis colaborar hoje. 😭',
-        v => v >= 85 ? 'Altíssimo nível detectado. 🚀' : v >= 60 ? 'Nada mal, hein? 👀' : 'Tem espaço para evolução. 🛠️'
-    ];
-    const comentario = escolherAleatorioSeguro(comentarios)(valor);
-    const nome = pessoa ? mencaoDaPessoa(pessoa) : mencaoDaPessoa(idPessoa);
+    const configuracao = obterConfiguracaoRank(message.from);
+    if (configuracao.exibicao === 'top') {
+        const ids = await obterParticipantesDoGrupoParaRank(message);
+        if (!ids.length) {
+            await reagir(message, '❌');
+            await responderCitando(message, `┏═•❃༺❌༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
+│
+├➤ _Não consegui obter os participantes do grupo agora._
+│
+┗═•❃༺❌༻❃•═┓`);
+            return;
+        }
+        const resultados = ids.map(id => ({ id, valor: obterValorRankCustomizado(message.from, textoRank, id) }));
+        resultados.sort((a, b) => b.valor - a.valor || a.id.localeCompare(b.id));
+        const top = resultados.slice(0, configuracao.quantidadeTop);
+        const idsMencao = top.map(item => item.id);
+        const medalhas = ['🥇', '🥈', '🥉'];
+        let texto = `┏═•❃༺🎨༻❃•═┓
+│       *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
+├✯
+│
+├➤ 🎯 Critério: *${textoRank}*
+├➤ 🏆 *TOP ${top.length} DO GRUPO*
+│
+`;
+        top.forEach((item, i) => {
+            const medalha = medalhas[i] || `${i + 1}º`;
+            const percentual = configuracao.mostrarPorcentagem ? ` *${item.valor}%*` : '';
+            texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}${percentual}
+│   ${item.valor >= 90 ? 'Nível absurdo. 🤯' : item.valor >= 70 ? 'Resultado forte. 📈' : item.valor >= 50 ? 'Resultado mediano, mas respeitável. 😎' : 'Tem espaço para evolução. 🛠️'}
+│
+`;
+        });
+        texto += `┗═•❃༺🎨༻❃•═┓`;
+        await reagir(message, '🎨');
+        await enviarComMencoes(message.from, texto, { mentions: idsMencao });
+        return;
+    }
 
+    const idPessoa = obterIdRemetente(message);
+    if (!idPessoa) return;
+    const valor = obterValorRankCustomizado(message.from, textoRank, idPessoa);
+    const nome = mencaoDaPessoa(idPessoa);
+    const percentual = configuracao.mostrarPorcentagem ? ` *${valor}%*` : '';
+    const comentario = valor >= 90 ? 'Nível absurdo. O bot ficou impressionado. 🤯' : valor >= 70 ? 'Resultado forte. 📈' : valor >= 50 ? 'Resultado mediano, mas respeitável. 😎' : 'Tem espaço para evolução. 🛠️';
     await reagir(message, '🎨');
-    await responderComMencoes(
-        message,
-        `┏═•❃༺🎨༻❃•═┓
+    await responderComMencoes(message, `┏═•❃༺🎨༻❃•═┓
 │       *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
 ├✯
 │
 ├➤ 👤 ${nome}
 ├➤ 🎯 Critério: *${textoRank}*
-├➤ 📊 Resultado: *${valor}%*
+├➤ 📊 Resultado:${percentual}
 │
 ├➤ ${comentario}
 │
-┗═•❃༺🎨༻❃•═┓`,
-        { mentions: [idPessoa] }
-    );
+┗═•❃༺🎨༻❃•═┓`, { mentions: [idPessoa] });
 }
 
 async function comandoRankPobre(message) {
@@ -1542,7 +1624,16 @@ async function comandoRankPobre(message) {
 ┗═•❃༺🪙༻❃•═┓`);
             return;
         }
-
+        const configuracao = obterConfiguracaoRank(message.from);
+        if (configuracao.exibicao === 'individual') {
+            const idPessoa = obterIdRemetente(message);
+            const canonico = await resolverIdEconomia(idPessoa);
+            const carteira = canonico ? obterCarteiraEconomia(canonico) : null;
+            const saldo = Number(carteira?.saldo) || 0;
+            await reagir(message, '🪙');
+            await responderComMencoes(message, `┏═•❃༺🪙༻❃•═┓\n│       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*\n├✯\n│\n├➤ 👤 ${mencaoDaPessoa(idPessoa)}\n├➤ 🪙 Saldo: *${formatarMoedas(saldo)} moedas*\n│\n├➤ _Modo pessoal: apenas seu resultado é exibido._\n│\n┗═•❃༺🪙༻❃•═┓`, { mentions: [idPessoa] });
+            return;
+        }
         const ids = await obterParticipantesDoGrupoParaRank(message);
         const participantes = [];
         for (const id of ids) {
@@ -1550,7 +1641,6 @@ async function comandoRankPobre(message) {
             const carteira = canonico ? obterCarteiraEconomia(canonico) : null;
             participantes.push({ id, saldo: Number(carteira?.saldo) || 0 });
         }
-
         if (!participantes.length) {
             await reagir(message, '🪙');
             await responderCitando(message, `┏═•❃༺🪙༻❃•═┓
@@ -1562,18 +1652,18 @@ async function comandoRankPobre(message) {
 ┗═•❃༺🪙༻❃•═┓`);
             return;
         }
-
         participantes.sort((a, b) => a.saldo - b.saldo || a.id.localeCompare(b.id));
-        const top = participantes.slice(0, 10);
+        const top = participantes.slice(0, configuracao.quantidadeTop);
         const idsMencao = top.map(item => item.id);
         let texto = `┏═•❃༺🪙༻❃•═┓
 │       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
 ├✯
 │
+├➤ 🏆 *TOP ${top.length} DO GRUPO*
 ├➤ _Ranking baseado nas moedas do bot._
 │
 `;
-        const medalhas = ['🥇','🥈','🥉'];
+        const medalhas = ['🥇', '🥈', '🥉'];
         top.forEach((item, i) => {
             const medalha = medalhas[i] || `${i + 1}º`;
             texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}
@@ -1582,7 +1672,6 @@ async function comandoRankPobre(message) {
 `;
         });
         texto += `┗═•❃༺🪙༻❃•═┓`;
-
         await reagir(message, '🪙');
         await enviarComMencoes(message.from, texto, { mentions: idsMencao });
     } catch (erro) {
@@ -1677,6 +1766,121 @@ async function comandoRankShip(message) {
 │
 ┗═•❃༺❌༻❃•═┓`);
     }
+}
+
+async function mostrarConfiguracoesRanks(message) {
+    if (!message?.from?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
+├✯ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐄 𝐑𝐀𝐍𝐊𝐒*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺🏆༻❃•═┓`);
+        return;
+    }
+    if (!(await exigirAdmin(message))) return;
+    const c = obterConfiguracaoRank(message.from);
+    const modoExibicao = c.exibicao === 'top' ? `🏆 TOP ${c.quantidadeTop} DO GRUPO` : '👤 APENAS VOCÊ';
+    const modoSorteio = c.modo === 'fixo' ? '📌 FIXO' : '🎲 ALEATÓRIO';
+    const porcentagem = c.mostrarPorcentagem ? '✅ ATIVADA' : '❌ DESATIVADA';
+    await reagir(message, '⚙️');
+    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
+│      *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐄 𝐑𝐀𝐍𝐊𝐒*
+├✯
+│
+├➤ 🏆 Exibição: *${modoExibicao}*
+├➤ 🎲 Sorteio: *${modoSorteio}*
+├➤ 🔢 Quantidade no TOP: *${c.quantidadeTop}*
+├➤ 📊 Porcentagem: *${porcentagem}*
+│
+├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒 𝐃𝐄 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎*
+│
+├➤ ${PREFIXO}srank top
+│   _Ranks mostram os melhores do grupo._
+├➤ ${PREFIXO}srank pessoal
+│   _Rank mostra apenas você._
+├➤ ${PREFIXO}srank qtd 10
+│   _Define o tamanho do TOP (1 a 50)._ 
+├➤ ${PREFIXO}srank porcentagem on
+│   _Mostra os percentuais._
+├➤ ${PREFIXO}srank porcentagem off
+│   _Oculta os percentuais._
+├➤ ${PREFIXO}srank fixo
+│   _Mantém os resultados salvos._
+├➤ ${PREFIXO}srank aleatorio
+│   _Sorteia novamente a cada uso._
+│
+├➤ 💾 _As configurações ficam salvas por grupo._
+├➤ 👑 _Somente administradores podem alterá-las._
+│
+┗═•❃༺⚙️༻❃•═┓`);
+}
+
+async function configurarRanksPorComando(message, argumentos) {
+    if (!message?.from?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
+├✯ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐄 𝐑𝐀𝐍𝐊𝐒*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺🏆༻❃•═┓`);
+        return;
+    }
+    if (!(await exigirAdmin(message))) return;
+    const partes = String(argumentos || '').trim().split(/\s+/).filter(Boolean);
+    const acao = (partes[0] || '').toLowerCase();
+    const c = obterConfiguracaoRank(message.from);
+
+    if (acao === 'top') c.exibicao = 'top';
+    else if (acao === 'pessoal' || acao === 'individual') c.exibicao = 'individual';
+    else if (acao === 'qtd' || acao === 'quantidade' || acao === 'topqtd') {
+        const n = Number(partes[1]);
+        if (!Number.isInteger(n) || n < 1 || n > 50) {
+            await reagir(message, '❓');
+            await responderCitando(message, `┏═•❃༺🔢༻❃•═┓
+├✯ *𝐐𝐔𝐀𝐍𝐓𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐓𝐎𝐏*
+│
+├➤ _Use um número inteiro entre 1 e 50._
+├➤ *Exemplo:* ${PREFIXO}srank qtd 10
+│
+┗═•❃༺🔢༻❃•═┓`);
+            return;
+        }
+        c.quantidadeTop = n;
+    } else if (acao === 'porcentagem' || acao === 'porcentagens' || acao === 'percentual') {
+        const valor = (partes[1] || '').toLowerCase();
+        if (!['on','off','sim','nao','não','true','false'].includes(valor)) {
+            await reagir(message, '❓');
+            await responderCitando(message, `┏═•❃༺📊༻❃•═┓
+├✯ *𝐏𝐎𝐑𝐂𝐄𝐍𝐓𝐀𝐆𝐄𝐌*
+│
+├➤ _Use on/off._
+├➤ *Exemplo:* ${PREFIXO}srank porcentagem off
+│
+┗═•❃༺📊༻❃•═┓`);
+            return;
+        }
+        c.mostrarPorcentagem = ['on', 'sim', 'true'].includes(valor);
+    } else if (acao === 'fixo') c.modo = 'fixo';
+    else if (acao === 'aleatorio' || acao === 'aleatório' || acao === 'random') c.modo = 'aleatorio';
+    else {
+        await mostrarConfiguracoesRanks(message);
+        return;
+    }
+
+    salvarConfiguracoesRanks();
+    const rotulo = acao === 'top' ? `🏆 TOP ${c.quantidadeTop} DO GRUPO` : acao === 'pessoal' || acao === 'individual' ? '👤 APENAS VOCÊ' : acao.startsWith('qtd') || acao === 'quantidade' || acao === 'topqtd' ? `🔢 TOP ${c.quantidadeTop}` : acao.startsWith('porcent') || acao === 'percentual' ? `📊 PORCENTAGEM ${c.mostrarPorcentagem ? 'ATIVADA' : 'DESATIVADA'}` : c.modo === 'fixo' ? '📌 MODO FIXO' : '🎲 MODO ALEATÓRIO';
+    await reagir(message, '✅');
+    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
+│       *𝐑𝐀𝐍𝐊𝐒 𝐀𝐓𝐔𝐀𝐋𝐈𝐙𝐀𝐃𝐎𝐒*
+├✯
+│
+├➤ ✅ ${rotulo}
+├➤ 💾 _Configuração salva para este grupo._
+│
+┗═•❃༺⚙️༻❃•═┓`);
 }
 
 async function configurarModoRank(message, modo) {
@@ -5579,6 +5783,8 @@ async function listarComandos(message) {
 ├➤ 💕 *${PREFIXO}rankship @pessoa @pessoa*
 │   _Rank de compatibilidade_
 │
+├➤ ⚙️ *${PREFIXO}srank*
+│   _Admins: configurar os rankings_
 ├➤ 📌 *${PREFIXO}rfixo*
 │   _Admins: deixar resultados fixos_
 ├➤ 🎲 *${PREFIXO}raleatorio*
@@ -18988,6 +19194,9 @@ case 'recusar':
         break;
     case 'csrank':
         await comandoRankCustomizado(message, argumentos);
+        break;
+    case 'srank':
+        await configurarRanksPorComando(message, argumentos);
         break;
     case 'rfixo':
         await configurarModoRank(message, 'fixo');
