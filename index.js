@@ -25,7 +25,13 @@ const client = new Client({
     }
 });
 
-const PREFIXO = ';';
+let PREFIXO = ';';
+const arquivoConfigAdmin = './dados/config-admin.json';
+const configuracoesAdminGrupos = new Map();
+const sorteiosGrupos = new Map();
+const logsAdminGrupos = new Map();
+const participantesSorteio = new Map();
+const historicoFlood = new Map();
 const NOME_BOT = 'JUST BOT';
 const VERSAO = '3.19';
 const SHAZAM_API_KEY = process.env.SHAZAM_API_KEY || '';
@@ -165,6 +171,105 @@ if (!fs.existsSync(pastaDados)) {
         pastaDados,
         { recursive: true }
     );
+}
+
+
+function obterConfigAdmin(grupoId) {
+    if (!grupoId) return null;
+    if (!configuracoesAdminGrupos.has(grupoId)) {
+        configuracoesAdminGrupos.set(grupoId, {
+            antilink: false,
+            linksPermitidos: [],
+            antiflood: false,
+            floodLimite: 8,
+            welcome: false,
+            goodbye: false,
+            welcomeTexto: '👋 Bem-vindo, @pessoa! Divirta-se no grupo! 🎉',
+            goodbyeTexto: '👋 @pessoa saiu do grupo. Até mais!',
+            jogos: true,
+            economia: true,
+            xp: true,
+            cmds: true,
+            regras: '',
+            prefixo: ';',
+            logs: false
+        });
+    }
+    return configuracoesAdminGrupos.get(grupoId);
+}
+
+function salvarConfigAdmin() {
+    try {
+        const dados = {};
+        for (const [grupo, config] of configuracoesAdminGrupos) dados[grupo] = config;
+        fs.writeFileSync(arquivoConfigAdmin, JSON.stringify(dados, null, 2), 'utf8');
+    } catch (erro) {
+        console.error('❌ Erro ao salvar configurações administrativas:', erro.message);
+    }
+}
+
+function carregarConfigAdmin() {
+    try {
+        if (!fs.existsSync(arquivoConfigAdmin)) return;
+        const dados = JSON.parse(fs.readFileSync(arquivoConfigAdmin, 'utf8'));
+        for (const [grupo, salvo] of Object.entries(dados)) {
+            const base = obterConfigAdmin(grupo);
+            Object.assign(base, salvo);
+        }
+        console.log('💾 Configurações administrativas carregadas:', configuracoesAdminGrupos.size, 'grupos');
+    } catch (erro) {
+        console.error('⚠️ Erro ao carregar configurações administrativas:', erro.message);
+    }
+}
+
+function registrarLogAdmin(message, acao, detalhes = '') {
+    if (!message?.from?.endsWith('@g.us')) return;
+    const config = obterConfigAdmin(message.from);
+    if (!config.logs) return;
+    const autor = obterIdRemetente(message) || message.author || message.from;
+    if (!logsAdminGrupos.has(message.from)) logsAdminGrupos.set(message.from, []);
+    const logs = logsAdminGrupos.get(message.from);
+    logs.unshift({
+        data: new Date().toISOString(),
+        autor: String(autor),
+        acao,
+        detalhes: String(detalhes || '')
+    });
+    if (logs.length > 30) logs.length = 30;
+}
+
+function parseDuracao(texto) {
+    const m = String(texto || '').trim().match(/^(\d+(?:\.\d+)?)(s|m|h)?$/i);
+    if (!m) return null;
+    const valor = Number(m[1]);
+    const unidade = (m[2] || 'm').toLowerCase();
+    const multiplicador = unidade === 'h' ? 3600000 : unidade === 's' ? 1000 : 60000;
+    return Math.max(1000, Math.min(valor * multiplicador, 86400000));
+}
+
+function obterPrefixoGrupo(grupoId) {
+    return grupoId && configuracoesAdminGrupos.has(grupoId)
+        ? (configuracoesAdminGrupos.get(grupoId).prefixo || PREFIXO)
+        : PREFIXO;
+}
+
+function formatarConfiguracaoAdmin(config) {
+    return `┏═•❃༺⚙️༻❃•═┓
+│      *𝐂𝐎𝐍𝐅𝐈𝐆 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
+├✯
+│
+├➤ 🔗 Antilink: *${config.antilink ? '🟢 ON' : '🔴 OFF'}*
+├➤ 🚨 Antiflood: *${config.antiflood ? `🟢 ON (${config.floodLimite})` : '🔴 OFF'}*
+├➤ 👋 Welcome: *${config.welcome ? '🟢 ON' : '🔴 OFF'}*
+├➤ 🚪 Goodbye: *${config.goodbye ? '🟢 ON' : '🔴 OFF'}*
+├➤ 🎮 Jogos: *${config.jogos ? '🟢 ON' : '🔴 OFF'}*
+├➤ 💰 Economia: *${config.economia ? '🟢 ON' : '🔴 OFF'}*
+├➤ ⭐ XP: *${config.xp ? '🟢 ON' : '🔴 OFF'}*
+├➤ 📋 Comandos: *${config.cmds ? '🟢 ON' : '🔴 OFF'}*
+├➤ 📜 Logs: *${config.logs ? '🟢 ON' : '🔴 OFF'}*
+├➤ 🔣 Prefixo: *${config.prefixo}*
+│
+┗═•❃༺⚙️༻❃•═┓`;
 }
 
 // Carrega os dados salvos
@@ -1264,6 +1369,7 @@ async function soAdm(message) {
 }
 
 carregarDados();
+carregarConfigAdmin();
 
 // ============================================================
 // 🏆 SISTEMA DE RANKS VARIADOS
@@ -5297,6 +5403,52 @@ async function menuModeracao(message) {
 │
 ├➤ 🔓 *${PREFIXO}gp a*
 │   _Todos podem enviar mensagens_
+│
+├✯
+│
+│  ⚙️ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎*
+│
+├➤ ⚙️ *${PREFIXO}config*
+│   _Painel de configurações do grupo_
+├➤ 🔗 *${PREFIXO}antilink on/off*
+│   _Bloquear links não permitidos_
+├➤ 🚨 *${PREFIXO}antiflood on/off*
+│   _Controlar flood de mensagens_
+├➤ 👋 *${PREFIXO}welcome on/off*
+├➤ 🚪 *${PREFIXO}goodbye on/off*
+├➤ 📝 *${PREFIXO}setwelcome texto*
+├➤ 📝 *${PREFIXO}setgoodbye texto*
+├➤ 🎮 *${PREFIXO}jogos on/off*
+├➤ 💰 *${PREFIXO}economia on/off*
+├➤ ⭐ *${PREFIXO}xp on/off*
+├➤ 📋 *${PREFIXO}cmds on/off*
+├➤ 🔣 *${PREFIXO}prefixo !*
+│
+│  🏷️ *𝐆𝐑𝐔𝐏𝐎*
+│
+├➤ ✏️ *${PREFIXO}setnome Novo nome*
+├➤ 🖼️ *${PREFIXO}setfoto* _respondendo uma imagem_
+├➤ 📄 *${PREFIXO}desc*
+├➤ 📝 *${PREFIXO}setdesc Nova descrição*
+├➤ 📜 *${PREFIXO}setregras regras*
+├➤ 📖 *${PREFIXO}regras*
+├➤ 👑 *${PREFIXO}staff*
+│
+│  🎁 *𝐄𝐕𝐄𝐍𝐓𝐎𝐒*
+│
+├➤ 🎁 *${PREFIXO}sorteio 10m prêmio*
+├➤ 🛑 *${PREFIXO}cancelarsorteio*
+├➤ 🧹 *${PREFIXO}limpar 10*
+├➤ 📋 *${PREFIXO}logs on/off*
+│
+│  ⭐ *𝐌𝐀𝐍𝐔𝐓𝐄𝐍𝐂̧𝐀̃𝐎*
+│
+├➤ ⭐ *${PREFIXO}darxp @pessoa 100*
+├➤ ⭐ *${PREFIXO}removerxp @pessoa 100*
+├➤ ♻️ *${PREFIXO}resetxp @pessoa*
+├➤ 💰 *${PREFIXO}darcoins @pessoa 100*
+├➤ 💰 *${PREFIXO}removercoins @pessoa 100*
+├➤ ♻️ *${PREFIXO}reseteco @pessoa*
 │
 ├✯
 │
@@ -17064,7 +17216,6 @@ async function processarSelecaoRemoverAviso(message) {
     // Se o usuário quiser executar outro comando,
     // deixa o processamento normal continuar.
     if (message.body.trim().startsWith(PREFIXO)) {
-        return false;
     }
 
     const texto = message.body.trim();
@@ -18659,6 +18810,180 @@ async function comandoNota(message) {
 // PROCESSADOR DE COMANDOS
 // ============================================================
 
+
+async function comandoConfigAdmin(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const grupo = message.from;
+    const config = obterConfigAdmin(grupo);
+    const args = String(argumentos || '').trim();
+    if (!args) {
+        await reagir(message, '⚙️');
+        await responderCitando(message, formatarConfiguracaoAdmin(config));
+        return;
+    }
+    const partes = args.split(/\s+/);
+    const alvo = partes.shift().toLowerCase();
+    const valor = partes.join(' ').trim();
+    const bool = ['on', 'sim', 'true', '1', 'ativar'].includes(valor.toLowerCase()) ? true :
+        ['off', 'nao', 'não', 'false', '0', 'desativar'].includes(valor.toLowerCase()) ? false : null;
+    const mapa = { jogos: 'jogos', economia: 'economia', xp: 'xp', cmds: 'cmds', comandos: 'cmds', welcome: 'welcome', goodbye: 'goodbye', antilink: 'antilink', antiflood: 'antiflood', logs: 'logs' };
+    if (mapa[alvo] && bool !== null) {
+        config[mapa[alvo]] = bool;
+        salvarConfigAdmin(); registrarLogAdmin(message, `config ${alvo}`, String(bool));
+        await reagir(message, bool ? '🟢' : '🔴');
+        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n├✯ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎 𝐀𝐋𝐓𝐄𝐑𝐀𝐃𝐀*\n│\n├➤ ${alvo}: *${bool ? 'ATIVADO' : 'DESATIVADO'}*\n└➤ _Configuração salva para este grupo._\n┗═•❃༺⚙️༻❃•═┓`);
+        return;
+    }
+    await responderCitando(message, `${formatarConfiguracaoAdmin(config)}\n\n💡 _Use:_ *${obterPrefixoGrupo(grupo)}config jogos on/off*`);
+}
+
+async function comandoToggleGrupo(message, tipo, valor) {
+    if (!(await exigirAdmin(message))) return;
+    const config = obterConfigAdmin(message.from);
+    const estado = String(valor || '').toLowerCase();
+    const ativo = ['on', 'sim', 'true', '1'].includes(estado);
+    if (!['on','sim','true','1','off','nao','não','false','0'].includes(estado)) {
+        await responderCitando(message, `❓ Use *${obterPrefixoGrupo(message.from)}${tipo} on* ou *off*.`); return;
+    }
+    config[tipo] = ativo; salvarConfigAdmin(); registrarLogAdmin(message, tipo, ativo ? 'on' : 'off');
+    await reagir(message, ativo ? '🟢' : '🔴');
+    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n├✯ *𝐒𝐈𝐒𝐓𝐄𝐌𝐀 𝐀𝐋𝐓𝐄𝐑𝐀𝐃𝐎*\n│\n├➤ ${tipo.toUpperCase()}: *${ativo ? '🟢 ATIVADO' : '🔴 DESATIVADO'}*\n└➤ _A configuração foi salva neste grupo._\n┗═•❃༺⚙️༻❃•═┓`);
+}
+
+async function comandoAntiLink(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const config = obterConfigAdmin(message.from); const args = String(argumentos || '').trim();
+    const [sub, ...resto] = args.split(/\s+/); const valor = resto.join(' ').trim();
+    if (sub?.toLowerCase() === 'allow' && valor) {
+        const dominio = valor.toLowerCase().replace(/^https?:\/\//,'').split('/')[0];
+        if (!config.linksPermitidos.includes(dominio)) config.linksPermitidos.push(dominio);
+        salvarConfigAdmin(); await responderCitando(message, `✅ *${dominio}* foi adicionado aos links permitidos.`); return;
+    }
+    if (sub?.toLowerCase() === 'remove' && valor) {
+        config.linksPermitidos = config.linksPermitidos.filter(x => x !== valor.toLowerCase());
+        salvarConfigAdmin(); await responderCitando(message, `🗑️ *${valor}* removido da lista de links permitidos.`); return;
+    }
+    if (sub?.toLowerCase() === 'list') {
+        await responderCitando(message, `🔗 *𝐋𝐈𝐍𝐊𝐒 𝐏𝐄𝐑𝐌𝐈𝐓𝐈𝐃𝐎𝐒*\n\n${config.linksPermitidos.length ? config.linksPermitidos.map((x,i)=>`${i+1}. ${x}`).join('\n') : '_Nenhum domínio cadastrado._'}`); return;
+    }
+    if (['on','off','sim','não','nao'].includes(sub?.toLowerCase())) {
+        config.antilink = ['on','sim'].includes(sub.toLowerCase()); salvarConfigAdmin();
+        await responderCitando(message, `🔗 *Antilink ${config.antilink ? 'ATIVADO' : 'DESATIVADO'}.*`); return;
+    }
+    await responderCitando(message, `┏═•❃༺🔗༻❃•═┓\n├✯ *𝐀𝐍𝐓𝐈𝐋𝐈𝐍𝐊*\n│\n├➤ *${obterPrefixoGrupo(message.from)}antilink on/off*\n├➤ *${obterPrefixoGrupo(message.from)}antilink allow youtube.com*\n├➤ *${obterPrefixoGrupo(message.from)}antilink remove youtube.com*\n└➤ *${obterPrefixoGrupo(message.from)}antilink list*\n┗═•❃༺🔗༻❃•═┓`);
+}
+
+async function comandoAntiFlood(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const config = obterConfigAdmin(message.from); const args = String(argumentos || '').trim().split(/\s+/);
+    if (['on','off'].includes(args[0]?.toLowerCase())) { config.antiflood = args[0].toLowerCase() === 'on'; if (args[1]) config.floodLimite = Math.max(3, Math.min(30, Number(args[1]) || config.floodLimite)); salvarConfigAdmin(); await responderCitando(message, `🚨 *Antiflood ${config.antiflood ? 'ATIVADO' : 'DESATIVADO'}.*\n├➤ Limite: *${config.floodLimite} mensagens*`); return; }
+    if (args[0] === 'limite' && args[1]) { config.floodLimite = Math.max(3, Math.min(30, Number(args[1]) || 8)); salvarConfigAdmin(); await responderCitando(message, `🚨 Limite do antiflood: *${config.floodLimite} mensagens*.`); return; }
+    await responderCitando(message, `🚨 *${obterPrefixoGrupo(message.from)}antiflood on/off [limite]*`);
+}
+
+async function comandoWelcomeGoodbye(message, tipo, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const config = obterConfigAdmin(message.from); const args = String(argumentos || '').trim();
+    if (!args) { await responderCitando(message, `👋 ${tipo === 'welcome' ? 'Welcome' : 'Goodbye'}: *${config[tipo] ? 'ON' : 'OFF'}*\n📝 ${config[tipo === 'welcome' ? 'welcomeTexto' : 'goodbyeTexto']}`); return; }
+    if (['on','off'].includes(args.toLowerCase())) { config[tipo] = args.toLowerCase() === 'on'; salvarConfigAdmin(); await responderCitando(message, `👋 *${tipo} ${config[tipo] ? 'ATIVADO' : 'DESATIVADO'}.*`); return; }
+    const chave = tipo === 'welcome' ? 'welcomeTexto' : 'goodbyeTexto'; config[chave] = args.replace(/@pessoa/gi, '@pessoa'); salvarConfigAdmin(); await responderCitando(message, `✅ Mensagem de ${tipo} atualizada.\n\n${config[chave]}`);
+}
+
+async function comandoRegras(message, argumentos = '') {
+    const config = obterConfigAdmin(message.from);
+    if (!argumentos.trim()) { await responderCitando(message, config.regras ? `┏═•❃༺📜༻❃•═┓\n│ *𝐑𝐄𝐆𝐑𝐀𝐒*\n│\n${config.regras}\n┗═•❃༺📜༻❃•═┓` : '📜 _Nenhuma regra foi configurada ainda._'); return; }
+    if (!(await exigirAdmin(message))) return;
+    config.regras = argumentos.trim(); salvarConfigAdmin(); registrarLogAdmin(message,'setregras'); await responderCitando(message, '✅ Regras do grupo atualizadas.');
+}
+
+async function comandoSetNome(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const nome = argumentos.trim(); if (!nome) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}setnome Novo nome*.`); return; }
+    try { const resultado = await client.pupPage.evaluate(async (id, novoNome) => { try { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo não encontrado.'}; if (typeof chat.setSubject==='function') { await chat.setSubject(novoNome); return {ok:true}; } if (chat.groupMetadata?.subject?.set) { chat.groupMetadata.subject.set(novoNome); return {ok:true}; } return {ok:false,erro:'Método de nome indisponível.'}; } catch(e){return {ok:false,erro:String(e?.message||e)}} }, message.from, nome); if (!resultado?.ok) throw new Error(resultado?.erro); registrarLogAdmin(message,'setnome',nome); await responderCitando(message, `✅ *Nome do grupo alterado.*\n\n🏷️ ${nome}`); } catch(e){ await responderCitando(message, `❌ Não consegui alterar o nome.\n_${e.message}_`); }
+}
+
+async function comandoDescricao(message) {
+    if (!(await exigirAdmin(message))) return;
+    try { const resultado = await client.pupPage.evaluate(async id => { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo não encontrado.'}; return {ok:true,descricao:chat.groupMetadata?.description || chat.description || ''}; }, message.from); if (!resultado?.ok) throw new Error(resultado.erro); if (!argumentos.trim()) { await responderCitando(message, `┏═•❃༺📄༻❃•═┓\n├✯ *𝐃𝐄𝐒𝐂𝐑𝐈𝐂̧𝐀̃𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n${resultado.descricao || '_Sem descrição._'}\n┗═•❃༺📄༻❃•═┓`); return; } const desc=argumentos.trim(); const alterado=await client.pupPage.evaluate(async (id,descricao)=>{try{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);if(!chat)return {ok:false,erro:'Grupo não encontrado.'};if(typeof chat.setDescription==='function'){await chat.setDescription(descricao);return {ok:true};}return {ok:false,erro:'Método de descrição indisponível.'};}catch(e){return {ok:false,erro:String(e?.message||e)}}},message.from,desc); if(!alterado?.ok) throw new Error(alterado.erro); registrarLogAdmin(message,'desc'); await responderCitando(message,'✅ *Descrição do grupo atualizada.*'); } catch(e){ await responderCitando(message,`❌ Não consegui alterar a descrição.\n_${e.message}_`); }
+}
+
+async function comandoSetDescricao(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const desc = argumentos.trim();
+    if (!desc) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}setdesc Nova descrição*.`); return; }
+    try {
+        const resultado = await client.pupPage.evaluate(async (id, descricao) => {
+            try {
+                const Store = window.require('WAWebCollections');
+                const chat = Store?.Chat?.get(id);
+                if (!chat) return { ok: false, erro: 'Grupo não encontrado.' };
+                if (typeof chat.setDescription === 'function') { await chat.setDescription(descricao); return { ok: true }; }
+                return { ok: false, erro: 'Método de descrição indisponível.' };
+            } catch (e) { return { ok: false, erro: String(e?.message || e) }; }
+        }, message.from, desc);
+        if (!resultado?.ok) throw new Error(resultado.erro);
+        await responderCitando(message, '✅ *Descrição do grupo atualizada.*');
+    } catch (e) { await responderCitando(message, `❌ Não consegui alterar a descrição.\n_${e.message}_`); }
+}
+
+async function comandoSetFoto(message) {
+    if (!(await exigirAdmin(message))) return;
+    try { let alvo=message; if (message.hasQuotedMsg) alvo=await message.getQuotedMessage(); if (!alvo?.hasMedia) { await responderCitando(message,`🖼️ Responda a uma imagem com *${obterPrefixoGrupo(message.from)}setfoto*.`); return; } const media=await alvo.downloadMedia(); if (!media) throw new Error('Não consegui baixar a imagem.'); await client.setProfilePicture(message.from, media); registrarLogAdmin(message,'setfoto'); await responderCitando(message,'✅ *Foto do grupo atualizada.*'); } catch(e){ await responderCitando(message,`❌ Não consegui alterar a foto do grupo.\n_${e.message}_`); }
+}
+
+async function comandoStaff(message) {
+    if (!(await exigirAdmin(message))) return;
+    if (!message.from.endsWith('@g.us')) { await responderCitando(message,'❌ Esse comando só funciona em grupos.'); return; }
+    try { const dados=await client.pupPage.evaluate(id=>{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);const p=chat?.groupMetadata?.participants;if(!p)return null;const arr=typeof p.getModelsArray==='function'?p.getModelsArray():(p.models||[]);return arr.filter(x=>x.isAdmin||x.isSuperAdmin).map(x=>({id:x.id?._serialized||'',owner:!!x.isSuperAdmin}));},message.from); if(!dados) throw new Error('Não consegui obter a equipe.'); const linhas=dados.map((x,i)=>`${x.owner?'👑':'🛡️'} *${i+1}.* @${x.id.split('@')[0]}`).join('\n'); await enviarComMencoes(message.from,`┏═•❃༺👑༻❃•═┓\n│ *𝐒𝐓𝐀𝐅𝐅 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n${linhas || '_Nenhum administrador encontrado._'}\n┗═•❃༺👑༻❃•═┓`,{mentions:dados.map(x=>x.id)}); } catch(e){ await responderCitando(message,`❌ Não consegui consultar a equipe.\n_${e.message}_`); }
+}
+
+async function obterPessoaAlvoAdmin(message, argumentos = '') {
+    const mencionados = [...new Set(message?.mentionedIds || [])];
+    if (mencionados.length) return mencionados[0];
+    if (message?.hasQuotedMsg) {
+        try {
+            const citado = await message.getQuotedMessage();
+            return citado?.author || citado?.from || null;
+        } catch {}
+    }
+    const numero = String(argumentos || '').match(/\b\d{8,15}\b/)?.[0];
+    return numero ? `${numero}@c.us` : null;
+}
+
+async function comandoDarXP(message, argumentos, remover = false) {
+    if (!(await exigirAdmin(message))) return;
+    const alvo = await obterPessoaAlvoAdmin(message, argumentos);
+    const qtd = Number(String(argumentos || '').match(/\b(\d+)\b/)?.[1]);
+    if (!alvo || !Number.isFinite(qtd) || qtd <= 0) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}${remover ? 'removerxp' : 'darxp'} @pessoa 100*.`); return; }
+    const atual = garantirDadosXP(message.from, alvo);
+    atual.xp = Math.max(0, atual.xp + (remover ? -qtd : qtd));
+    atual.nivel = calcularNivel(atual.xp);
+    salvarXP();
+    await responderCitando(message, `⭐ *${remover ? 'XP REMOVIDO' : 'XP ADICIONADO'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover ? '-' : '+'}${qtd} XP`);
+}
+
+async function comandoDarCoins(message, argumentos, remover = false) {
+    if (!(await exigirAdmin(message))) return;
+    const alvo=await obterPessoaAlvoAdmin(message,argumentos); const qtd=Number(String(argumentos||'').match(/\b(\d+)\b/)?.[1]); if(!alvo||!Number.isFinite(qtd)||qtd<=0){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${remover?'removercoins':'darcoins'} @pessoa 100*.`);return;} const atual=moedasUsuarios.get(alvo)||{saldo:0}; atual.saldo=Math.max(0,atual.saldo+(remover?-qtd:qtd)); moedasUsuarios.set(alvo,atual); salvarMoedas(); await responderCitando(message,`💰 *${remover?'MOEDAS REMOVIDAS':'MOEDAS ADICIONADAS'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover?'-':''}${qtd}`); }
+
+async function comandoResetXP(message, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const alvo=await obterPessoaAlvoAdmin(message,argumentos); const grupo=dadosXP.get(message.from);
+    if(alvo){ if(grupo) grupo.delete(alvo); salvarXP(); await responderCitando(message,`♻️ XP de @${String(alvo).split('@')[0]} resetado.`); return; }
+    if(grupo) grupo.clear(); salvarXP(); await responderCitando(message,'♻️ *XP de todos os membros deste grupo foi resetado.*');
+}
+async function comandoResetEco(message, argumentos='') { if (!(await exigirAdmin(message))) return; const alvo=await obterPessoaAlvoAdmin(message,argumentos); if(alvo){moedasUsuarios.delete(alvo);salvarMoedas();await responderCitando(message,`♻️ Economia de @${String(alvo).split('@')[0]} resetada.`);return;} await responderCitando(message,'⚠️ Por segurança, o reset geral da economia deve ser feito por usuário. Use uma menção.'); }
+
+async function comandoSorteio(message, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const partes=String(argumentos||'').trim().split(/\s+/); const dur=parseDuracao(partes.shift()); if(!dur){await responderCitando(message,`🎁 Use *${obterPrefixoGrupo(message.from)}sorteio 10m prêmio*.`);return;} if(sorteiosGrupos.has(message.from)){await responderCitando(message,'⚠️ Já existe um sorteio ativo.');return;} const premio=partes.join(' ')||'Prêmio surpresa'; const dados={premio,participantes:new Set(),fim:Date.now()+dur}; sorteiosGrupos.set(message.from,dados); await responderCitando(message,`┏═•❃༺🎁༻❃•═┓\n│ *𝐒𝐎𝐑𝐓𝐄𝐈𝐎 𝐀𝐁𝐄𝐑𝐓𝐎!*\n│\n├➤ 🎁 Prêmio: *${premio}*\n├➤ ⏳ Duração: *${Math.round(dur/60000)||1} min*\n├➤ 🎟️ Participe com *${obterPrefixoGrupo(message.from)}participar*\n┗═•❃༺🎁༻❃•═┓`); dados.timer=setTimeout(async()=>{const atual=sorteiosGrupos.get(message.from);if(!atual)return;const lista=[...atual.participantes];sorteiosGrupos.delete(message.from);if(!lista.length){await client.sendMessage(message.from,'🎁 Sorteio encerrado sem participantes.');return;}const vencedor=lista[crypto.randomInt(lista.length)];await enviarComMencoes(message.from,`🏆 *SORTEIO ENCERRADO!*\n\n🎁 Prêmio: *${premio}*\n👑 Vencedor: @${String(vencedor).split('@')[0]}`,{mentions:[vencedor]});},dur); }
+async function comandoParticiparSorteio(message){const s=sorteiosGrupos.get(message.from);if(!s){await responderCitando(message,'❌ Não há sorteio ativo.');return;}const id=obterIdRemetente(message);if(id)s.participantes.add(id);await responderCitando(message,'🎟️ *Você está participando do sorteio!*');}
+async function comandoCancelarSorteio(message){if(!(await exigirAdmin(message)))return;const s=sorteiosGrupos.get(message.from);if(!s){await responderCitando(message,'❌ Não há sorteio ativo.');return;}clearTimeout(s.timer);sorteiosGrupos.delete(message.from);await responderCitando(message,'🛑 *Sorteio cancelado pelo administrador.*');}
+
+async function comandoLimpar(message, argumentos='') { if (!(await exigirAdmin(message))) return; const qtd=Math.max(1,Math.min(50,Number(argumentos)||10)); try { if(message.hasQuotedMsg){const q=await message.getQuotedMessage();await q.delete(true);await responderCitando(message,'🧹 Mensagem apagada.');return;} const chat=await message.getChat(); const msgs=await chat.fetchMessages({limit:qtd+1}); let apagadas=0; for(const m of msgs){if(m.id?._serialized===message.id?._serialized)continue;try{await m.delete(true);apagadas++;}catch{}} await responderCitando(message,`🧹 *${apagadas} mensagem(ns) apagada(s).*`);}catch(e){await responderCitando(message,`❌ Não consegui limpar as mensagens.\n_${e.message}_`);} }
+
+async function comandoLogs(message) { if(!(await exigirAdmin(message)))return; const c=obterConfigAdmin(message.from); const logs=logsAdminGrupos.get(message.from)||[]; if(!c.logs){await responderCitando(message,'📋 _Os logs estão desativados. Use ;logs on._');return;} const texto=logs.slice(0,15).map(x=>`• ${new Date(x.data).toLocaleString('pt-BR')} | ${x.acao} | @${x.autor.split('@')[0]} ${x.detalhes?'| '+x.detalhes:''}`).join('\n'); await enviarComMencoes(message.from,`┏═•❃༺📋༻❃•═┓\n│ *𝐋𝐎𝐆𝐒 𝐀𝐃𝐌𝐈𝐍*\n│\n${texto||'_Nenhuma ação registrada._'}\n┗═•❃༺📋༻❃•═┓`,{mentions:logs.slice(0,15).map(x=>x.autor)}); }
+
 async function processarComando(
     message,
     comando,
@@ -18686,6 +19011,23 @@ async function processarComando(
         }
     }
 
+    if (message?.from?.endsWith('@g.us')) {
+        const config = obterConfigAdmin(message.from);
+        const admin = await usuarioEhAdminDoGrupo(message);
+        if (!admin && config.cmds === false && !['cmds','config','prefixo'].includes(comando)) {
+            await responderCitando(message, '🔒 _Os comandos estão desativados neste grupo pelos administradores._');
+            return;
+        }
+        if (!admin && ['minerar','mina','loja','shop','comprar','buy','inventario','inv','doar','donate','sortearm','rankingdinheiro','rankingmoedas','ricos','slots','slot','saldo','carteira','roubar'].includes(comando) && !config.economia) {
+            await responderCitando(message, '💰 _O sistema de economia está desativado neste grupo._'); return;
+        }
+        if (!admin && ['dado','moeda','sn','ppt','adivinha','chute','chuterpg','quiz','pokemon','ppp','passar','batata','batataquente','hotpotato','rr','roletarussa','roleta','forca','revforca','stop'].includes(comando) && !config.jogos) {
+            await responderCitando(message, '🎮 _Os jogos estão desativados neste grupo._'); return;
+        }
+    }
+
+    if (['config','antilink','antiflood','welcome','goodbye','setwelcome','setgoodbye','jogos','economia','xp','cmds','setregras','setnome','setfoto','desc','staff','darxp','removerxp','resetxp','darcoins','removercoins','reseteco','sorteio','cancelarsorteio','limpar','logs','prefixo'].includes(comando)) registrarLogAdmin(message, comando, argumentos);
+
     switch (comando) {
 
         // ============================================================
@@ -18711,8 +19053,8 @@ case 'menudiversao':
     break;
 
 case 'jogos':
-case 'menujogos':
-    await menuJogos(message);
+    if (argumentos.trim()) await comandoToggleGrupo(message, 'jogos', argumentos);
+    else await menuJogos(message);
     break;
 
 case 'rpg':
@@ -19393,6 +19735,68 @@ case 'filhosranking':
             await mostrarRanking(message);
             break;
 
+        case 'config':
+            await comandoConfigAdmin(message, argumentos); break;
+        case 'antilink':
+            await comandoAntiLink(message, argumentos); break;
+        case 'antiflood':
+            await comandoAntiFlood(message, argumentos); break;
+        case 'welcome':
+            await comandoWelcomeGoodbye(message, 'welcome', argumentos); break;
+        case 'goodbye':
+            await comandoWelcomeGoodbye(message, 'goodbye', argumentos); break;
+        case 'setwelcome':
+            await comandoWelcomeGoodbye(message, 'welcome', argumentos); break;
+        case 'setgoodbye':
+            await comandoWelcomeGoodbye(message, 'goodbye', argumentos); break;
+        case 'economia':
+            await comandoToggleGrupo(message, 'economia', argumentos); break;
+        case 'xp':
+            await comandoToggleGrupo(message, 'xp', argumentos); break;
+        case 'cmds':
+            await comandoToggleGrupo(message, 'cmds', argumentos); break;
+        case 'setregras':
+            await comandoRegras(message, argumentos); break;
+        case 'regras':
+            await comandoRegras(message, argumentos); break;
+        case 'setnome':
+            await comandoSetNome(message, argumentos); break;
+        case 'setfoto':
+            await comandoSetFoto(message); break;
+        case 'desc':
+            await comandoDescricao(message); break;
+        case 'setdesc':
+            await comandoSetDescricao(message, argumentos); break;
+        case 'staff':
+            await comandoStaff(message); break;
+        case 'darxp':
+            await comandoDarXP(message, argumentos); break;
+        case 'removerxp':
+            await comandoDarXP(message, argumentos, true); break;
+        case 'resetxp':
+            await comandoResetXP(message, argumentos); break;
+        case 'darcoins':
+            await comandoDarCoins(message, argumentos); break;
+        case 'removercoins':
+            await comandoDarCoins(message, argumentos, true); break;
+        case 'reseteco':
+            await comandoResetEco(message, argumentos); break;
+        case 'sorteio':
+            await comandoSorteio(message, argumentos); break;
+        case 'participar':
+            await comandoParticiparSorteio(message); break;
+        case 'cancelarsorteio':
+            await comandoCancelarSorteio(message); break;
+        case 'limpar':
+            await comandoLimpar(message, argumentos); break;
+        case 'logs':
+            await comandoLogs(message); break;
+        case 'prefixo':
+            if (!(await exigirAdmin(message))) break;
+            if (!argumentos.trim()) { await responderCitando(message, `🔣 Prefixo atual: *${obterPrefixoGrupo(message.from)}*\nUse *${obterPrefixoGrupo(message.from)}prefixo !* para alterar.`); break; }
+            { const novo=argumentos.trim().split(/\s+/)[0]; if(!/^[!#$%&*+?./:_=-]{1,3}$/.test(novo)){await responderCitando(message,'❌ Prefixo inválido. Escolha 1 a 3 caracteres sem letras/números.');break;} const c=obterConfigAdmin(message.from); c.prefixo=novo; salvarConfigAdmin(); await responderCitando(message,`✅ Prefixo alterado para *${novo}*.`); }
+            break;
+
         // ============================================================
         // COMANDO DESCONHECIDO
         // ============================================================
@@ -19569,6 +19973,46 @@ if (
                 mutadoNoGrupo = true;
                 break;
             }
+        }
+    }
+}
+
+// ============================================================
+// 🛡️ PROTEÇÕES AUTOMÁTICAS DO GRUPO
+// ============================================================
+
+if (message.from.endsWith('@g.us') && idRemetente) {
+    const configProtecao = obterConfigAdmin(message.from);
+    let autorAdmin = false;
+    try { autorAdmin = await usuarioEhAdminDoGrupo(message); } catch {}
+
+    if (!autorAdmin && configProtecao.antilink && /https?:\/\/|www\./i.test(message.body || '')) {
+        const links = String(message.body || '').match(/(?:https?:\/\/|www\.)[^\s]+/gi) || [];
+        const bloqueado = links.some(link => {
+            const dominio = link.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+            return !configProtecao.linksPermitidos.some(permitido => dominio === permitido || dominio.endsWith('.' + permitido));
+        });
+        if (bloqueado) {
+            try { await message.delete(true); } catch {}
+            await enviarComMencoes(message.from, `┏═•❃༺🔗༻❃•═┓\n├✯ *𝐋𝐈𝐍𝐊 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐎*\n│\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ _Links não permitidos são bloqueados neste grupo._\n┗═•❃༺🔗༻❃•═┓`, { mentions: [idRemetente] });
+            return;
+        }
+    }
+
+    if (!autorAdmin && configProtecao.antiflood) {
+        const agora = Date.now();
+        const chaveFlood = `${message.from}_${idRemetente}`;
+        const lista = historicoFlood.get(chaveFlood) || [];
+        lista.push(agora);
+        const recentes = lista.filter(t => agora - t <= 10000);
+        historicoFlood.set(chaveFlood, recentes);
+        if (recentes.length >= configProtecao.floodLimite) {
+            historicoFlood.delete(chaveFlood);
+            const listaMute = mutados.get(message.from) || new Set();
+            listaMute.add(idRemetente); mutados.set(message.from, listaMute); salvarMutados();
+            try { await message.delete(true); } catch {}
+            await enviarComMencoes(message.from, `┏═•❃༺🚨༻❃•═┓\n├✯ *𝐀𝐍𝐓𝐈𝐅𝐋𝐎𝐎𝐃*\n│\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ 🔇 _Você foi silenciado por flood._\n┗═•❃༺🚨༻❃•═┓`, { mentions: [idRemetente] });
+            return;
         }
     }
 }
@@ -20144,17 +20588,23 @@ if (
 }
 
 // Ignorar mensagens normais
-            if (
-                !message.body.startsWith(
-                    PREFIXO
-                )
-            ) {
+            const prefixoMensagem = obterPrefixoGrupo(message.from);
+            const corpoMensagem = message.body.trim();
+            const usaPrefixo =
+                corpoMensagem.startsWith(prefixoMensagem) ||
+                corpoMensagem.startsWith(PREFIXO);
+
+            if (!usaPrefixo) {
                 return;
             }
 
             const texto =
-                message.body
-                    .slice(PREFIXO.length)
+                corpoMensagem
+                    .slice(
+                        corpoMensagem.startsWith(prefixoMensagem)
+                            ? prefixoMensagem.length
+                            : PREFIXO.length
+                    )
                     .trim();
 
             if (!texto) {
@@ -20263,6 +20713,29 @@ async function verificarAvisos() {
         }
     }
 }
+
+client.on('group_join', async notification => {
+    try {
+        const config = obterConfigAdmin(notification.chatId);
+        if (!config?.welcome) return;
+        const ids = notification.recipientIds || [];
+        for (const id of ids) {
+            const texto = config.welcomeTexto.replace(/@pessoa/gi, `@${String(id).split('@')[0]}`);
+            await enviarComMencoes(notification.chatId, texto, { mentions: [id] });
+        }
+    } catch (erro) { console.error('⚠️ Erro no welcome:', erro); }
+});
+
+client.on('group_leave', async notification => {
+    try {
+        const config = obterConfigAdmin(notification.chatId);
+        if (!config?.goodbye) return;
+        const id = notification.recipientId || notification.author;
+        if (!id) return;
+        const texto = config.goodbyeTexto.replace(/@pessoa/gi, `@${String(id).split('@')[0]}`);
+        await enviarComMencoes(notification.chatId, texto, { mentions: [id] });
+    } catch (erro) { console.error('⚠️ Erro no goodbye:', erro); }
+});
 
 client.on('ready', () => {
     console.log('🔔 Sistema de avisos iniciado!');
