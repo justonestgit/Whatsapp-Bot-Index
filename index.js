@@ -892,6 +892,44 @@ function salvarFamilias() {
 // 👥 SALVAR PARTICIPANTES DOS GRUPOS
 // ============================================================
 
+function salvarParticipantesGrupos() {
+
+    try {
+
+        const dados = {};
+
+        for (
+            const [grupo, participantes]
+            of participantesGrupos
+        ) {
+
+            dados[grupo] =
+                [...participantes];
+        }
+
+        fs.writeFileSync(
+            arquivoParticipantesGrupos,
+            JSON.stringify(
+                dados,
+                null,
+                2
+            ),
+            'utf8'
+        );
+
+        console.log(
+            '💾 Participantes dos grupos salvos!'
+        );
+
+    } catch (erro) {
+
+        console.log(
+            '❌ Erro ao salvar participantes:',
+            erro.message
+        );
+    }
+}
+
 // ============================================================
 // 🎭 SISTEMA DE PERSONALIDADES
 // ============================================================
@@ -1359,16 +1397,6 @@ function carregarMoedas() {
     } catch (erro) {
         console.error('❌ Erro ao carregar economia:', erro);
     }
-}
-
-function obterCarteira(usuarioId) {
-    if (!usuarioId) return null;
-    const carteira = moedasUsuarios.get(usuarioId);
-    if (!carteira) return null;
-    carteira.saldo = Math.max(0, Math.floor(Number(carteira.saldo) || 0));
-    carteira.mineracoes = Number(carteira.mineracoes) || 0;
-    carteira.roubosSucesso = Number(carteira.roubosSucesso) || 0;
-    return carteira;
 }
 
 function garantirCarteira(usuarioId) {
@@ -2916,11 +2944,7 @@ function idsIguais(id1, id2) {
 
     const normalizar = id =>
         typeof id === 'object'
-            ? (
-                id._serialized ||
-                id.user ||
-                null
-            )
+            ? (id._serialized || id.user || null)
             : id;
 
     const a = normalizar(id1);
@@ -2934,16 +2958,26 @@ function idsIguais(id1, id2) {
         return true;
     }
 
-    // Compara apenas a parte numérica quando os dois
-    // IDs possuem formato de usuário do WhatsApp.
-    const numeroA = String(a).split('@')[0];
-    const numeroB = String(b).split('@')[0];
+    const textoA = String(a);
+    const textoB = String(b);
+    const tipoA = textoA.includes('@') ? textoA.split('@')[1] : '';
+    const tipoB = textoB.includes('@') ? textoB.split('@')[1] : '';
 
-    return (
-        numeroA &&
-        numeroB &&
-        numeroA === numeroB
-    );
+    // Nunca consideramos um LID igual a um telefone só porque
+    // ambos têm números antes do @. LIDs e JIDs podem ter valores
+    // numéricos completamente diferentes.
+    const saoTelefones =
+        (!tipoA || tipoA === 'c.us') &&
+        (!tipoB || tipoB === 'c.us');
+
+    if (!saoTelefones) {
+        return false;
+    }
+
+    const numeroA = textoA.split('@')[0].replace(/\D/g, '');
+    const numeroB = textoB.split('@')[0].replace(/\D/g, '');
+
+    return Boolean(numeroA && numeroB && numeroA === numeroB);
 }
 
 function salvarParticipantesGrupos() {
@@ -4221,17 +4255,6 @@ async function menuBot(message) {
 }
 
 // ============================================================
-// ℹ️ SOBRE
-// ============================================================
-
-async function sobre(message) {
-    await reagir(message, 'ℹ️');
-    await responderCitando(
-        message,
-        `┏═•❃༺ℹ️༻❃•═┓\n│        *𝐒𝐎𝐁𝐑𝐄 𝐎 𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*\n├✯\n│\n├➤ 🤖 *Versão:* ${VERSAO}\n├➤ ⚙️ *Prefixo:* ${PREFIXO}\n├➤ 💬 _Bot para grupos do WhatsApp_\n├➤ 🎮 _Jogos, diversão, utilidades e sistemas sociais_\n│\n├➤ 📜 Use *${PREFIXO}changelog* para ver as novidades.\n│\n┗═•❃༺ℹ️༻❃•═┛`
-    );
-}
-
 // 📜 CHANGELOG
 // ============================================================
 
@@ -4752,7 +4775,7 @@ async function acaoRPG(
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *${emoji} 𝐑𝐏𝐆*
@@ -4839,7 +4862,7 @@ async function abracar(message) {
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *🫂 𝐀𝐁𝐑𝐀𝐂̧𝐎*
@@ -4873,7 +4896,7 @@ async function proteger(message) {
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *🛡️ 𝐏𝐑𝐎𝐓𝐄𝐆𝐄𝐑*
@@ -4912,7 +4935,7 @@ async function curar(message) {
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *💚 𝐂𝐔𝐑𝐀*
@@ -4962,7 +4985,7 @@ async function elogiar(message) {
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *⭐ 𝐄𝐋𝐎𝐆𝐈𝐎*
@@ -5012,7 +5035,7 @@ async function zoar(message) {
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *😂 𝐙𝐎𝐀𝐑*
@@ -5071,7 +5094,7 @@ async function duelo(message) {
         opcoesEnvio.mentions = [idPessoa];
     }
 
-    await client.sendMessage(
+    await enviarComMencoes(
         message.from,
         `┏═•❃༺✿༻❃•═┓
 │   *⚔️ 𝐃𝐔𝐄𝐋𝐎*
@@ -12297,83 +12320,6 @@ ou:
 }
 
 // ============================================================
-// 🔓 REMOVER DA BLACKLIST
-// ============================================================
-
-async function removerBlacklist(message, argumento = '') {
-    const permitido = await exigirAdmin(message);
-    if (!permitido) return;
-
-    let idPessoa = null;
-    let idsPessoa = new Set();
-
-    const mencoes = await message.getMentions();
-    if (mencoes?.length) {
-        idPessoa = idDaPessoa(mencoes[0]);
-        idsPessoa = await obterIdsPessoa(mencoes[0]);
-    }
-
-    if (!idPessoa && message.hasQuotedMsg) {
-        try {
-            const mensagemAlvo = await message.getQuotedMessage();
-            idPessoa = mensagemAlvo?.author || mensagemAlvo?.from || null;
-            if (idPessoa) {
-                idsPessoa = await obterIdsPessoa(idPessoa);
-            }
-        } catch (erro) {
-            console.log('⚠️ Erro ao obter mensagem respondida:', erro.message);
-        }
-    }
-
-    if (!idPessoa) {
-        const numero = String(argumento || '').replace(/\D/g, '');
-        if (numero) {
-            idPessoa = `${numero}@c.us`;
-            idsPessoa = await obterIdsPessoa(idPessoa);
-        }
-    }
-
-    if (idPessoa) idsPessoa.add(idPessoa);
-
-    if (!idsPessoa.size) {
-        await reagir(message, '❌');
-        await responderCitando(
-            message,
-            `❌ *𝐏𝐄𝐒𝐒𝐎𝐀 𝐍𝐀̃𝐎 𝐈𝐃𝐄𝐍𝐓𝐈𝐅𝐈𝐂𝐀𝐃𝐀.*\n\nUse uma menção, responda à mensagem da pessoa ou informe o número.\n\n*Exemplo:* *${PREFIXO}unmuteblacklist @pessoa*`
-        );
-        return;
-    }
-
-    const removidos = [];
-    for (const id of idsPessoa) {
-        if (blacklistMute.delete(id)) removidos.push(id);
-    }
-
-    // Também remove por número quando houver LID antigo salvo na blacklist.
-    const numerosAlvo = new Set(
-        [...idsPessoa].map(id => String(id).split('@')[0]).filter(Boolean)
-    );
-    for (const id of [...blacklistMute]) {
-        if (numerosAlvo.has(String(id).split('@')[0])) {
-            blacklistMute.delete(id);
-            removidos.push(id);
-        }
-    }
-
-    if (!removidos.length) {
-        await reagir(message, '⚠️');
-        await responderCitando(message, '⚠️ _Essa pessoa não está na blacklist de mute._');
-        return;
-    }
-
-    salvarBlacklist();
-    await reagir(message, '🔓');
-    await responderCitando(
-        message,
-        `┏═•❃༺🔓༻❃•═┓\n│   *𝐁𝐋𝐀𝐂𝐊𝐋𝐈𝐒𝐓 𝐀𝐓𝐔𝐀𝐋𝐈𝐙𝐀𝐃𝐀*\n├✯\n│\n├➤ A pessoa foi removida da\n│   lista negra de mute.\n│\n┗═•❃༺🔓༻❃•═┛`
-    );
-}
-
 // 💀 COMANDO SUICÍDIO
 // ============================================================
 
@@ -13673,16 +13619,12 @@ async function rankingDinheiro(message) {
         } catch (erro) { return []; }
     }, message.from);
 
-    const listaCompleta = (dados || [])
-        .map(id => ({ id, carteira: obterCarteira(id) }))
-        .filter(item => item.carteira)
-        .map(item => ({ id: item.id, saldo: item.carteira.saldo }))
-        .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id));
-
-    const lista = listaCompleta.slice(0,10);
+    const lista = (dados || []).map(id => ({ id, saldo: garantirCarteira(id).saldo }))
+        .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).slice(0,10);
 
     const eu = obterIdRemetente(message);
-    const posicao = listaCompleta.findIndex(x => idsIguais(x.id, eu)) + 1;
+    const posicao = (dados || []).map(id => ({id, saldo: garantirCarteira(id).saldo}))
+        .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).findIndex(x => idsIguais(x.id, eu)) + 1;
 
     let texto = `┏═•❃༺🏆༻❃•═┓
 │    *𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐌𝐎𝐄𝐃𝐀𝐒*
