@@ -254,22 +254,72 @@ function obterPrefixoGrupo(grupoId) {
 }
 
 function formatarConfiguracaoAdmin(config) {
+    const prefixo = config.prefixo || PREFIXO;
+    const estado = valor => valor ? '🟢 ON' : '🔴 OFF';
+
     return `┏═•❃༺⚙️༻❃•═┓
-│      *𝐂𝐎𝐍𝐅𝐈𝐆 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
-├✯
+│   *𝐏𝐀𝐈𝐍𝐄𝐋 𝐃𝐄 𝐀𝐃𝐌𝐈𝐍*
 │
-├➤ 🔗 Antilink: *${config.antilink ? '🟢 ON' : '🔴 OFF'}*
+│ 🛡️ *MODERAÇÃO*
+├➤ ${prefixo}antilink on/off
+├➤ ${prefixo}antilink allow <domínio>
+├➤ ${prefixo}antilink remove <domínio>
+├➤ ${prefixo}antilink list
+├➤ ${prefixo}antiflood on/off
+├➤ ${prefixo}antiflood limite <n>
+├➤ ${prefixo}limpar <quantidade>
+│
+│ 👋 *ENTRADA E SAÍDA*
+├➤ ${prefixo}welcome on/off
+├➤ ${prefixo}setwelcome <texto>
+├➤ ${prefixo}goodbye on/off
+├➤ ${prefixo}setgoodbye <texto>
+│
+│ 🎮 *SISTEMAS DO GRUPO*
+├➤ ${prefixo}jogos on/off
+├➤ ${prefixo}economia on/off
+├➤ ${prefixo}xp on/off
+├➤ ${prefixo}cmds on/off
+│
+│ 📜 *GRUPO*
+├➤ ${prefixo}setregras <texto>
+├➤ ${prefixo}regras
+├➤ ${prefixo}setnome <nome>
+├➤ ${prefixo}setfoto 📷
+├➤ ${prefixo}desc
+├➤ ${prefixo}setdesc <descrição>
+│
+│ 👑 *EQUIPE*
+├➤ ${prefixo}staff
+├➤ ${prefixo}darxp @pessoa <quantia>
+├➤ ${prefixo}removerxp @pessoa <quantia>
+├➤ ${prefixo}resetxp @pessoa
+├➤ ${prefixo}darcoins @pessoa <quantia>
+├➤ ${prefixo}removercoins @pessoa <quantia>
+├➤ ${prefixo}reseteco @pessoa
+│
+│ 🎁 *SORTEIOS*
+├➤ ${prefixo}sorteio <tempo> <prêmio>
+├➤ ${prefixo}participar
+├➤ ${prefixo}cancelarsorteio
+│
+│ ⚙️ *SISTEMA*
+├➤ ${prefixo}logs on/off
+└➤ ${prefixo}prefixo <símbolo>
+
+│ 📊 *STATUS ATUAL*
+├➤ 🔗 Antilink: *${estado(config.antilink)}*
 ├➤ 🚨 Antiflood: *${config.antiflood ? `🟢 ON (${config.floodLimite})` : '🔴 OFF'}*
-├➤ 👋 Welcome: *${config.welcome ? '🟢 ON' : '🔴 OFF'}*
-├➤ 🚪 Goodbye: *${config.goodbye ? '🟢 ON' : '🔴 OFF'}*
-├➤ 🎮 Jogos: *${config.jogos ? '🟢 ON' : '🔴 OFF'}*
-├➤ 💰 Economia: *${config.economia ? '🟢 ON' : '🔴 OFF'}*
-├➤ ⭐ XP: *${config.xp ? '🟢 ON' : '🔴 OFF'}*
-├➤ 📋 Comandos: *${config.cmds ? '🟢 ON' : '🔴 OFF'}*
-├➤ 📜 Logs: *${config.logs ? '🟢 ON' : '🔴 OFF'}*
-├➤ 🔣 Prefixo: *${config.prefixo}*
-│
-┗═•❃༺⚙️༻❃•═┓`;
+├➤ 👋 Welcome: *${estado(config.welcome)}*
+├➤ 🚪 Goodbye: *${estado(config.goodbye)}*
+├➤ 🎮 Jogos: *${estado(config.jogos)}*
+├➤ 💰 Economia: *${estado(config.economia)}*
+├➤ ⭐ XP: *${estado(config.xp)}*
+├➤ 📋 Comandos: *${estado(config.cmds)}*
+├➤ 📝 Logs: *${estado(config.logs)}*
+└➤ 🔣 Prefixo: *${prefixo}*
+
+💡 *Dica:* use *${prefixo}config <comando>* para ver a ajuda de uma opção.`;
 }
 
 // Carrega os dados salvos
@@ -18824,6 +18874,28 @@ async function comandoConfigAdmin(message, argumentos = '') {
     const partes = args.split(/\s+/);
     const alvo = partes.shift().toLowerCase();
     const valor = partes.join(' ').trim();
+
+    const ajudaConfig = {
+        antilink: `🔗 *𝐀𝐍𝐓𝐈𝐋𝐈𝐍𝐊*\n\n├➤ ${obterPrefixoGrupo(grupo)}antilink on/off\n├➤ ${obterPrefixoGrupo(grupo)}antilink allow youtube.com\n├➤ ${obterPrefixoGrupo(grupo)}antilink remove youtube.com\n└➤ ${obterPrefixoGrupo(grupo)}antilink list`,
+        antiflood: `🚨 *𝐀𝐍𝐓𝐈𝐅𝐋𝐎𝐎𝐃*\n\n├➤ ${obterPrefixoGrupo(grupo)}antiflood on/off\n└➤ ${obterPrefixoGrupo(grupo)}antiflood limite 10`,
+        welcome: `👋 *𝐖𝐄𝐋𝐂𝐎𝐌𝐄*\n\n├➤ ${obterPrefixoGrupo(grupo)}welcome on/off\n└➤ ${obterPrefixoGrupo(grupo)}setwelcome <texto>`,
+        goodbye: `🚪 *𝐆𝐎𝐎𝐃𝐁𝐘𝐄*\n\n├➤ ${obterPrefixoGrupo(grupo)}goodbye on/off\n└➤ ${obterPrefixoGrupo(grupo)}setgoodbye <texto>`,
+        jogos: `🎮 *𝐉𝐎𝐆𝐎𝐒*\n\n├➤ ${obterPrefixoGrupo(grupo)}jogos on\n└➤ ${obterPrefixoGrupo(grupo)}jogos off`,
+        economia: `💰 *𝐄𝐂𝐎𝐍𝐎𝐌𝐈𝐀*\n\n├➤ ${obterPrefixoGrupo(grupo)}economia on\n└➤ ${obterPrefixoGrupo(grupo)}economia off`,
+        xp: `⭐ *𝐗𝐏*\n\n├➤ ${obterPrefixoGrupo(grupo)}xp on\n└➤ ${obterPrefixoGrupo(grupo)}xp off`,
+        cmds: `📋 *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*\n\n├➤ ${obterPrefixoGrupo(grupo)}cmds on\n└➤ ${obterPrefixoGrupo(grupo)}cmds off`,
+        regras: `📜 *𝐑𝐄𝐆𝐑𝐀𝐒*\n\n├➤ ${obterPrefixoGrupo(grupo)}regras\n└➤ ${obterPrefixoGrupo(grupo)}setregras <texto>`,
+        grupo: `🏠 *𝐆𝐑𝐔𝐏𝐎*\n\n├➤ ${obterPrefixoGrupo(grupo)}setnome <nome>\n├➤ ${obterPrefixoGrupo(grupo)}setfoto + imagem\n├➤ ${obterPrefixoGrupo(grupo)}desc\n└➤ ${obterPrefixoGrupo(grupo)}setdesc <descrição>`,
+        equipe: `👑 *𝐄𝐐𝐔𝐈𝐏𝐄*\n\n├➤ ${obterPrefixoGrupo(grupo)}staff\n├➤ ${obterPrefixoGrupo(grupo)}darxp @pessoa <quantia>\n├➤ ${obterPrefixoGrupo(grupo)}removerxp @pessoa <quantia>\n├➤ ${obterPrefixoGrupo(grupo)}resetxp @pessoa\n├➤ ${obterPrefixoGrupo(grupo)}darcoins @pessoa <quantia>\n├➤ ${obterPrefixoGrupo(grupo)}removercoins @pessoa <quantia>\n└➤ ${obterPrefixoGrupo(grupo)}reseteco @pessoa`,
+        sorteio: `🎁 *𝐒𝐎𝐑𝐓𝐄𝐈𝐎*\n\n├➤ ${obterPrefixoGrupo(grupo)}sorteio <tempo> <prêmio>\n├➤ ${obterPrefixoGrupo(grupo)}participar\n└➤ ${obterPrefixoGrupo(grupo)}cancelarsorteio`,
+        sistema: `⚙️ *𝐒𝐈𝐒𝐓𝐄𝐌𝐀*\n\n├➤ ${obterPrefixoGrupo(grupo)}logs on/off\n└➤ ${obterPrefixoGrupo(grupo)}prefixo <símbolo>`
+    };
+
+    if (ajudaConfig[alvo] && !valor) {
+        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n├✯ *𝐀𝐉𝐔𝐃𝐀 𝐃𝐄 𝐀𝐃𝐌𝐈𝐍*\n│\n${ajudaConfig[alvo]}\n┗═•❃༺⚙️༻❃•═┓`);
+        return;
+    }
+
     const bool = ['on', 'sim', 'true', '1', 'ativar'].includes(valor.toLowerCase()) ? true :
         ['off', 'nao', 'não', 'false', '0', 'desativar'].includes(valor.toLowerCase()) ? false : null;
     const mapa = { jogos: 'jogos', economia: 'economia', xp: 'xp', cmds: 'cmds', comandos: 'cmds', welcome: 'welcome', goodbye: 'goodbye', antilink: 'antilink', antiflood: 'antiflood', logs: 'logs' };
