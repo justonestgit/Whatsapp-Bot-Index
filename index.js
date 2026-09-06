@@ -1579,10 +1579,27 @@ async function resolverIdEconomia(usuarioIdOuContato) {
     return registrarIdentidadeEconomia([...ids], original);
 }
 
+function obterCarteiraEconomia(usuarioId) {
+    if (!usuarioId) return null;
+
+    const original = normalizarIdEconomia(usuarioId);
+    const id = economiaIdentidades.get(original) || original;
+    if (!id) return null;
+
+    const carteira = moedasUsuarios.get(id);
+    if (!carteira) return null;
+
+    carteira.saldo = Math.max(0, Math.floor(Number(carteira.saldo) || 0));
+    carteira.mineracoes = Number(carteira.mineracoes) || 0;
+    carteira.roubosSucesso = Number(carteira.roubosSucesso) || 0;
+    return carteira;
+}
+
 function garantirCarteira(usuarioId) {
     if (!usuarioId) return null;
 
-    const id = economiaIdentidades.get(normalizarIdEconomia(usuarioId)) || normalizarIdEconomia(usuarioId);
+    const original = normalizarIdEconomia(usuarioId);
+    const id = economiaIdentidades.get(original) || original;
     if (!id) return null;
 
     if (!moedasUsuarios.has(id)) {
@@ -1592,6 +1609,7 @@ function garantirCarteira(usuarioId) {
             mineracoes: 0,
             roubosSucesso: 0
         });
+        registrarTransacao('carteira_inicial', null, id, MOEDAS_INICIAIS, 'Saldo inicial da economia');
     }
 
     const carteira = moedasUsuarios.get(id);
@@ -13650,9 +13668,15 @@ async function doarMoedas(message, argumentos) {
     if (!pessoa) return;
     const destinatario = await resolverIdEconomia(pessoa);
     const partes = String(argumentos || '').trim().split(/\s+/);
-    const valor = parseInt(partes[0], 10);
+    const valorTexto = partes[0] || '';
+    if (!/^\d+$/.test(valorTexto)) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe um valor inteiro válido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
+        return;
+    }
+    const valor = Number(valorTexto);
 
-    if (!Number.isInteger(valor) || valor <= 0) {
+    if (!Number.isSafeInteger(valor) || valor <= 0) {
         await reagir(message, '❌');
         await responderCitando(message, `❌ _Informe um valor válido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
         return;
@@ -13695,8 +13719,14 @@ async function doarMoedas(message, argumentos) {
 
 async function sortearMoedas(message, argumentos) {
     if (!(await exigirAdmin(message))) return;
-    const valor = parseInt(String(argumentos || '').trim(), 10);
-    if (!Number.isInteger(valor) || valor <= 0) {
+    const valorTexto = String(argumentos || '').trim();
+    if (!/^\d+$/.test(valorTexto)) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Informe um valor inteiro válido._\n\nExemplo: *${PREFIXO}sortearm 500*`);
+        return;
+    }
+    const valor = Number(valorTexto);
+    if (!Number.isSafeInteger(valor) || valor <= 0) {
         await reagir(message, '❌');
         await responderCitando(message, `❌ _Informe o valor do sorteio._\n\nExemplo: *${PREFIXO}sortearm 500*`);
         return;
@@ -13779,11 +13809,17 @@ async function rankingDinheiro(message) {
         if (resolvido) idsEconomia.push(resolvido);
     }
 
-    const lista = [...new Set(idsEconomia)].map(id => ({ id, saldo: garantirCarteira(id).saldo }))
+    const lista = [...new Set(idsEconomia)]
+        .map(id => ({ id, carteira: obterCarteiraEconomia(id) }))
+        .filter(item => item.carteira)
+        .map(item => ({ id: item.id, saldo: item.carteira.saldo }))
         .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).slice(0,10);
 
     const eu = await resolverIdEconomia(obterIdRemetente(message));
-    const posicao = [...new Set(idsEconomia)].map(id => ({id, saldo: garantirCarteira(id).saldo}))
+    const posicao = [...new Set(idsEconomia)]
+        .map(id => ({ id, carteira: obterCarteiraEconomia(id) }))
+        .filter(item => item.carteira)
+        .map(item => ({ id: item.id, saldo: item.carteira.saldo }))
         .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).findIndex(x => idsIguais(x.id, eu)) + 1;
 
     let texto = `┏═•❃༺🏆༻❃•═┓
