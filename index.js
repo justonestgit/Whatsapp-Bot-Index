@@ -2989,6 +2989,22 @@ function obterIdMensagem(message) {
 // RESPOSTA CITADA
 // ============================================================
 
+function aplicarEstiloMensagem(conteudo) {
+    if (conteudo === null || conteudo === undefined) {
+        return conteudo;
+    }
+
+    const texto = String(conteudo);
+
+    // Mensagens que já usam o layout do bot permanecem exatamente como estão.
+    if (texto.includes('┏═•❃') || texto.includes('┗═•❃')) {
+        return texto;
+    }
+
+    const linhas = texto.split('\n');
+    return `┏═•❃༺💬༻❃•═┓\n│\n${linhas.map(linha => `├➤ ${linha}`).join('\n')}\n│\n┗═•❃༺💬༻❃•═┛`;
+}
+
 async function responderCitando(message, conteudo, opcoes = {}) {
     try {
         const idMensagem = obterIdMensagem(message);
@@ -3001,11 +3017,12 @@ async function responderCitando(message, conteudo, opcoes = {}) {
             configuracao.quotedMessageId = idMensagem;
         }
 
-        const conteudoFinal =
+        const conteudoFinal = aplicarEstiloMensagem(
             aplicarPersonalidade(
                 conteudo,
                 message.from
-            );
+            )
+        );
 
         return await enviarComMencoes(
             message.from,
@@ -3223,7 +3240,7 @@ async function responderComMencoes(message, conteudo, chatIdOuOpcoes, opcoes = {
 
     return await enviarComMencoes(
         chatId || message.from,
-        conteudo,
+        aplicarEstiloMensagem(conteudo),
         {
             ...configuracao,
             quotedMessageId: obterIdMensagem(message)
@@ -11251,7 +11268,7 @@ async function divorcioPessoa(message) {
     // Não está casado
     if (!casamento) {
         await message.react('❌');
-        await message.reply('💔 Você não está casado com ninguém.');
+        await message.reply(aplicarEstiloMensagem('💔 Você não está casado com ninguém.'));
         return;
     }
 
@@ -11263,10 +11280,10 @@ async function divorcioPessoa(message) {
     // Já existe uma confirmação pendente
     if (confirmacoesDivorcio.has(chaveCasamento)) {
         await message.react('⚠️');
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '💔 Você já tem um divórcio aguardando confirmação.\n\n' +
             'Use `;aceitar` para confirmar ou `;recusar` para cancelar.'
-        );
+        ));
         return;
     }
 
@@ -11504,10 +11521,10 @@ async function adotarPessoa(message) {
 
         await message.react('❌');
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             `👶 Para adotar alguém, mencione a pessoa ou responda a uma mensagem dela.\n\n` +
             `Exemplo: *${PREFIXO}adotar @pessoa*`
-        );
+        ));
 
         return;
     }
@@ -11525,9 +11542,9 @@ async function adotarPessoa(message) {
 
         await message.react('❌');
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Você não pode adotar a si mesmo!'
-        );
+        ));
 
         return;
     }
@@ -11572,9 +11589,9 @@ if (
 
     await message.react('❌');
 
-    await message.reply(
+    await message.reply(aplicarEstiloMensagem(
         '❌ Você não pode adotar seu par! (felizmente)'
-    );
+    ));
 
     return;
 }
@@ -11600,9 +11617,9 @@ if (
 
         await message.react('⚠️');
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '⚠️ Essa pessoa já está registrada como seu filho!'
-        );
+        ));
 
         return;
     }
@@ -11622,9 +11639,9 @@ if (
 
             await message.react('⚠️');
 
-            await message.reply(
+            await message.reply(aplicarEstiloMensagem(
                 '⚠️ Essa pessoa já recebeu uma proposta de adoção!'
-            );
+            ));
 
             return;
         }
@@ -12623,9 +12640,9 @@ async function formarCasalAleatorio(message) {
 
         await message.react('❌');
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Esse comando só pode ser usado em grupos!'
-        );
+        ));
 
         return;
     }
@@ -12644,10 +12661,10 @@ async function formarCasalAleatorio(message) {
         participantes.size < 2
     ) {
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Ainda não conheço pessoas suficientes desse grupo para formar um casal!\n\n' +
             '💡 Peça para pelo menos 2 pessoas enviarem uma mensagem primeiro.'
-        );
+        ));
 
         return;
     }
@@ -12748,9 +12765,9 @@ async function shiparPessoas(message) {
 
         await message.react('❌');
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Esse comando só pode ser usado em grupos!'
-        );
+        ));
 
         return;
     }
@@ -12784,13 +12801,13 @@ async function shiparPessoas(message) {
         pessoas.length !== 2
     ) {
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Você precisa mencionar exatamente 2 pessoas!\n\n' +
             '💡 Exemplo:\n' +
             '`;shipar`\n' +
             '@Pessoa1\n' +
             '@Pessoa2'
-        );
+        ));
 
         return;
     }
@@ -12804,9 +12821,9 @@ async function shiparPessoas(message) {
         pessoas[0] === pessoas[1]
     ) {
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Você não pode shipar a mesma pessoa com ela mesma! 😂'
-        );
+        ));
 
         return;
     }
@@ -13505,9 +13522,9 @@ async function suicidio(message) {
 
         await message.react('❌');
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Esse comando só pode ser usado em grupos!'
-        );
+        ));
 
         return;
     }
@@ -13517,9 +13534,9 @@ async function suicidio(message) {
 
     if (!idUsuario) {
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Não consegui identificar você!'
-        );
+        ));
 
         return;
     }
@@ -13659,9 +13676,9 @@ async function suicidio(message) {
                 resultado?.erro
             );
 
-            await message.reply(
+            await message.reply(aplicarEstiloMensagem(
                 '❌ Não consegui localizar você neste grupo.'
-            );
+            ));
 
             return;
         }
@@ -13815,10 +13832,10 @@ console.log(
                 remocao?.erro
             );
 
-            await message.reply(
+            await message.reply(aplicarEstiloMensagem(
                 '❌ Não consegui te remover do grupo.\n\n' +
                 '👑 Verifique se o JUST BOT continua sendo administrador.'
-            );
+            ));
 
             return;
         }
@@ -13827,9 +13844,9 @@ console.log(
         // SUCESSO
         // ========================================================
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '💀 Mais um para lista!'
-        );
+        ));
 
     } catch (erro) {
 
@@ -13838,9 +13855,9 @@ console.log(
             erro
         );
 
-        await message.reply(
+        await message.reply(aplicarEstiloMensagem(
             '❌ Ocorreu um erro ao executar o comando.'
-        );
+        ));
     }
 }
 
@@ -14438,7 +14455,7 @@ async function mandarCantada(message) {
         return;
     }
 
-    await message.reply(cantada);
+    await message.reply(aplicarEstiloMensagem(cantada));
 }
 
 
@@ -15285,7 +15302,7 @@ async function jogarRoletaRussa(message) {
     try {
         if (!message.from.endsWith('@g.us')) {
             await reagir(message, '❌');
-            await message.reply('❌ A roleta russa só pode ser usada em grupos!');
+            await message.reply(aplicarEstiloMensagem('❌ A roleta russa só pode ser usada em grupos!'));
             return;
         }
 
@@ -15295,20 +15312,20 @@ async function jogarRoletaRussa(message) {
 
         if (jogosEliminacao.has(message.from)) {
             await reagir(message, '❌');
-            await message.reply('❌ Já existe um jogo de eliminação em andamento neste grupo.');
+            await message.reply(aplicarEstiloMensagem('❌ Já existe um jogo de eliminação em andamento neste grupo.'));
             return;
         }
 
         const jogadores = await obterJogadoresParaEliminacao(message);
         if (jogadores.erro) {
             await reagir(message, '❌');
-            await message.reply(`❌ ${jogadores.erro}`);
+            await message.reply(aplicarEstiloMensagem(`❌ ${jogadores.erro}`));
             return;
         }
 
         if (jogadores.jogadores.length < 2) {
             await reagir(message, '❌');
-            await message.reply('❌ Preciso de pelo menos *2 participantes que não sejam administradores* para girar a roleta russa!');
+            await message.reply(aplicarEstiloMensagem('❌ Preciso de pelo menos *2 participantes que não sejam administradores* para girar a roleta russa!'));
             return;
         }
 
@@ -15342,7 +15359,7 @@ async function jogarRoletaRussa(message) {
     } catch (erro) {
         jogosEliminacao.delete(message.from);
         console.error('❌ ERRO NA ROLETA RUSSA:', erro);
-        await message.reply('❌ Ocorreu um erro ao girar a roleta russa.');
+        await message.reply(aplicarEstiloMensagem('❌ Ocorreu um erro ao girar a roleta russa.'));
     }
 }
 
@@ -19010,9 +19027,9 @@ if (oiAutoAtivo.get(message.from) === true) {
                 contemOla
             ) {
 
-                await message.reply(
+                await message.reply(aplicarEstiloMensagem(
                     'Ola Incrivel Bea!'
-                );
+                ));
 
                 // Para aqui somente porque
                 // o OI AUTO já respondeu
