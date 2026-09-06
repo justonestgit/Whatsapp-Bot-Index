@@ -52,6 +52,8 @@ const confirmacoesRemoverAviso = new Map();
 const dadosXP = new Map();
 const moedasUsuarios = new Map();
 const jogosEliminacao = new Map();
+const jogosForca = new Map();
+const jogosStop = new Map();
 const personalidadesGrupos = new Map();
 const historicoEconomia = [];
 const inventariosEconomia = new Map();
@@ -4558,6 +4560,12 @@ async function menuModeracao(message) {
 │
 ├➤ 🔒 *${PREFIXO}soadm*
 │   _Alternar modo somente administradores_
+│
+├➤ 🔒 *${PREFIXO}gp f*
+│   _Somente admins podem enviar mensagens_
+│
+├➤ 🔓 *${PREFIXO}gp a*
+│   _Todos podem enviar mensagens_
 │
 ├✯
 │
@@ -15264,6 +15272,348 @@ async function jogarRoletaRussa(message) {
     }
 }
 
+
+// ============================================================
+// 🪢 FORCA
+// ============================================================
+
+const PALAVRAS_FORCA = [
+    'abacaxi', 'avião', 'banana', 'bicicleta', 'borboleta',
+    'cachorro', 'cavalo', 'computador', 'chocolate', 'dinossauro',
+    'elefante', 'escola', 'espelho', 'foguete', 'floresta',
+    'girafa', 'hamburguer', 'jacaré', 'janela', 'lápis',
+    'macaco', 'montanha', 'navio', 'oceano', 'pipoca',
+    'pirata', 'planeta', 'queijo', 'sorvete', 'telefone',
+    'tigre', 'universo', 'vampiro', 'violão', 'zebra',
+    'castelo', 'dragão', 'tesouro', 'robô', 'futebol',
+    'morcego', 'astronauta', 'chave', 'geladeira', 'televisão',
+    'travesseiro', 'dinheiro', 'amizade', 'aventura', 'tempestade'
+];
+
+const LETRAS_STOP = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'U', 'V'];
+const CATEGORIAS_STOP = ['Nome', 'Animal', 'Comida', 'Lugar', 'Objeto'];
+const TEMPO_STOP = 60 * 1000;
+const MAX_ERROS_FORCA = 6;
+
+function normalizarJogoTexto(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+function formatarPalavraForca(jogo) {
+    return Array.from(jogo.palavra)
+        .map(letra => {
+            const chave = normalizarJogoTexto(letra);
+            return jogo.descobertas.has(chave) ? letra.toUpperCase() : '＿';
+        })
+        .join(' ');
+}
+
+function limparJogoForca(chatId) {
+    jogosForca.delete(chatId);
+}
+
+async function iniciarForca(message) {
+    const chatId = message?.from;
+    if (!chatId?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ A forca só pode ser jogada em grupos.');
+        return;
+    }
+
+    if (jogosForca.has(chatId)) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ Já existe uma forca em andamento neste grupo. Use *;revforca* para revelar a palavra.');
+        return;
+    }
+
+    const palavra = escolherAleatorioSeguro(PALAVRAS_FORCA);
+    const jogo = {
+        palavra,
+        descobertas: new Set(),
+        erros: new Set(),
+        criadoEm: Date.now()
+    };
+    jogosForca.set(chatId, jogo);
+
+    await reagir(message, '🪢');
+    await responderCitando(
+        message,
+        `┏═•❃༺🪢༻❃•═┓\n│\n│      *𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ 🔤 Palavra: *${formatarPalavraForca(jogo)}*\n├➤ ❤️ Erros restantes: *${MAX_ERROS_FORCA}*\n│\n├➤ 💡 Use *${PREFIXO}forca letra* para chutar uma letra.\n├➤ 🎯 Você também pode tentar a palavra inteira.\n│\n└➤ _Boa sorte!_ 👀\n┗═•❃༺🪢༻❃•═┛`
+    );
+}
+
+async function jogarForca(message, argumentos = '') {
+    const chatId = message?.from;
+    if (!chatId?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ A forca só pode ser jogada em grupos.');
+        return;
+    }
+
+    const entrada = String(argumentos || '').trim();
+    if (!entrada) {
+        await iniciarForca(message);
+        return;
+    }
+
+    const jogo = jogosForca.get(chatId);
+    if (!jogo) {
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ Não existe uma forca em andamento. Use *${PREFIXO}forca* para começar.`);
+        return;
+    }
+
+    const tentativa = normalizarJogoTexto(entrada);
+    if (!tentativa) return;
+
+    if (tentativa.length > 1) {
+        if (tentativa === normalizarJogoTexto(jogo.palavra)) {
+            limparJogoForca(chatId);
+            await reagir(message, '🎉');
+            await responderCitando(message, `🎉 *${obterNomeRemetente(message)}* acertou a palavra!\n\n🪢 A palavra era: *${jogo.palavra.toUpperCase()}*`);
+            return;
+        }
+
+        jogo.erros.add(tentativa);
+    } else {
+        if (!/^[a-z]$/i.test(tentativa)) {
+            await responderCitando(message, '❌ Envie apenas uma letra ou tente a palavra inteira.');
+            return;
+        }
+
+        if (jogo.descobertas.has(tentativa) || jogo.erros.has(tentativa)) {
+            await responderCitando(message, `⚠️ A letra *${tentativa.toUpperCase()}* já foi tentada.`);
+            return;
+        }
+
+        const existe = Array.from(normalizarJogoTexto(jogo.palavra)).includes(tentativa);
+        if (existe) jogo.descobertas.add(tentativa);
+        else jogo.erros.add(tentativa);
+    }
+
+    const palavraNormalizada = normalizarJogoTexto(jogo.palavra);
+    const venceu = Array.from(new Set(Array.from(palavraNormalizada).filter(letra => /[a-z]/.test(letra))))
+        .every(letra => jogo.descobertas.has(letra));
+
+    if (venceu) {
+        limparJogoForca(chatId);
+        await reagir(message, '🎉');
+        await responderCitando(message, `🎉 *${obterNomeRemetente(message)}* completou a forca!\n\n🪢 Palavra: *${jogo.palavra.toUpperCase()}*`);
+        return;
+    }
+
+    if (jogo.erros.size >= MAX_ERROS_FORCA) {
+        limparJogoForca(chatId);
+        await reagir(message, '💀');
+        await responderCitando(message, `💀 *Fim de jogo!*\n\n🪢 A palavra era: *${jogo.palavra.toUpperCase()}*\n❌ Erros: *${[...jogo.erros].join(', ').toUpperCase()}*`);
+        return;
+    }
+
+    await reagir(message, tentativa.length === 1 && jogo.descobertas.has(tentativa) ? '✅' : '❌');
+    await responderCitando(
+        message,
+        `🪢 *FORCA*\n\n🔤 ${formatarPalavraForca(jogo)}\n❤️ Erros restantes: *${MAX_ERROS_FORCA - jogo.erros.size}*\n❌ Letras erradas: *${jogo.erros.size ? [...jogo.erros].join(', ').toUpperCase() : 'nenhuma'}*`
+    );
+}
+
+async function revelarForca(message) {
+    if (!(await exigirAdmin(message))) return;
+
+    const jogo = jogosForca.get(message.from);
+    if (!jogo) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ Não existe uma forca em andamento neste grupo.');
+        return;
+    }
+
+    limparJogoForca(message.from);
+    await reagir(message, '👑');
+    await responderCitando(message, `👑 *FORCA REVELADA POR UM ADMINISTRADOR!*\n\n🪢 A palavra era: *${jogo.palavra.toUpperCase()}*`);
+}
+
+// ============================================================
+// 🛑 STOP
+// ============================================================
+
+function limparJogoStop(chatId) {
+    const jogo = jogosStop.get(chatId);
+    if (jogo?.timeout) clearTimeout(jogo.timeout);
+    jogosStop.delete(chatId);
+}
+
+function pontuarStop(respostas) {
+    const pontos = {};
+    const ids = Object.keys(respostas);
+
+    for (const id of ids) pontos[id] = 0;
+
+    for (let indice = 0; indice < CATEGORIAS_STOP.length; indice++) {
+        const categoria = CATEGORIAS_STOP[indice];
+        const valores = ids.map(id => ({
+            id,
+            valor: String(respostas[id]?.[indice] || '').trim()
+        })).filter(item => item.valor);
+
+        const validos = valores.filter(item =>
+            normalizarJogoTexto(item.valor).startsWith(normalizarJogoTexto(respostas._letra))
+        );
+
+        const contagem = new Map();
+        for (const item of validos) {
+            const chave = normalizarJogoTexto(item.valor);
+            contagem.set(chave, (contagem.get(chave) || 0) + 1);
+        }
+
+        for (const item of validos) {
+            const chave = normalizarJogoTexto(item.valor);
+            pontos[item.id] += contagem.get(chave) > 1 ? 5 : 10;
+        }
+    }
+
+    return pontos;
+}
+
+async function finalizarStop(chatId, motivo = 'tempo') {
+    const jogo = jogosStop.get(chatId);
+    if (!jogo) return;
+
+    if (jogo.timeout) clearTimeout(jogo.timeout);
+    jogosStop.delete(chatId);
+
+    const respostas = { ...jogo.respostas, _letra: jogo.letra };
+    const pontos = pontuarStop(respostas);
+    const ranking = Object.keys(pontos).sort((a, b) => pontos[b] - pontos[a]);
+
+    let texto = `┏═•❃༺🛑༻❃•═┓\n│      *𝐒𝐓𝐎𝐏!*\n│\n├➤ 🔤 Letra: *${jogo.letra}*\n├➤ ${motivo === 'manual' ? '🛑 O jogo foi encerrado.' : '⏰ O tempo acabou!'}\n│\n`;
+
+    if (!ranking.length) {
+        texto += '├➤ 😶 Ninguém enviou respostas.\n';
+    } else {
+        ranking.forEach((id, indice) => {
+            texto += `├➤ ${indice === 0 ? '🥇' : indice === 1 ? '🥈' : indice === 2 ? '🥉' : '🏅'} @${String(id).split('@')[0]} — *${pontos[id]} pontos*\n`;
+        });
+    }
+
+    texto += '│\n├➤ 📋 Respostas:\n';
+    for (const id of ranking) {
+        const respostasPessoa = jogo.respostas[id] || [];
+        texto += `│\n│ @${String(id).split('@')[0]}\n`;
+        CATEGORIAS_STOP.forEach((categoria, indice) => {
+            texto += `│   ${categoria}: *${respostasPessoa[indice] || 'sem resposta'}*\n`;
+        });
+    }
+    texto += '│\n┗═•❃༺🛑༻❃•═┛';
+
+    await enviarComMencoes(chatId, texto, { mentions: ranking });
+}
+
+async function jogarStop(message, argumentos = '') {
+    const chatId = message?.from;
+    if (!chatId?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ O STOP só pode ser jogado em grupos.');
+        return;
+    }
+
+    const entrada = String(argumentos || '').trim();
+    const atual = jogosStop.get(chatId);
+
+    if (!atual) {
+        if (entrada && normalizarJogoTexto(entrada) !== 'iniciar') {
+            await responderCitando(message, `❌ Não existe um STOP em andamento. Use *${PREFIXO}stop* para começar.`);
+            return;
+        }
+
+        const letra = escolherAleatorioSeguro(LETRAS_STOP);
+        const jogo = {
+            letra,
+            respostas: {},
+            iniciadoEm: Date.now(),
+            timeout: null
+        };
+        jogosStop.set(chatId, jogo);
+        jogo.timeout = setTimeout(() => {
+            finalizarStop(chatId).catch(erro => console.error('❌ ERRO AO FINALIZAR STOP:', erro));
+        }, TEMPO_STOP);
+
+        await reagir(message, '🛑');
+        await responderCitando(
+            message,
+            `┏═•❃༺🛑༻❃•═┓\n│      *𝐒𝐓𝐎𝐏!*\n│\n├➤ 🔤 Letra sorteada: *${letra}*\n├➤ ⏰ Tempo: *60 segundos*\n│\n├➤ 📝 Categorias:\n│   1. Nome\n│   2. Animal\n│   3. Comida\n│   4. Lugar\n│   5. Objeto\n│\n├➤ 💡 Responda assim:\n│ *${PREFIXO}stop João | Jacaré | Jaca | Japão | Janela*\n│\n└➤ 🛑 Um admin pode encerrar usando *${PREFIXO}stop parar*.\n┗═•❃༺🛑༻❃•═┛`
+        );
+        return;
+    }
+
+    if (normalizarJogoTexto(entrada) === 'parar') {
+        if (!(await exigirAdmin(message))) return;
+        await finalizarStop(chatId, 'manual');
+        return;
+    }
+
+    const respostas = entrada.split('|').map(item => item.trim());
+    if (respostas.length !== CATEGORIAS_STOP.length) {
+        await responderCitando(message, `❌ Envie exatamente *${CATEGORIAS_STOP.length} respostas*, separadas por |.\n\nExemplo: *${PREFIXO}stop João | Jacaré | Jaca | Japão | Janela*`);
+        return;
+    }
+
+    const id = obterIdRemetente(message);
+    atual.respostas[id] = respostas;
+    await reagir(message, '📝');
+    await responderCitando(message, `✅ Suas respostas foram registradas! Aguarde o fim do STOP.\n\n🔤 Letra: *${atual.letra}*`);
+}
+
+// ============================================================
+// 🔒 GRUPO: SOMENTE ADM / TODOS
+// ============================================================
+
+async function configurarGrupoMensagens(message, argumentos = '') {
+    if (!message?.from?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, '❌ Esse comando só funciona em grupos.');
+        return;
+    }
+
+    if (!(await exigirAdmin(message))) return;
+
+    const modo = String(argumentos || '').trim().toLowerCase();
+    if (!['f', 'a'].includes(modo)) {
+        await responderCitando(message, `❌ Use:\n\n🔒 *${PREFIXO}gp f* → somente administradores podem mandar mensagens.\n🔓 *${PREFIXO}gp a* → todos podem mandar mensagens.`);
+        return;
+    }
+
+    try {
+        const chat = await message.getChat();
+        if (!chat?.isGroup || typeof chat.setMessagesAdminsOnly !== 'function') {
+            throw new Error('A função de alteração das permissões do grupo não está disponível.');
+        }
+
+        const somenteAdmins = modo === 'f';
+        const sucesso = await chat.setMessagesAdminsOnly(somenteAdmins);
+
+        if (!sucesso) {
+            await reagir(message, '❌');
+            await responderCitando(message, '❌ O WhatsApp não permitiu alterar essa configuração. Verifique se o bot é administrador do grupo.');
+            return;
+        }
+
+        await reagir(message, somenteAdmins ? '🔒' : '🔓');
+        await responderCitando(
+            message,
+            somenteAdmins
+                ? `┏═•❃༺🔒༻❃•═┓\n│ *𝐆𝐑𝐔𝐏𝐎 𝐅𝐄𝐂𝐇𝐀𝐃𝐎*\n│\n├➤ 👑 Agora *somente administradores* podem enviar mensagens.\n├➤ 🔓 Para liberar novamente: *${PREFIXO}gp a*\n┗═•❃༺🔒༻❃•═┓`
+                : `┏═•❃༺🔓༻❃•═┓\n│ *𝐆𝐑𝐔𝐏𝐎 𝐀𝐁𝐄𝐑𝐓𝐎*\n│\n├➤ 👥 Agora *todos os membros* podem enviar mensagens.\n├➤ 🔒 Para fechar novamente: *${PREFIXO}gp f*\n┗═•❃༺🔓༻❃•═┓`
+        );
+    } catch (erro) {
+        console.error('❌ ERRO AO ALTERAR PERMISSÃO DE MENSAGENS DO GRUPO:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ Não consegui alterar as permissões do grupo.\n\n_${String(erro?.message || erro)}_`);
+    }
+}
+
 async function menuJogos(message) {
 
     await reagir(
@@ -15336,6 +15686,15 @@ async function menuJogos(message) {
 │
 ├➤ 🔫 *${PREFIXO}rr*
 │   _Roleta russa: alguém será expulso_
+│
+├➤ 🪢 *${PREFIXO}forca*
+│   _Jogue forca com o grupo_
+│
+├➤ 👑 *${PREFIXO}revforca*
+│   _Revela a palavra da forca (ADM)_
+│
+├➤ 🛑 *${PREFIXO}stop*
+│   _Jogue STOP com o grupo_
 │
 ┗═•❃༺🎮༻❃•═┛`
     );
@@ -17293,6 +17652,22 @@ case 'sobre':
         case 'roletarussa':
         case 'roleta':
             await jogarRoletaRussa(message);
+            break;
+
+        case 'forca':
+            await jogarForca(message, argumentos);
+            break;
+
+        case 'revforca':
+            await revelarForca(message);
+            break;
+
+        case 'stop':
+            await jogarStop(message, argumentos);
+            break;
+
+        case 'gp':
+            await configurarGrupoMensagens(message, argumentos);
             break;
 
 
