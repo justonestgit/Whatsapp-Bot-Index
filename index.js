@@ -14001,17 +14001,97 @@ if (
 
         salvarXP();
 
-        if (resultadoXP.subiuNivel) {
+        // ====================================================
+        // 🎖️ VERIFICAR CONQUISTAS
+        // ====================================================
 
-    try {
+        const novasConquistas =
+            verificarConquistas(
+                idRemetente,
+                resultadoXP
+            );
 
-        const mencaoUsuario =
-            `@${String(idRemetente).split('@')[0]}`;
+        // ====================================================
+        // 🎖️ AVISAR SOBRE NOVAS CONQUISTAS
+        // ====================================================
 
-        await client.sendMessage(
-            message.from,
+        if (
+            novasConquistas.length > 0
+        ) {
 
-            `┏═•❃༺⭐༻❃•═┓
+            for (
+                const conquistaId
+                of novasConquistas
+            ) {
+
+                const conquista =
+                    CONQUISTAS[
+                        conquistaId
+                    ];
+
+                if (!conquista) {
+                    continue;
+                }
+
+                try {
+
+                    const mencaoUsuario =
+                        `@${String(
+                            idRemetente
+                        ).split('@')[0]}`;
+
+                    await client.sendMessage(
+                        message.from,
+
+                        `┏═•❃༺🎖️༻❃•═┓
+│
+│  *𝐍𝐎𝐕𝐀 𝐂𝐎𝐍𝐐𝐔𝐈𝐒𝐓𝐀!*
+│
+├➤ 👤 ${mencaoUsuario}
+│
+├➤ ${conquista.emoji} *${conquista.nome}*
+│
+├➤ _${conquista.descricao}_
+│
+┗═•❃༺🎖️༻❃•═┓
+✨ _Continue participando para desbloquear mais conquistas!_`,
+
+                        {
+                            mentions: [
+                                idRemetente
+                            ]
+                        }
+                    );
+
+                } catch (erro) {
+
+                    console.error(
+                        '⚠️ Erro ao enviar mensagem de conquista:',
+                        erro
+                    );
+
+                }
+            }
+        }
+
+        // ====================================================
+        // ⭐ AVISO DE SUBIDA DE NÍVEL
+        // ====================================================
+
+        if (
+            resultadoXP.subiuNivel
+        ) {
+
+            try {
+
+                const mencaoUsuario =
+                    `@${String(
+                        idRemetente
+                    ).split('@')[0]}`;
+
+                await client.sendMessage(
+                    message.from,
+                    `┏═•❃༺⭐༻❃•═┓
 │   *🎉 𝐍𝐈́𝐕𝐄𝐋 𝐀𝐔𝐌𝐄𝐍𝐓𝐎𝐔!*
 ├✯
 ├➤ 👤 ${mencaoUsuario}
@@ -14027,22 +14107,22 @@ if (
 
 🎊 _Continue participando para alcançar o próximo nível!_`,
 
-            {
-                mentions: [
-                    idRemetente
-                ]
+                    {
+                        mentions: [
+                            idRemetente
+                        ]
+                    }
+                );
+
+            } catch (erro) {
+
+                console.error(
+                    '⚠️ Erro ao enviar mensagem de nível:',
+                    erro
+                );
+
             }
-        );
-
-    } catch (erro) {
-
-        console.error(
-            '⚠️ Erro ao enviar mensagem de nível:',
-            erro
-        );
-
-    }
-}
+        }
     }
 }
 
