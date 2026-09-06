@@ -1405,6 +1405,31 @@ if (
     }
 }
     
+// ========================================================
+// ⭐ SUBINDO DE NÍVEL
+// ========================================================
+
+if (
+    Number(dadosUsuario.nivel) >= 5 &&
+    !possuiConquista(
+        usuarioId,
+        'nivel5'
+    )
+) {
+
+    if (
+        desbloquearConquista(
+            usuarioId,
+            'nivel5'
+        )
+    ) {
+
+        novasConquistas.push(
+            'nivel5'
+        );
+    }
+}    
+
     return novasConquistas;
 }
 
