@@ -55,6 +55,7 @@ const jogosEliminacao = new Map();
 const jogosForca = new Map();
 const jogosStop = new Map();
 const personalidadesGrupos = new Map();
+const configuracoesRanks = new Map();
 const historicoEconomia = [];
 const inventariosEconomia = new Map();
 const cooldownsMineracao = new Map();
@@ -155,6 +156,8 @@ const arquivoPersonalidades =
 
 const arquivoConquistas =
     `${pastaDados}/conquistas.json`;
+const arquivoRanks =
+    `${pastaDados}/ranks.json`;
 
 // Cria a pasta dados se ela não existir
 if (!fs.existsSync(pastaDados)) {
@@ -1261,6 +1264,452 @@ async function soAdm(message) {
 }
 
 carregarDados();
+
+// ============================================================
+// 🏆 SISTEMA DE RANKS VARIADOS
+// ============================================================
+
+function obterConfiguracaoRank(grupoId) {
+    if (!configuracoesRanks.has(grupoId)) {
+        configuracoesRanks.set(grupoId, {
+            modo: 'aleatorio',
+            fixos: {}
+        });
+    }
+    return configuracoesRanks.get(grupoId);
+}
+
+function salvarConfiguracoesRanks() {
+    try {
+        fs.writeFileSync(
+            arquivoRanks,
+            JSON.stringify(Object.fromEntries(configuracoesRanks), null, 2),
+            'utf8'
+        );
+    } catch (erro) {
+        console.error('❌ Erro ao salvar configurações de ranks:', erro);
+    }
+}
+
+function carregarConfiguracoesRanks() {
+    try {
+        if (!fs.existsSync(arquivoRanks)) return;
+        const dados = JSON.parse(fs.readFileSync(arquivoRanks, 'utf8'));
+        if (!dados || typeof dados !== 'object') return;
+
+        configuracoesRanks.clear();
+        for (const [grupoId, configuracao] of Object.entries(dados)) {
+            if (!grupoId || !grupoId.endsWith('@g.us')) continue;
+            configuracoesRanks.set(grupoId, {
+                modo: configuracao?.modo === 'fixo' ? 'fixo' : 'aleatorio',
+                fixos: configuracao?.fixos && typeof configuracao.fixos === 'object'
+                    ? configuracao.fixos
+                    : {}
+            });
+        }
+        console.log('🏆 Configurações de ranks carregadas:', configuracoesRanks.size);
+    } catch (erro) {
+        console.error('❌ Erro ao carregar configurações de ranks:', erro);
+    }
+}
+
+carregarConfiguracoesRanks();
+
+const DEFINICOES_RANK = {
+    ranklindo: {
+        titulo: '𝐑𝐀𝐍𝐊 𝐋𝐈𝐍𝐃𝐎',
+        emoji: '😍',
+        descricao: 'nível de beleza do cidadão',
+        comentario: valor => valor >= 90 ? 'Uma ameaça à autoestima alheia. ✨' : valor >= 70 ? 'Bonito(a) com certificado do bot. 😎' : valor >= 50 ? 'Tem seu charme. 👀' : 'A beleza está em manutenção. 🛠️'
+    },
+    rankfeio: {
+        titulo: '𝐑𝐀𝐍𝐊 𝐅𝐄𝐈𝐎',
+        emoji: '👹',
+        descricao: 'nível de feiura detectado',
+        comentario: valor => valor >= 90 ? 'O espelho pediu demissão. 😭' : valor >= 70 ? 'O departamento de estética entrou em alerta. 🚨' : valor >= 50 ? 'Uma feiura respeitável. 🤨' : 'Quase escapou ileso. 😌'
+    },
+    rankgay: {
+        titulo: '𝐑𝐀𝐍𝐊 𝐆𝐀𝐘',
+        emoji: '🏳️‍🌈',
+        descricao: 'índice aleatório deste rank',
+        comentario: valor => valor >= 90 ? 'O arco-íris chegou antes. 🌈' : valor >= 70 ? 'O radar detectou fortes sinais de brilho. ✨' : valor >= 50 ? 'O radar está indeciso. 📡' : 'O radar quase não apitou. 📻'
+    },
+    rankhetero: {
+        titulo: '𝐑𝐀𝐍𝐊 𝐇𝐄𝐓𝐄𝐑𝐎',
+        emoji: '💘',
+        descricao: 'índice aleatório deste rank',
+        comentario: valor => valor >= 90 ? 'O radar hetero está em órbita. 🛰️' : valor >= 70 ? 'O radar marcou presença. 📡' : valor >= 50 ? 'Situação indefinida no radar. 🤔' : 'O radar está praticamente desligado. 📴'
+    },
+    ranklesbico: {
+        titulo: '𝐑𝐀𝐍𝐊 𝐋𝐄𝐒𝐁𝐈𝐂𝐎',
+        emoji: '💜',
+        descricao: 'índice aleatório deste rank',
+        comentario: valor => valor >= 90 ? 'O radar roxo entrou em combustão. 💜' : valor >= 70 ? 'O radar captou sinais fortes. 📡' : valor >= 50 ? 'O radar está analisando. 🔎' : 'Poucos sinais detectados. 📻'
+    },
+    rankinteligente: {
+        titulo: '𝐑𝐀𝐍𝐊 𝐈𝐍𝐓𝐄𝐋𝐈𝐆𝐄𝐍𝐓𝐄',
+        emoji: '🧠',
+        descricao: 'nível de inteligência do cidadão',
+        comentario: valor => valor >= 90 ? 'Einstein acaba de ganhar concorrência. 🧠' : valor >= 70 ? 'Processador mental acima da média. ⚡' : valor >= 50 ? 'Funcionando dentro dos parâmetros. 👍' : 'O cérebro está em modo economia de energia. 🔋'
+    }
+};
+
+function normalizarChaveRank(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 80) || 'rank';
+}
+
+function obterValorRank(grupoId, tipo, idPessoa) {
+    const configuracao = obterConfiguracaoRank(grupoId);
+    const chave = `${tipo}:${idPessoa}`;
+
+    if (configuracao.modo === 'fixo') {
+        if (!Number.isFinite(Number(configuracao.fixos[chave]))) {
+            configuracao.fixos[chave] = crypto.randomInt(0, 101);
+            salvarConfiguracoesRanks();
+        }
+        return Number(configuracao.fixos[chave]);
+    }
+
+    return crypto.randomInt(0, 101);
+}
+
+function obterValorRankPar(grupoId, tipo, ids) {
+    const pares = [...new Set((ids || []).filter(Boolean).map(String))].sort();
+    const chavePar = pares.join('|');
+    const configuracao = obterConfiguracaoRank(grupoId);
+    const chave = `${tipo}:${chavePar}`;
+
+    if (configuracao.modo === 'fixo') {
+        if (!Number.isFinite(Number(configuracao.fixos[chave]))) {
+            configuracao.fixos[chave] = crypto.randomInt(0, 101);
+            salvarConfiguracoesRanks();
+        }
+        return Number(configuracao.fixos[chave]);
+    }
+
+    return crypto.randomInt(0, 101);
+}
+
+async function obterParticipantesDoGrupoParaRank(message) {
+    if (!message?.from?.endsWith('@g.us')) return [];
+
+    try {
+        const dados = await client.pupPage.evaluate(async chatId => {
+            try {
+                const Store = window.require('WAWebCollections');
+                const chat = Store.Chat.get(chatId);
+                const participantes = chat?.groupMetadata?.participants;
+                let modelos = [];
+                if (typeof participantes?.getModelsArray === 'function') {
+                    modelos = participantes.getModelsArray();
+                } else if (Array.isArray(participantes?.models)) {
+                    modelos = participantes.models;
+                }
+                return modelos.map(p => p.id?._serialized || p.id?.toString?.()).filter(Boolean);
+            } catch (erro) {
+                return [];
+            }
+        }, message.from);
+        return [...new Set(dados || [])];
+    } catch (erro) {
+        console.log('⚠️ Erro ao obter participantes para rank:', erro.message);
+        return [];
+    }
+}
+
+async function comandoRankVariado(message, tipo) {
+    try {
+        if (!message?.from?.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐕𝐀𝐑𝐈𝐀𝐃𝐎*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺🏆༻❃•═┓`);
+            return;
+        }
+
+        const definicao = DEFINICOES_RANK[tipo];
+        if (!definicao) return;
+
+        const pessoa = await obterAlvoComContato(message, false);
+        const idPessoa = pessoa ? idDaPessoa(pessoa) : obterIdRemetente(message);
+        if (!idPessoa) return;
+
+        const valor = obterValorRank(message.from, tipo, idPessoa);
+        const nome = pessoa ? mencaoDaPessoa(pessoa) : mencaoDaPessoa(idPessoa);
+
+        await reagir(message, definicao.emoji);
+        await responderComMencoes(
+            message,
+            `┏═•❃༺${definicao.emoji}༻❃•═┓
+│       *${definicao.titulo}*
+├✯
+│
+├➤ 👤 ${nome}
+├➤ 📊 ${definicao.descricao}: *${valor}%*
+│
+├➤ ${definicao.comentario(valor)}
+│
+┗═•❃༺${definicao.emoji}༻❃•═┓`,
+            { mentions: [idPessoa] }
+        );
+    } catch (erro) {
+        console.error(`❌ Erro no ${tipo}:`, erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
+├✯ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐑𝐀𝐍𝐊*
+│
+├➤ _Não consegui gerar este rank agora._
+│
+┗═•❃༺❌༻❃•═┓`);
+    }
+}
+
+async function comandoRankCustomizado(message, argumentos) {
+    const textoRank = String(argumentos || '').trim();
+    if (!textoRank) {
+        await reagir(message, '❓');
+        await responderCitando(message, `┏═•❃༺🎨༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
+│
+├➤ _Digite o que deseja avaliar._
+│
+├➤ *Exemplo:* ${PREFIXO}csrank engraçado
+│
+┗═•❃༺🎨༻❃•═┓`);
+        return;
+    }
+
+    const pessoa = await obterAlvoComContato(message, false);
+    const idPessoa = pessoa ? idDaPessoa(pessoa) : obterIdRemetente(message);
+    if (!idPessoa) return;
+
+    const chave = `custom:${normalizarChaveRank(textoRank)}:${idPessoa}`;
+    const configuracao = obterConfiguracaoRank(message.from);
+    let valor;
+    if (configuracao.modo === 'fixo') {
+        if (!Number.isFinite(Number(configuracao.fixos[chave]))) {
+            configuracao.fixos[chave] = crypto.randomInt(0, 101);
+            salvarConfiguracoesRanks();
+        }
+        valor = Number(configuracao.fixos[chave]);
+    } else {
+        valor = crypto.randomInt(0, 101);
+    }
+
+    const comentarios = [
+        v => v >= 90 ? 'Nível absurdo. O bot ficou impressionado. 🤯' : v >= 70 ? 'Resultado forte. 📈' : v >= 50 ? 'Resultado mediano, mas respeitável. 😎' : 'O algoritmo não quis colaborar hoje. 😭',
+        v => v >= 85 ? 'Altíssimo nível detectado. 🚀' : v >= 60 ? 'Nada mal, hein? 👀' : 'Tem espaço para evolução. 🛠️'
+    ];
+    const comentario = escolherAleatorioSeguro(comentarios)(valor);
+    const nome = pessoa ? mencaoDaPessoa(pessoa) : mencaoDaPessoa(idPessoa);
+
+    await reagir(message, '🎨');
+    await responderComMencoes(
+        message,
+        `┏═•❃༺🎨༻❃•═┓
+│       *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
+├✯
+│
+├➤ 👤 ${nome}
+├➤ 🎯 Critério: *${textoRank}*
+├➤ 📊 Resultado: *${valor}%*
+│
+├➤ ${comentario}
+│
+┗═•❃༺🎨༻❃•═┓`,
+        { mentions: [idPessoa] }
+    );
+}
+
+async function comandoRankPobre(message) {
+    try {
+        if (!message?.from?.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(message, `┏═•❃༺🪙༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺🪙༻❃•═┓`);
+            return;
+        }
+
+        const ids = await obterParticipantesDoGrupoParaRank(message);
+        const participantes = [];
+        for (const id of ids) {
+            const canonico = await resolverIdEconomia(id);
+            const carteira = canonico ? obterCarteiraEconomia(canonico) : null;
+            participantes.push({ id, saldo: Number(carteira?.saldo) || 0 });
+        }
+
+        if (!participantes.length) {
+            await reagir(message, '🪙');
+            await responderCitando(message, `┏═•❃༺🪙༻❃•═┓
+│       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
+├✯
+│
+├➤ 📊 _Ainda não há carteiras suficientes no grupo._
+│
+┗═•❃༺🪙༻❃•═┓`);
+            return;
+        }
+
+        participantes.sort((a, b) => a.saldo - b.saldo || a.id.localeCompare(b.id));
+        const top = participantes.slice(0, 10);
+        const idsMencao = top.map(item => item.id);
+        let texto = `┏═•❃༺🪙༻❃•═┓
+│       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
+├✯
+│
+├➤ _Ranking baseado nas moedas do bot._
+│
+`;
+        const medalhas = ['🥇','🥈','🥉'];
+        top.forEach((item, i) => {
+            const medalha = medalhas[i] || `${i + 1}º`;
+            texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}
+│   🪙 *${formatarMoedas(item.saldo)} moedas*
+│
+`;
+        });
+        texto += `┗═•❃༺🪙༻❃•═┓`;
+
+        await reagir(message, '🪙');
+        await enviarComMencoes(message.from, texto, { mentions: idsMencao });
+    } catch (erro) {
+        console.error('❌ Erro no rank pobre:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
+├✯ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐑𝐀𝐍𝐊*
+│
+├➤ _Não consegui consultar as moedas do grupo._
+│
+┗═•❃༺❌༻❃•═┓`);
+    }
+}
+
+async function comandoRankShip(message) {
+    try {
+        if (!message?.from?.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await responderCitando(message, `┏═•❃༺💘༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐒𝐇𝐈𝐏*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺💘༻❃•═┓`);
+            return;
+        }
+
+        const mencionados = [...new Set(message.mentionedIds || [])];
+        const pessoas = [...mencionados];
+        if (pessoas.length < 2 && message.hasQuotedMsg) {
+            try {
+                const citada = await message.getQuotedMessage();
+                const id = citada?.author || citada?.from;
+                if (id && id !== message.from && !pessoas.includes(id)) pessoas.push(id);
+            } catch {}
+        }
+
+        if (pessoas.length < 2) {
+            const participantes = await obterParticipantesDoGrupoParaRank(message);
+            const disponiveis = participantes.filter(id => !idsIguais(id, obterIdRemetente(message)));
+            if (disponiveis.length >= 2) {
+                const primeira = disponiveis[crypto.randomInt(0, disponiveis.length)];
+                let segunda = primeira;
+                while (idsIguais(segunda, primeira)) {
+                    segunda = disponiveis[crypto.randomInt(0, disponiveis.length)];
+                }
+                pessoas.push(primeira, segunda);
+            }
+        }
+
+        if (pessoas.length < 2) {
+            await reagir(message, '❓');
+            await responderCitando(message, `┏═•❃༺💘༻❃•═┓
+├✯ *𝐑𝐀𝐍𝐊 𝐒𝐇𝐈𝐏*
+│
+├➤ _Mencione duas pessoas para fazer o ship._
+│
+├➤ *Exemplo:* ${PREFIXO}rankship @pessoa1 @pessoa2
+│
+┗═•❃༺💘༻❃•═┓`);
+            return;
+        }
+
+        const ids = pessoas.slice(0, 2);
+        const valor = obterValorRankPar(message.from, 'ship', ids);
+        const comentarios = valor >= 90 ? 'Casamento marcado pelo algoritmo. 💍' : valor >= 70 ? 'Tem química! 👀❤️' : valor >= 50 ? 'Existe alguma faísca escondida. ✨' : valor >= 25 ? 'O algoritmo está vendo amizade. 😂' : 'O ship afundou antes de zarpar. 🚢💀';
+        const mencao1 = mencaoDaPessoa(ids[0]);
+        const mencao2 = mencaoDaPessoa(ids[1]);
+
+        await reagir(message, '💘');
+        await enviarComMencoes(
+            message.from,
+            `┏═•❃༺💘༻❃•═┓
+│        *𝐑𝐀𝐍𝐊 𝐒𝐇𝐈𝐏*
+├✯
+│
+├➤ 💕 ${mencao1} × ${mencao2}
+├➤ 💞 Compatibilidade: *${valor}%*
+│
+├➤ ${comentarios}
+│
+┗═•❃༺💘༻❃•═┓`,
+            { mentions: ids }
+        );
+    } catch (erro) {
+        console.error('❌ Erro no rank ship:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
+├✯ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐒𝐇𝐈𝐏*
+│
+├➤ _Não consegui calcular esse ship agora._
+│
+┗═•❃༺❌༻❃•═┓`);
+    }
+}
+
+async function configurarModoRank(message, modo) {
+    if (!message?.from?.endsWith('@g.us')) {
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
+├✯ *𝐌𝐎𝐃𝐎 𝐃𝐎𝐒 𝐑𝐀𝐍𝐊𝐒*
+│
+├➤ ❌ _Esse comando só funciona em grupos._
+│
+┗═•❃༺🏆༻❃•═┓`);
+        return;
+    }
+    if (!(await exigirAdmin(message))) return;
+
+    const configuracao = obterConfiguracaoRank(message.from);
+    configuracao.modo = modo === 'fixo' ? 'fixo' : 'aleatorio';
+    salvarConfiguracoesRanks();
+
+    const fixo = configuracao.modo === 'fixo';
+    await reagir(message, fixo ? '📌' : '🎲');
+    await responderCitando(message, `┏═•❃༺${fixo ? '📌' : '🎲'}༻❃•═┓
+│       *𝐌𝐎𝐃𝐎 𝐃𝐎𝐒 𝐑𝐀𝐍𝐊𝐒*
+├✯
+│
+├➤ ${fixo ? '📌' : '🎲'} Modo atual: *${fixo ? 'FIXO' : 'ALEATÓRIO'}*
+│
+├➤ ${fixo ? '_A mesma pessoa manterá o mesmo resultado em cada rank._' : '_Os resultados serão sorteados novamente a cada uso._'}
+│
+├➤ 👑 _Apenas administradores podem alterar esta opção._
+│
+┗═•❃༺${fixo ? '📌' : '🎲'}༻❃•═┓`);
+}
 
 // ============================================================
 // ✨ SISTEMA DE XP
@@ -4705,6 +5154,18 @@ async function menuUtil(message) {
 │   _Ver seu nível de XP_
 ├➤ 🏆 *${PREFIXO}rank*
 │   _Ver o ranking de XP_
+├➤ 🏆 *${PREFIXO}ranklindo / rankfeio*
+│   _Ranks de aparência_
+├➤ 🌈 *${PREFIXO}rankgay / rankhetero / ranklesbico*
+│   _Ranks variados_
+├➤ 🧠 *${PREFIXO}rankinteligente*
+│   _Rank de inteligência_
+├➤ 🪙 *${PREFIXO}rankpobre*
+│   _Rank baseado nas moedas_
+├➤ 🎨 *${PREFIXO}csrank <critério>*
+│   _Rank personalizado_
+├➤ 💕 *${PREFIXO}rankship @pessoa @pessoa*
+│   _Rank de compatibilidade_
 │
 ┗═•❃༺⚙️༻❃•═┛`
     );
@@ -5095,6 +5556,33 @@ async function listarComandos(message) {
 │
 ├➤ 🏆 *${PREFIXO}rankingdinheiro*
 │   _Ranking dos mais ricos_
+│
+├✯
+│  🏆 *𝐑𝐀𝐍𝐊𝐒 𝐕𝐀𝐑𝐈𝐀𝐃𝐎𝐒*
+│
+├➤ 😍 *${PREFIXO}ranklindo @pessoa*
+│   _Rank de beleza_
+├➤ 👹 *${PREFIXO}rankfeio @pessoa*
+│   _Rank de feiura_
+├➤ 🏳️‍🌈 *${PREFIXO}rankgay @pessoa*
+│   _Rank gay aleatório_
+├➤ 💘 *${PREFIXO}rankhetero @pessoa*
+│   _Rank hetero aleatório_
+├➤ 💜 *${PREFIXO}ranklesbico @pessoa*
+│   _Rank lésbico aleatório_
+├➤ 🧠 *${PREFIXO}rankinteligente @pessoa*
+│   _Rank de inteligência_
+├➤ 🪙 *${PREFIXO}rankpobre*
+│   _Ranking dos menores saldos_
+├➤ 🎨 *${PREFIXO}csrank engraçado*
+│   _Criar um rank personalizado_
+├➤ 💕 *${PREFIXO}rankship @pessoa @pessoa*
+│   _Rank de compatibilidade_
+│
+├➤ 📌 *${PREFIXO}rfixo*
+│   _Admins: deixar resultados fixos_
+├➤ 🎲 *${PREFIXO}raleatorio*
+│   _Admins: sortear resultados novamente_
 │
 ├➤ 🎉 *${PREFIXO}sortearm 500*
 │   _Sortear moedas (admins)_
@@ -18471,6 +18959,42 @@ case 'recusar':
     case 'ranking':
     await mostrarRanking(message);
     break;
+
+    case 'ranklindo':
+        await comandoRankVariado(message, 'ranklindo');
+        break;
+    case 'rankfeio':
+        await comandoRankVariado(message, 'rankfeio');
+        break;
+    case 'rankgay':
+        await comandoRankVariado(message, 'rankgay');
+        break;
+    case 'rankhetero':
+    case 'rankhétero':
+        await comandoRankVariado(message, 'rankhetero');
+        break;
+    case 'ranklesbico':
+    case 'ranklésbico':
+        await comandoRankVariado(message, 'ranklesbico');
+        break;
+    case 'rankinteligente':
+        await comandoRankVariado(message, 'rankinteligente');
+        break;
+    case 'rankpobre':
+        await comandoRankPobre(message);
+        break;
+    case 'rankship':
+        await comandoRankShip(message);
+        break;
+    case 'csrank':
+        await comandoRankCustomizado(message, argumentos);
+        break;
+    case 'rfixo':
+        await configurarModoRank(message, 'fixo');
+        break;
+    case 'raleatorio':
+        await configurarModoRank(message, 'aleatorio');
+        break;
 
 case 'rankingfilhos':
 case 'rankingfilho':
