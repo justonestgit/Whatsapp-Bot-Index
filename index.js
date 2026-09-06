@@ -16194,24 +16194,37 @@ function extensaoAudio(mimetype) {
     return '.bin';
 }
 
+function formatarErroDownload(erro) {
+    if (!erro) return 'erro desconhecido';
+    if (typeof erro === 'string') return erro;
+    if (erro instanceof Error && erro.message) return erro.message;
+    if (erro?.message) return String(erro.message);
+    try {
+        return JSON.stringify(erro);
+    } catch (_) {
+        return String(erro);
+    }
+}
+
 async function baixarMidiaWhatsAppCompativel(mensagem) {
     const raw = mensagem?.rawData || mensagem?._data || {};
 
-    // O WhatsApp Web atual pode quebrar Msg.get()/Msg.getMessagesById()
-    // por causa da migração de IDs (_serialized -> $1 / @lid). Como a
-    // Message já recebeu os dados criptográficos da mídia, tentamos primeiro
-    // baixar diretamente pelo DownloadManager, sem procurar o modelo Msg.
+    // O WhatsApp Web atual está migrando os IDs de _serialized para $1.
+    // Para mídia, tentamos primeiro usar os dados criptográficos que já vieram
+    // no próprio objeto Message, sem depender da busca Msg.get().
     const dadosDiretos = {
-        directPath: raw.directPath,
-        encFilehash: raw.encFilehash,
-        filehash: raw.filehash,
+        directPath: raw.directPath || mensagem?.directPath,
+        encFilehash: raw.encFilehash || mensagem?.encFilehash,
+        filehash: raw.filehash || mensagem?.filehash,
         mediaKey: raw.mediaKey || mensagem?.mediaKey,
-        mediaKeyTimestamp: raw.mediaKeyTimestamp,
+        mediaKeyTimestamp: raw.mediaKeyTimestamp || mensagem?.mediaKeyTimestamp,
         type: raw.type || mensagem?.type,
-        mimetype: raw.mimetype,
-        filename: raw.filename,
-        filesize: raw.size,
+        mimetype: raw.mimetype || mensagem?.mimetype,
+        filename: raw.filename || mensagem?.filename,
+        filesize: raw.size || mensagem?.filesize || mensagem?.size,
     };
+
+    let ultimoErro = null;
 
     if (
         dadosDiretos.directPath &&
@@ -16259,110 +16272,110 @@ async function baixarMidiaWhatsAppCompativel(mensagem) {
                 );
             }
         } catch (erroDireto) {
-            // Se o download direto falhar, continua para os fallbacks abaixo.
+            ultimoErro = erroDireto;
         }
+    } else {
+        ultimoErro = new Error('Dados criptográficos da mídia incompletos no objeto Message.');
     }
 
     const id = mensagem?.id || {};
     const candidatos = [];
 
-    if (id._serialized) candidatos.push(id._serialized);
-    if (id.$1 && !candidatos.includes(id.$1)) candidatos.push(id.$1);
+    // $1 é o novo nome usado por algumas versões recentes do WhatsApp Web.
+    if (id.$1) candidatos.push(id.$1);
+    if (id._serialized && !candidatos.includes(id._serialized)) {
+        candidatos.push(id._serialized);
+    }
     if (id.fromMe !== undefined && id.remote && id.id) {
         const reconstruido = `${id.fromMe}_${id.remote}_${id.id}`;
         if (!candidatos.includes(reconstruido)) candidatos.push(reconstruido);
     }
 
-    let ultimoErro = null;
+    if (client.pupPage && candidatos.length) {
+        try {
+            const resultado = await client.pupPage.evaluate(async (ids) => {
+                const collections = window.require('WAWebCollections');
+                const downloadManager = window.require('WAWebDownloadManager').downloadManager;
+                const mockQpl = {
+                    addAnnotations() { return this; },
+                    addPoint() { return this; },
+                };
 
+                for (const id of ids) {
+                    try {
+                        let msg = collections.Msg.get(id);
+                        if (!msg) {
+                            msg = (await collections.Msg.getMessagesById([id]))?.messages?.[0];
+                        }
+                        if (!msg || !msg.mediaData || msg.mediaData.mediaStage === 'REUPLOADING') {
+                            continue;
+                        }
+
+                        if (msg.mediaData.mediaStage !== 'RESOLVED') {
+                            await msg.downloadMedia({
+                                downloadEvenIfExpensive: true,
+                                rmrReason: 1,
+                            });
+                        }
+
+                        if (
+                            !msg.mediaData ||
+                            String(msg.mediaData.mediaStage || '').includes('ERROR') ||
+                            msg.mediaData.mediaStage === 'FETCHING'
+                        ) {
+                            continue;
+                        }
+
+                        const decryptedMedia = await downloadManager.downloadAndMaybeDecrypt({
+                            directPath: msg.directPath,
+                            encFilehash: msg.encFilehash,
+                            filehash: msg.filehash,
+                            mediaKey: msg.mediaKey,
+                            mediaKeyTimestamp: msg.mediaKeyTimestamp,
+                            type: msg.type,
+                            signal: new AbortController().signal,
+                            downloadQpl: mockQpl,
+                        });
+
+                        const data = await window.WWebJS.arrayBufferToBase64Async(decryptedMedia);
+                        return {
+                            data,
+                            mimetype: msg.mimetype,
+                            filename: msg.filename,
+                            filesize: msg.size,
+                        };
+                    } catch (erro) {
+                        // Um formato de ID pode falhar enquanto outro ainda funciona.
+                    }
+                }
+
+                return null;
+            }, candidatos);
+
+            if (resultado?.data) {
+                return new MessageMedia(
+                    resultado.mimetype || dadosDiretos.mimetype || 'audio/ogg',
+                    resultado.data,
+                    resultado.filename || dadosDiretos.filename,
+                    resultado.filesize || dadosDiretos.filesize,
+                );
+            }
+        } catch (erroFallback) {
+            ultimoErro = erroFallback;
+        }
+    }
+
+    // Último recurso: usa a implementação oficial da biblioteca. Não fazemos
+    // reload() aqui porque Message.reload() ainda depende de id._serialized em
+    // whatsapp-web.js 1.34.7 e pode substituir o erro real por outro t: t.
     try {
         const midia = await mensagem.downloadMedia();
         if (midia) return midia;
-    } catch (erro) {
-        ultimoErro = erro;
+    } catch (erroOficial) {
+        ultimoErro = erroOficial;
     }
 
-    if (!candidatos.length || !client.pupPage) {
-        throw ultimoErro || new Error('ID da mensagem de mídia indisponível.');
-    }
-
-    const resultado = await client.pupPage.evaluate(async (ids) => {
-        const collections = window.require('WAWebCollections');
-        let msg = null;
-
-        for (const id of ids) {
-            try {
-                msg = collections.Msg.get(id) ||
-                    (await collections.Msg.getMessagesById([id]))?.messages?.[0];
-                if (msg) break;
-            } catch (_) {
-                // Tenta o próximo formato de ID.
-            }
-        }
-
-        if (!msg || !msg.mediaData || msg.mediaData.mediaStage === 'REUPLOADING') {
-            return null;
-        }
-
-        if (msg.mediaData.mediaStage !== 'RESOLVED') {
-            await msg.downloadMedia({
-                downloadEvenIfExpensive: true,
-                rmrReason: 1,
-            });
-        }
-
-        if (
-            !msg.mediaData ||
-            msg.mediaData.mediaStage.includes('ERROR') ||
-            msg.mediaData.mediaStage === 'FETCHING'
-        ) {
-            return undefined;
-        }
-
-        const mockQpl = {
-            addAnnotations() { return this; },
-            addPoint() { return this; },
-        };
-
-        try {
-            const decryptedMedia = await window
-                .require('WAWebDownloadManager')
-                .downloadManager
-                .downloadAndMaybeDecrypt({
-                    directPath: msg.directPath,
-                    encFilehash: msg.encFilehash,
-                    filehash: msg.filehash,
-                    mediaKey: msg.mediaKey,
-                    mediaKeyTimestamp: msg.mediaKeyTimestamp,
-                    type: msg.type,
-                    signal: new AbortController().signal,
-                    downloadQpl: mockQpl,
-                });
-
-            const data = await window.WWebJS.arrayBufferToBase64Async(decryptedMedia);
-
-            return {
-                data,
-                mimetype: msg.mimetype,
-                filename: msg.filename,
-                filesize: msg.size,
-            };
-        } catch (erro) {
-            if (erro?.status === 404) return undefined;
-            throw erro;
-        }
-    }, candidatos);
-
-    if (!resultado) {
-        throw ultimoErro || new Error('WhatsApp não encontrou a mídia da mensagem.');
-    }
-
-    return new MessageMedia(
-        resultado.mimetype,
-        resultado.data,
-        resultado.filename,
-        resultado.filesize,
-    );
+    throw new Error(`Download de mídia falhou: ${formatarErroDownload(ultimoErro)}`);
 }
 
 async function modificarAudio(message, comando) {
@@ -16382,9 +16395,9 @@ async function modificarAudio(message, comando) {
 
         for (let tentativa = 1; tentativa <= 3; tentativa++) {
             try {
-                if (tentativa > 1 && typeof mensagemAudio.reload === 'function') {
-                    await mensagemAudio.reload();
-                }
+                // Não usamos mensagemAudio.reload() nas tentativas seguintes.
+                // A implementação atual de whatsapp-web.js ainda usa id._serialized
+                // internamente e pode falhar antes mesmo de tentar baixar a mídia.
                 midia = await baixarMidiaWhatsAppCompativel(mensagemAudio);
                 if (midia) break;
             } catch (erroDownload) {
