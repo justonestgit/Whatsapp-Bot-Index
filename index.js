@@ -16194,6 +16194,110 @@ function extensaoAudio(mimetype) {
     return '.bin';
 }
 
+async function baixarMidiaWhatsAppCompativel(mensagem) {
+    const id = mensagem?.id || {};
+    const candidatos = [];
+
+    if (id._serialized) candidatos.push(id._serialized);
+    if (id.$1 && !candidatos.includes(id.$1)) candidatos.push(id.$1);
+    if (id.fromMe !== undefined && id.remote && id.id) {
+        const reconstruido = `${id.fromMe}_${id.remote}_${id.id}`;
+        if (!candidatos.includes(reconstruido)) candidatos.push(reconstruido);
+    }
+
+    let ultimoErro = null;
+
+    try {
+        const midia = await mensagem.downloadMedia();
+        if (midia) return midia;
+    } catch (erro) {
+        ultimoErro = erro;
+    }
+
+    if (!candidatos.length || !client.pupPage) {
+        throw ultimoErro || new Error('ID da mensagem de mídia indisponível.');
+    }
+
+    const resultado = await client.pupPage.evaluate(async (ids) => {
+        const collections = window.require('WAWebCollections');
+        let msg = null;
+
+        for (const id of ids) {
+            try {
+                msg = collections.Msg.get(id) ||
+                    (await collections.Msg.getMessagesById([id]))?.messages?.[0];
+                if (msg) break;
+            } catch (_) {
+                // Alguns IDs inválidos fazem o IndexedDB do WhatsApp lançar
+                // erros minificados. Tenta o próximo formato de ID.
+            }
+        }
+
+        if (!msg || !msg.mediaData || msg.mediaData.mediaStage === 'REUPLOADING') {
+            return null;
+        }
+
+        if (msg.mediaData.mediaStage !== 'RESOLVED') {
+            await msg.downloadMedia({
+                downloadEvenIfExpensive: true,
+                rmrReason: 1,
+            });
+        }
+
+        if (
+            !msg.mediaData ||
+            msg.mediaData.mediaStage.includes('ERROR') ||
+            msg.mediaData.mediaStage === 'FETCHING'
+        ) {
+            return undefined;
+        }
+
+        const mockQpl = {
+            addAnnotations() { return this; },
+            addPoint() { return this; },
+        };
+
+        try {
+            const decryptedMedia = await window
+                .require('WAWebDownloadManager')
+                .downloadManager
+                .downloadAndMaybeDecrypt({
+                    directPath: msg.directPath,
+                    encFilehash: msg.encFilehash,
+                    filehash: msg.filehash,
+                    mediaKey: msg.mediaKey,
+                    mediaKeyTimestamp: msg.mediaKeyTimestamp,
+                    type: msg.type,
+                    signal: new AbortController().signal,
+                    downloadQpl: mockQpl,
+                });
+
+            const data = await window.WWebJS.arrayBufferToBase64Async(decryptedMedia);
+
+            return {
+                data,
+                mimetype: msg.mimetype,
+                filename: msg.filename,
+                filesize: msg.size,
+            };
+        } catch (erro) {
+            if (erro?.status === 404) return undefined;
+            throw erro;
+        }
+    }, candidatos);
+
+    if (!resultado) {
+        throw ultimoErro || new Error('WhatsApp não encontrou a mídia da mensagem.');
+    }
+
+    return new MessageMedia(
+        resultado.mimetype,
+        resultado.data,
+        resultado.filename,
+        resultado.filesize,
+    );
+}
+
 async function modificarAudio(message, comando) {
     const efeito = obterEfeitoDeVoz(comando);
     if (!efeito) return false;
@@ -16209,15 +16313,12 @@ async function modificarAudio(message, comando) {
         let midia = null;
         let ultimoErroDownload = null;
 
-        // O WhatsApp Web pode falhar ao descriptografar a mídia na primeira
-        // tentativa (especialmente em mensagens de voz recém-recebidas).
-        // Recarregamos a mensagem e tentamos novamente antes de desistir.
         for (let tentativa = 1; tentativa <= 3; tentativa++) {
             try {
                 if (tentativa > 1 && typeof mensagemAudio.reload === 'function') {
                     await mensagemAudio.reload();
                 }
-                midia = await mensagemAudio.downloadMedia();
+                midia = await baixarMidiaWhatsAppCompativel(mensagemAudio);
                 if (midia) break;
             } catch (erroDownload) {
                 ultimoErroDownload = erroDownload;
@@ -16230,8 +16331,7 @@ async function modificarAudio(message, comando) {
         if (!midia) {
             throw new Error(`Não foi possível baixar o áudio do WhatsApp após 3 tentativas: ${ultimoErroDownload?.message || 'mídia indisponível'}`);
         }
-
-        if (!String(midia.mimetype || '').toLowerCase().startsWith('audio/')) {
+        if (!midia || !String(midia.mimetype || '').toLowerCase().startsWith('audio/')) {
             await reagir(message, '❌');
             await responderCitando(message, '❌ _A mídia selecionada não é um áudio válido._');
             return true;
