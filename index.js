@@ -1380,9 +1380,6 @@ function verificarConquistas(
         }
     }
 
-    return novasConquistas;
-}
-
 // ========================================================
 // 🗣️ FALADOR PROFISSIONAL
 // ========================================================
@@ -1407,6 +1404,10 @@ if (
         );
     }
 }
+    
+    return novasConquistas;
+}
+
 
 // ============================================================
 // 💤 CONTROLE DE XP OFFLINE
