@@ -26,7 +26,7 @@ const client = new Client({
 
 const PREFIXO = ';';
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.10';
+const VERSAO = '3.11';
 
 const jogosAdivinhacao = new Map();
 const quizzes = new Map();
@@ -47,6 +47,7 @@ const confirmacoesRemoverAviso = new Map();
 
 const dadosXP = new Map();
 const moedasUsuarios = new Map();
+const jogosEliminacao = new Map();
 
 // ============================================================
 // 🎖️ SISTEMA DE CONQUISTAS
@@ -13169,6 +13170,278 @@ async function recompensaDiaria(message) {
     }
 }
 
+// ============================================================
+// 🥔 BATATA QUENTE / 🔫 ROLETA RUSSA
+// ============================================================
+
+async function obterJogadoresParaEliminacao(message) {
+    if (!message.from || !message.from.endsWith('@g.us')) {
+        return { erro: 'Esse jogo só pode ser usado em grupos.' };
+    }
+
+    try {
+        const dados = await client.pupPage.evaluate(
+            async (chatId, botId) => {
+                try {
+                    const Store = window.require('WAWebCollections');
+                    const chat = Store.Chat.get(chatId);
+
+                    if (!chat) {
+                        return { erro: 'Grupo não encontrado.' };
+                    }
+
+                    const participantes = chat.groupMetadata?.participants;
+                    if (!participantes) {
+                        return { erro: 'Participantes não encontrados.' };
+                    }
+
+                    let modelos = [];
+                    if (typeof participantes.getModelsArray === 'function') {
+                        modelos = participantes.getModelsArray();
+                    } else if (Array.isArray(participantes.models)) {
+                        modelos = participantes.models;
+                    }
+
+                    const jogadores = modelos
+                        .map(p => ({
+                            id: p.id?._serialized || p.id?.toString?.() || null,
+                            isAdmin: !!p.isAdmin,
+                            isSuperAdmin: !!p.isSuperAdmin
+                        }))
+                        .filter(p =>
+                            p.id &&
+                            p.id !== botId &&
+                            !p.isAdmin &&
+                            !p.isSuperAdmin
+                        )
+                        .map(p => p.id);
+
+                    return { jogadores };
+                } catch (erro) {
+                    return {
+                        erro: String(erro?.message || erro)
+                    };
+                }
+            },
+            message.from,
+            client.info?.wid?._serialized || null
+        );
+
+        if (!dados || dados.erro) {
+            return {
+                erro: dados?.erro || 'Não consegui obter os participantes.'
+            };
+        }
+
+        return { jogadores: dados.jogadores || [] };
+    } catch (erro) {
+        console.error('❌ Erro ao obter jogadores do jogo:', erro);
+        return { erro: String(erro?.message || erro) };
+    }
+}
+
+async function expulsarJogadorDoGrupo(message, idUsuario) {
+    try {
+        const resultado = await client.pupPage.evaluate(
+            async (chatId, idUsuario) => {
+                try {
+                    const Store = window.require('WAWebCollections');
+                    const chat = Store.Chat.get(chatId);
+
+                    if (!chat) {
+                        return { sucesso: false, erro: 'Grupo não encontrado.' };
+                    }
+
+                    const participantes = chat.groupMetadata?.participants;
+                    if (!participantes) {
+                        return { sucesso: false, erro: 'Participantes não encontrados.' };
+                    }
+
+                    let participante = null;
+                    if (typeof participantes.get === 'function') {
+                        participante = participantes.get(idUsuario);
+                    }
+
+                    if (!participante) {
+                        let modelos = [];
+                        if (typeof participantes.getModelsArray === 'function') {
+                            modelos = participantes.getModelsArray();
+                        } else if (Array.isArray(participantes.models)) {
+                            modelos = participantes.models;
+                        }
+
+                        participante = modelos.find(p =>
+                            p.id?._serialized === idUsuario
+                        );
+                    }
+
+                    if (!participante) {
+                        return {
+                            sucesso: false,
+                            erro: 'Participante não encontrado.'
+                        };
+                    }
+
+                    if (participante.isAdmin || participante.isSuperAdmin) {
+                        return {
+                            sucesso: false,
+                            erro: 'O participante é administrador.'
+                        };
+                    }
+
+                    const ModifyParticipants =
+                        window.require('WAWebModifyParticipantsGroupAction');
+
+                    await ModifyParticipants.removeParticipants(
+                        chat,
+                        [participante]
+                    );
+
+                    return { sucesso: true };
+                } catch (erro) {
+                    return {
+                        sucesso: false,
+                        erro: String(erro?.message || erro)
+                    };
+                }
+            },
+            message.from,
+            idUsuario
+        );
+
+        return resultado || {
+            sucesso: false,
+            erro: 'Resposta vazia da remoção.'
+        };
+    } catch (erro) {
+        console.error('❌ Erro ao expulsar jogador:', erro);
+        return {
+            sucesso: false,
+            erro: String(erro?.message || erro)
+        };
+    }
+}
+
+async function jogarBatataQuente(message) {
+    try {
+        if (!message.from.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await message.reply('❌ A batata quente só pode ser jogada em grupos!');
+            return;
+        }
+
+        const jogadores = await obterJogadoresParaEliminacao(message);
+        if (jogadores.erro) {
+            await reagir(message, '❌');
+            await message.reply(`❌ ${jogadores.erro}`);
+            return;
+        }
+
+        if (jogadores.jogadores.length < 2) {
+            await reagir(message, '❌');
+            await message.reply(
+                '❌ Preciso de pelo menos *2 participantes que não sejam administradores* para jogar a batata quente!'
+            );
+            return;
+        }
+
+        const azarado =
+            jogadores.jogadores[Math.floor(Math.random() * jogadores.jogadores.length)];
+
+        jogosEliminacao.set(message.from, {
+            tipo: 'batata',
+            jogador: azarado,
+            criadoEm: Date.now()
+        });
+
+        const mencao = `@${String(azarado).split('@')[0]}`;
+
+        await reagir(message, '🥔');
+        await client.sendMessage(
+            message.from,
+            `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ A batata passou de mão em mão...\n├➤ E explodiu na mão de *${mencao}*! 💥\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🥔༻❃•═┛`,
+            { mentions: [azarado] }
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        const remocao = await expulsarJogadorDoGrupo(message, azarado);
+        jogosEliminacao.delete(message.from);
+
+        if (!remocao.sucesso) {
+            await client.sendMessage(
+                message.from,
+                `⚠️ A batata acertou em cheio, mas não consegui expulsar @${String(azarado).split('@')[0]}.\n\n❌ ${remocao.erro}`,
+                { mentions: [azarado] }
+            );
+        }
+    } catch (erro) {
+        jogosEliminacao.delete(message.from);
+        console.error('❌ ERRO NA BATATA QUENTE:', erro);
+        await message.reply('❌ Ocorreu um erro ao jogar a batata quente.');
+    }
+}
+
+async function jogarRoletaRussa(message) {
+    try {
+        if (!message.from.endsWith('@g.us')) {
+            await reagir(message, '❌');
+            await message.reply('❌ A roleta russa só pode ser usada em grupos!');
+            return;
+        }
+
+        const jogadores = await obterJogadoresParaEliminacao(message);
+        if (jogadores.erro) {
+            await reagir(message, '❌');
+            await message.reply(`❌ ${jogadores.erro}`);
+            return;
+        }
+
+        if (jogadores.jogadores.length < 2) {
+            await reagir(message, '❌');
+            await message.reply(
+                '❌ Preciso de pelo menos *2 participantes que não sejam administradores* para girar a roleta russa!'
+            );
+            return;
+        }
+
+        const azarado =
+            jogadores.jogadores[Math.floor(Math.random() * jogadores.jogadores.length)];
+
+        jogosEliminacao.set(message.from, {
+            tipo: 'rr',
+            jogador: azarado,
+            criadoEm: Date.now()
+        });
+
+        const mencao = `@${String(azarado).split('@')[0]}`;
+
+        await reagir(message, '🔫');
+        await client.sendMessage(
+            message.from,
+            `┏═•❃༺🔫༻❃•═┓\n│\n│  *𝐑𝐎𝐋𝐄𝐓𝐀 𝐑𝐔𝐒𝐒𝐀!*\n│\n├➤ A roleta girou... 🔄\n├➤ O destino escolheu *${mencao}*! 💀\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🔫༻❃•═┛`,
+            { mentions: [azarado] }
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        const remocao = await expulsarJogadorDoGrupo(message, azarado);
+        jogosEliminacao.delete(message.from);
+
+        if (!remocao.sucesso) {
+            await client.sendMessage(
+                message.from,
+                `⚠️ A roleta escolheu @${String(azarado).split('@')[0]}, mas não consegui expulsá-lo.\n\n❌ ${remocao.erro}`,
+                { mentions: [azarado] }
+            );
+        }
+    } catch (erro) {
+        jogosEliminacao.delete(message.from);
+        console.error('❌ ERRO NA ROLETA RUSSA:', erro);
+        await message.reply('❌ Ocorreu um erro ao girar a roleta russa.');
+    }
+}
+
 async function menuJogos(message) {
 
     await reagir(
@@ -13213,6 +13486,12 @@ async function menuJogos(message) {
 │
 ├➤ 🎁 *${PREFIXO}diario*
 │   _Pegue sua recompensa diária_
+│
+├➤ 🥔 *${PREFIXO}batata*
+│   _Escolha aleatoriamente quem será expulso_
+│
+├➤ 🔫 *${PREFIXO}rr*
+│   _Roleta russa: alguém será expulso_
 │
 ┗═•❃༺🎮༻❃•═┛`
     );
@@ -14502,6 +14781,18 @@ case 'sobre':
         case 'diario':
         case 'diaria':
             await recompensaDiaria(message);
+            break;
+
+        case 'batata':
+        case 'batataquente':
+        case 'hotpotato':
+            await jogarBatataQuente(message);
+            break;
+
+        case 'rr':
+        case 'roletarussa':
+        case 'roleta':
+            await jogarRoletaRussa(message);
             break;
 
 
