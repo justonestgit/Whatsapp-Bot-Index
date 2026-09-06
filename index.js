@@ -17542,7 +17542,7 @@ async function comandoAvatar(message) {
         const url = await contato.getProfilePicUrl();
         if (!url) {
             await reagir(message, '👤');
-            await responderCitando(message, '👤 _Essa pessoa não possui uma foto de perfil pública._');
+            await responderCitando(message, `┏═•❃༺👤༻❃•═┓\n│       *𝐅𝐎𝐓𝐎 𝐃𝐄 𝐏𝐄𝐑𝐅𝐈𝐋*\n├✯\n│\n├➤ 👤 _Essa pessoa não possui uma foto de perfil pública._\n│\n┗═•❃༺👤༻❃•═┓`);
             return;
         }
         const midia = await MessageMedia.fromUrl(url, { unsafeMime: true });
@@ -17553,14 +17553,14 @@ async function comandoAvatar(message) {
     } catch (erro) {
         console.error('❌ Erro no avatar:', erro.message);
         await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui obter a foto de perfil agora._');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐄𝐑𝐑𝐎*\n├✯\n│\n├➤ _Não consegui obter a foto de perfil agora._\n│\n┗═•❃༺❌༻❃•═┓`);
     }
 }
 
 async function comandoAdmins(message) {
     if (!message.from?.endsWith('@g.us')) {
         await reagir(message, '❌');
-        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐃𝐄 𝐆𝐑𝐔𝐏𝐎*\n├✯\n│\n├➤ _Esse comando só funciona em grupos._\n│\n┗═•❃༺❌༻❃•═┓`);
         return;
     }
     try {
@@ -17586,7 +17586,7 @@ async function comandoAdmins(message) {
     } catch (erro) {
         console.error('❌ Erro ao listar admins:', erro.message);
         await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui consultar os administradores deste grupo._');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐄𝐑𝐑𝐎*\n├✯\n│\n├➤ _Não consegui consultar os administradores deste grupo._\n│\n┗═•❃༺❌༻❃•═┓`);
     }
 }
 
@@ -17700,7 +17700,7 @@ async function comandoPorcentagem(message, argumentos) {
     }
     const resultado = valor * p / 100;
     await reagir(message, '📊');
-    await responderCitando(message, `📊 *${p}% de ${valor} = ${resultado}*`);
+    await responderCitando(message, `┏═•❃༺📊༻❃•═┓\n│      *𝐏𝐎𝐑𝐂𝐄𝐍𝐓𝐀𝐆𝐄𝐌*\n├✯\n│\n├➤ 📊 *${p}%* de *${valor}*\n├➤ 🟰 Resultado: *${resultado}*\n│\n┗═•❃༺📊༻❃•═┓`);
 }
 
 async function comandoRegra3(message, argumentos) {
@@ -17748,7 +17748,7 @@ async function comandoConverter(message, argumentos) {
     }
     const resultado = conversoes[chave](valor);
     await reagir(message, '🔄');
-    await responderCitando(message, `🔄 *𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐀̃𝐎*\n\n*${valor} ${de}* = *${Number(resultado.toFixed(6))} ${para}*`);
+    await responderCitando(message, `┏═•❃༺🔄༻❃•═┓\n│       *𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐀̃𝐎*\n├✯\n│\n├➤ 📥 *${valor} ${de}*\n├➤ 📤 *${Number(resultado.toFixed(6))} ${para}*\n│\n┗═•❃༺🔄༻❃•═┓`);
 }
 
 async function comandoCotacao(message, argumentos) {
@@ -17810,7 +17810,7 @@ async function comandoEncurtar(message, argumentos) {
         const curto = (await resposta.text()).trim();
         if (!resposta.ok || !/^https?:\/\//i.test(curto)) throw new Error(curto || 'falha');
         await reagir(message, '🔗');
-        await responderCitando(message, `🔗 *𝐋𝐈𝐍𝐊 𝐄𝐍𝐂𝐔𝐑𝐓𝐀𝐃𝐎*\n\n${curto}`);
+        await responderCitando(message, `┏═•❃༺🔗༻❃•═┓\n│      *𝐋𝐈𝐍𝐊 𝐄𝐍𝐂𝐔𝐑𝐓𝐀𝐃𝐎*\n├✯\n│\n├➤ 🔗 ${curto}\n│\n┗═•❃༺🔗༻❃•═┓`);
     } catch (erro) {
         console.error('❌ Erro ao encurtar:', erro.message);
         await reagir(message, '❌');
@@ -17843,33 +17843,33 @@ async function comandoDesafio(message) {
 async function comandoVidente(message, argumentos) {
     if (!String(argumentos || '').trim()) {
         await reagir(message, '🔮');
-        await responderCitando(message, `🔮 _Faça uma pergunta para a vidente._\n\nExemplo: *${PREFIXO}vidente vou ganhar?*`);
+        await responderCitando(message, `┏═•❃༺🔮༻❃•═┓\n│       *𝐕𝐈𝐃𝐄𝐍𝐓𝐄*\n├✯\n│\n├➤ _Faça uma pergunta para a vidente._\n├➤ Exemplo: *${PREFIXO}vidente vou ganhar?*\n│\n┗═•❃༺🔮༻❃•═┓`);
         return;
     }
     const respostas = ['🌟 Sim, as chances são altas.', '🌙 Talvez. O destino está nebuloso.', '☄️ Não parece provável.', '🔮 O futuro guarda uma surpresa.', '✨ Os sinais são muito positivos.', '🌀 Tente novamente quando a lua mudar.'];
     await reagir(message, '🔮');
-    await responderCitando(message, `🔮 *𝐕𝐈𝐃𝐄𝐍𝐓𝐄*\n\n❓ _${String(argumentos).trim()}_\n\n➤ *${escolherAleatorioSeguro(respostas)}*`);
+    await responderCitando(message, `┏═•❃༺🔮༻❃•═┓\n│       *𝐕𝐈𝐃𝐄𝐍𝐓𝐄*\n├✯\n│\n├➤ ❓ _${String(argumentos).trim()}_\n├➤ 🔮 Resposta: *${escolherAleatorioSeguro(respostas)}*\n│\n┗═•❃༺🔮༻❃•═┓`);
 }
 
 async function comando8Ball(message, argumentos) {
     if (!String(argumentos || '').trim()) {
         await reagir(message, '🎱');
-        await responderCitando(message, `🎱 _Faça uma pergunta._\n\nExemplo: *${PREFIXO}8ball vou passar de fase?*`);
+        await responderCitando(message, `┏═•❃༺🎱༻❃•═┓\n│       *𝐌𝐀𝐆𝐈𝐂 𝟖 𝐁𝐀𝐋𝐋*\n├✯\n│\n├➤ _Faça uma pergunta._\n├➤ Exemplo: *${PREFIXO}8ball vou passar de fase?*\n│\n┗═•❃༺🎱༻❃•═┓`);
         return;
     }
     await reagir(message, '🎱');
-    await responderCitando(message, `🎱 *𝐌𝐀𝐆𝐈𝐂 𝟖 𝐁𝐀𝐋𝐋*\n\n❓ _${String(argumentos).trim()}_\n\n➤ *${escolherAleatorioSeguro(RESPOSTAS_8BALL)}*`);
+    await responderCitando(message, `┏═•❃༺🎱༻❃•═┓\n│       *𝐌𝐀𝐆𝐈𝐂 𝟖 𝐁𝐀𝐋𝐋*\n├✯\n│\n├➤ ❓ _${String(argumentos).trim()}_\n├➤ 🎱 Resposta: *${escolherAleatorioSeguro(RESPOSTAS_8BALL)}*\n│\n┗═•❃༺🎱༻❃•═┓`);
 }
 
 async function comandoDecidir(message, argumentos) {
     const opcoes = String(argumentos || '').split(/\s*(?:\||\/|,|;|\bou\b)\s*/i).map(v => v.trim()).filter(Boolean);
     if (opcoes.length < 2) {
         await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe duas ou mais opções._\n\nExemplo: *${PREFIXO}decidir cinema ou praia*`);
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐎𝐏𝐂̧𝐎̃𝐄𝐒 𝐈𝐍𝐒𝐔𝐅𝐈𝐂𝐈𝐄𝐍𝐓𝐄𝐒*\n├✯\n│\n├➤ _Informe duas ou mais opções._\n├➤ Exemplo: *${PREFIXO}decidir cinema ou praia*\n│\n┗═•❃༺❌༻❃•═┓`);
         return;
     }
     await reagir(message, '⚖️');
-    await responderCitando(message, `⚖️ *𝐃𝐄𝐂𝐈𝐃𝐈𝐃𝐎!*\n\n🎯 Minha escolha: *${escolherAleatorioSeguro(opcoes)}*`);
+    await responderCitando(message, `┏═•❃༺⚖️༻❃•═┓\n│       *𝐃𝐄𝐂𝐈𝐃𝐈𝐃𝐎!*\n├✯\n│\n├➤ 🎯 Minha escolha: *${escolherAleatorioSeguro(opcoes)}*\n│\n┗═•❃༺⚖️༻❃•═┓`);
 }
 
 async function comandoRelacaoAleatoria(message, tipo) {
@@ -17918,7 +17918,7 @@ async function comandoNota(message) {
     const nota = crypto.randomInt(0, 101) / 10;
     const avaliacao = nota >= 9 ? 'LENDÁRIO 🏆' : nota >= 7 ? 'Muito bom ⭐' : nota >= 5 ? 'Dá para melhorar 📚' : 'Precisamos conversar com o professor 😭';
     await reagir(message, '📝');
-    await responderAlvoComMencao(message, `📝 *𝐍𝐎𝐓𝐀*\n\n👤 ${nome}\n📊 Nota: *${nota.toFixed(1)}/10*\n🏫 Avaliação: *${avaliacao}*`, pessoa);
+    await responderAlvoComMencao(message, `┏═•❃༺📝༻❃•═┓\n│         *𝐍𝐎𝐓𝐀*\n├✯\n│\n├➤ 👤 ${nome}\n├➤ 📊 Nota: *${nota.toFixed(1)}/10*\n├➤ 🏫 Avaliação: *${avaliacao}*\n│\n┗═•❃༺📝༻❃•═┓`, pessoa);
 }
 
 
