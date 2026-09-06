@@ -14973,6 +14973,65 @@ function iniciarTimerBatataQuente(chatId, jogo) {
     }, TEMPO_BATATA_QUENTE);
 }
 
+async function verificarParticipanteBatataQuente(message, idDestino) {
+    try {
+        const resultado = await client.pupPage.evaluate(
+            (chatId, idDestino) => {
+                try {
+                    const Store = window.require('WAWebCollections');
+                    const chat = Store.Chat.get(chatId);
+                    const participantes = chat?.groupMetadata?.participants;
+
+                    if (!participantes) {
+                        return { erro: 'Não consegui obter os participantes do grupo.' };
+                    }
+
+                    let modelos = [];
+                    if (typeof participantes.getModelsArray === 'function') {
+                        modelos = participantes.getModelsArray();
+                    } else if (Array.isArray(participantes.models)) {
+                        modelos = participantes.models;
+                    }
+
+                    const alvo = String(idDestino || '');
+                    const alvoSemTipo = alvo.split('@')[0];
+
+                    const participante = modelos.find(p => {
+                        const id = p.id?._serialized || p.id?.toString?.() || '';
+                        const user = p.id?.user ? String(p.id.user) : '';
+                        return id === alvo || id.split('@')[0] === alvoSemTipo || user === alvoSemTipo;
+                    });
+
+                    if (!participante) {
+                        return { encontrado: false };
+                    }
+
+                    return {
+                        encontrado: true,
+                        id: participante.id?._serialized || participante.id?.toString?.() || null,
+                        isAdmin: !!participante.isAdmin,
+                        isSuperAdmin: !!participante.isSuperAdmin,
+                        isMe: !!participante.isMe
+                    };
+                } catch (erro) {
+                    return { erro: String(erro?.message || erro) };
+                }
+            },
+            message.from,
+            idDestino
+        );
+
+        if (!resultado) {
+            return { erro: 'Não consegui verificar o participante.' };
+        }
+
+        return resultado;
+    } catch (erro) {
+        console.error('❌ Erro ao verificar participante da batata:', erro);
+        return { erro: String(erro?.message || erro) };
+    }
+}
+
 async function passarBatataQuente(message) {
     try {
         if (!message.from?.endsWith('@g.us')) {
@@ -15015,25 +15074,35 @@ async function passarBatataQuente(message) {
             return;
         }
 
-        const jogadores = await obterJogadoresParaEliminacao(message);
-        if (jogadores.erro) {
+        const verificacaoDestino = await verificarParticipanteBatataQuente(message, destino);
+
+        if (verificacaoDestino.erro) {
             await reagir(message, '❌');
-            await responderCitando(message, `❌ ${jogadores.erro}`);
+            await responderCitando(message, `❌ ${verificacaoDestino.erro}`);
             return;
         }
 
-        const participanteValido = jogadores.jogadores.some(id => idsIguais(id, destino));
-        if (!participanteValido) {
+        if (!verificacaoDestino.encontrado) {
             await reagir(message, '❌');
             await responderComMencoes(
                 message,
-                `❌ @${String(destino).split('@')[0]} não pode receber a batata.\n_Administradores e o próprio bot não participam._`,
+                `❌ @${String(destino).split('@')[0]} não é um participante válido deste grupo.`,
                 { mentions: [destino] }
             );
             return;
         }
 
-        jogo.jogador = destino;
+        if (verificacaoDestino.isAdmin || verificacaoDestino.isSuperAdmin) {
+            await reagir(message, '❌');
+            await responderComMencoes(
+                message,
+                `❌ @${String(destino).split('@')[0]} é administrador e não pode receber a batata.\n_Administradores e o próprio bot não participam._`,
+                { mentions: [destino] }
+            );
+            return;
+        }
+
+        jogo.jogador = verificacaoDestino.id || destino;
         jogo.ultimaPassagemEm = Date.now();
         iniciarTimerBatataQuente(message.from, jogo);
 
