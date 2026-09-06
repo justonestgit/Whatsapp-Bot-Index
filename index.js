@@ -12927,17 +12927,14 @@ async function ativarAFK(
 
         await responderCitando(
             message,
-            `┏━━━❖❖━━━┓
-┃  💤 𝐌𝐎𝐃𝐎 𝐀𝐅𝐊
-┗━━━❖❖━━━┛
-
-╭┈┈┈┈┈┈┈┈┈╮
-│ ❌ *𝐀𝐏𝐄𝐍𝐀𝐒 𝐄𝐌 𝐆𝐑𝐔𝐏𝐎𝐒*
+            `╭━━━〔 💤 𝐌𝐎𝐃𝐎 𝐀𝐅𝐊 〕━━━╮
 │
-│ O sistema de AFK não pode
-│ ser utilizado em conversas
-│ privadas.
-╰┈┈┈┈┈┈┈┈┈╯`
+│ ❌ *Disponível apenas em grupos*
+│
+│ O modo AFK não pode ser utilizado
+│ em conversas privadas.
+│
+╰━━━━━━━━━━━━━━━━━━━━╯`
         );
 
         return;
@@ -12982,18 +12979,15 @@ async function ativarAFK(
 
         await responderCitando(
             message,
-            `┏━━━❖❖━━━┓
-┃  💤 𝐀𝐅𝐊 𝐀𝐓𝐈𝐕𝐎
-┗━━━❖❖━━━┛
-
-╭┈┈┈┈┈┈┈┈┈╮
-│ ⚠️ Você já estava AFK!
+            `╭━━━〔 💤 𝐀𝐅𝐊 𝐀𝐓𝐈𝐕𝐎 〕━━━╮
 │
-│ 📝 *𝐍𝐎𝐕𝐎 𝐌𝐎𝐓𝐈𝐕𝐎*
+│ ⚠️ Você já estava em AFK.
+│
+│ 📝 *Motivo atualizado:*
 │ ➜ _${dados.motivo}_
-╰┈┈┈┈┈┈┈┈┈╯
-
-💤 _Seu motivo foi atualizado._`
+│
+╰━━━━━━━━━━━━━━━━━━━━╯
+💡 _Seu motivo foi atualizado com sucesso._`
         );
 
         return;
@@ -13030,25 +13024,15 @@ async function ativarAFK(
 
     await responderCitando(
         message,
-        `┏━━━❖❖━━━┓
-┃  💤 𝐌𝐎𝐃𝐎 𝐀𝐅𝐊
-┗━━━❖❖━━━┛
-
-╭┈┈┈┈┈┈┈┈┈╮
-│ 👤 *𝐔𝐒𝐔𝐀́𝐑𝐈𝐎*
-│ ➜ Você
+        `╭━━━〔 💤 𝐀𝐅𝐊 𝐀𝐓𝐈𝐕𝐀𝐃𝐎 〕━━━╮
 │
-│ 📝 *𝐌𝐎𝐓𝐈𝐕𝐎*
-│ ➜ _${motivo || 'Sem motivo informado.'}_
+│ 👤 *Usuário:* Você
+│ 📝 *Motivo:* _${motivo || 'Sem motivo informado.'}_
+│ 💤 *Status:* Ausente
 │
-│ ⏰ *𝐒𝐓𝐀𝐓𝐔𝐒*
-│ ➜ 💤 Ausente
-╰┈┈┈┈┈┈┈┈┈╯
+╰━━━━━━━━━━━━━━━━━━━━╯
 
-> 💡 _Envie qualquer mensagem para
-> encerrar seu AFK._
-
-┗━━━━━━━━━━━━━━┛`
+💡 _Envie qualquer mensagem para encerrar seu AFK._`
     );
 
 }
@@ -13101,27 +13085,20 @@ async function removerAFK(
 
     await responderCitando(
         message,
-        `┏━━━❖❖━━━┓
-┃  👋 𝐕𝐎𝐋𝐓𝐎𝐔!
-┗━━━❖❖━━━┛
-
-🌙 *${saudacao}, ${nome}!*
-
-╭┈┈┈┈┈┈┈┈┈╮
-│ 💤 *𝐀𝐅𝐊 𝐄𝐍𝐂𝐄𝐑𝐑𝐀𝐃𝐎*
+        `╭━━━〔 👋 𝐀𝐅𝐊 𝐄𝐍𝐂𝐄𝐑𝐑𝐀𝐃𝐎 〕━━━╮
 │
-│ ⏱️ *𝐓𝐄𝐌𝐏𝐎 𝐀𝐔𝐒𝐄𝐍𝐓𝐄*
+│ 🌙 *${saudacao}, ${nome}!*
+│
+│ ⏱️ *Tempo ausente:*
 │ ➜ ${tempo}
 │
-│ 📝 *𝐌𝐎𝐓𝐈𝐕𝐎*
+│ 📝 *Motivo:*
 │ ➜ _${dados.motivo}_
-╰┈┈┈┈┈┈┈┈┈╯
-
-╭──────────────╮
-│ ✅ *𝐒𝐓𝐀𝐓𝐔𝐒: 𝐎𝐍𝐋𝐈𝐍𝐄*
-╰──────────────╯
-
-_Que bom que voltou! 👋_`
+│
+│ ✅ *Status:* Online
+│
+╰━━━━━━━━━━━━━━━━━━━━╯
+_Que bom que você voltou! 👋_`
     );
 
 }
@@ -17371,22 +17348,15 @@ if (
 
             await responderCitando(
                 message,
-                `┏━━━❖❖━━━┓
-┃  💤 𝐔𝐒𝐔𝐀́𝐑𝐈𝐎 𝐀𝐅𝐊
-┗━━━❖❖━━━┛
-
-👤 @${String(idMencionado).split('@')[0]}
-
-╭┈┈┈┈┈┈┈┈┈╮
-│ 📝 *𝐌𝐎𝐓𝐈𝐕𝐎*
-│ ➜ _${dadosAFK.motivo}_
+                `╭━━━〔 💤 𝐔𝐒𝐔𝐀́𝐑𝐈𝐎 𝐀𝐅𝐊 〕━━━╮
 │
-│ ⏱️ *𝐀𝐔𝐒𝐄𝐍𝐓𝐄 𝐇𝐀́*
-│ ➜ ${formatarTempoAFKCurto(dadosAFK.inicio)}
-╰┈┈┈┈┈┈┈┈┈╯
-
-💤 _Este usuário está temporariamente
-ausente._`
+│ 👤 @${String(idMencionado).split('@')[0]}
+│
+│ 📝 *Motivo:* _${dadosAFK.motivo}_
+│ ⏱️ *Ausente há:* ${formatarTempoAFKCurto(dadosAFK.inicio)}
+│
+╰━━━━━━━━━━━━━━━━━━━━╯
+💤 _Este usuário está temporariamente ausente._`
             , { mentions: [idMencionado] }
             );
 
@@ -17439,22 +17409,15 @@ ausente._`
 
                     await responderCitando(
                         message,
-                        `┏━━━❖❖━━━┓
-┃  💤 𝐔𝐒𝐔𝐀́𝐑𝐈𝐎 𝐀𝐅𝐊
-┗━━━❖❖━━━┛
-
-👤 @${String(idAutorResposta).split('@')[0]}
-
-╭┈┈┈┈┈┈┈┈┈╮
-│ 📝 *𝐌𝐎𝐓𝐈𝐕𝐎*
-│ ➜ _${dadosAFK.motivo}_
+                        `╭━━━〔 💤 𝐔𝐒𝐔𝐀́𝐑𝐈𝐎 𝐀𝐅𝐊 〕━━━╮
 │
-│ ⏱️ *𝐀𝐔𝐒𝐄𝐍𝐓𝐄 𝐇𝐀́*
-│ ➜ ${formatarTempoAFKCurto(dadosAFK.inicio)}
-╰┈┈┈┈┈┈┈┈┈╯
-
-💤 _Este usuário está temporariamente
-ausente._`
+│ 👤 @${String(idAutorResposta).split('@')[0]}
+│
+│ 📝 *Motivo:* _${dadosAFK.motivo}_
+│ ⏱️ *Ausente há:* ${formatarTempoAFKCurto(dadosAFK.inicio)}
+│
+╰━━━━━━━━━━━━━━━━━━━━╯
+💤 _Este usuário está temporariamente ausente._`
                     , { mentions: [idAutorResposta] }
                     );
 
