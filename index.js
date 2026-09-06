@@ -1437,7 +1437,7 @@ function transferirMoedas(de, para, valor, tipo = 'transferencia', detalhes = ''
 
 const MOEDAS_INICIAIS = 1000;
 const INTERVALO_MINERACAO = 60 * 1000;
-const INTERVALO_ROUBO = 30 * 60 * 1000;
+const INTERVALO_ROUBO = 5 * 60 * 1000;
 const INTERVALO_MESMA_VITIMA = 6 * 60 * 60 * 1000;
 
 const ITENS_LOJA = {
