@@ -1,1 +1,1 @@
-base64
+const RESTORE_PLACEHOLDER
