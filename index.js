@@ -16176,12 +16176,74 @@ async function executarFFmpeg(args) {
     });
 }
 
+// Cache local dos áudios que o próprio bot enviou.
+// Isso permite encadear efeitos sem depender do download da mídia pelo
+// WhatsApp Web, que pode falhar em mensagens enviadas pelo próprio bot.
+const CACHE_AUDIO_BOT = new Map();
+const CACHE_AUDIO_BOT_LIMITE = 30;
+
+function chaveMensagemAudio(mensagem) {
+    if (!mensagem) return null;
+    const id = mensagem.id || mensagem._data?.id || mensagem.rawData?.id;
+    if (!id) return null;
+    if (typeof id === 'string') return id;
+    return id.$1 || id._serialized || (id.fromMe !== undefined && id.remote && id.id
+        ? `${id.fromMe}_${id.remote}_${id.id}`
+        : null);
+}
+
+function guardarAudioBot(mensagem, audio) {
+    const chave = chaveMensagemAudio(mensagem);
+    if (!chave || !audio?.data) return;
+
+    CACHE_AUDIO_BOT.set(chave, {
+        data: audio.data,
+        mimetype: audio.mimetype || 'audio/ogg; codecs=opus',
+        filename: audio.filename,
+        filesize: audio.filesize,
+        criadoEm: Date.now(),
+    });
+
+    while (CACHE_AUDIO_BOT.size > CACHE_AUDIO_BOT_LIMITE) {
+        const primeira = CACHE_AUDIO_BOT.keys().next().value;
+        if (primeira === undefined) break;
+        CACHE_AUDIO_BOT.delete(primeira);
+    }
+}
+
+function recuperarAudioBot(mensagem) {
+    const chave = chaveMensagemAudio(mensagem);
+    if (!chave) return null;
+    const salvo = CACHE_AUDIO_BOT.get(chave);
+    if (!salvo) return null;
+    return new MessageMedia(salvo.mimetype, salvo.data, salvo.filename, salvo.filesize);
+}
+
 async function obterMensagemDeAudio(message) {
     if (message.hasMedia) return message;
+
     if (message.hasQuotedMsg) {
-        const citada = await message.getQuotedMessage();
-        if (citada && citada.hasMedia) return citada;
+        // Primeiro tenta o cache. É o caminho mais confiável para áudios que
+        // foram gerados pelo próprio bot e depois receberam outro efeito.
+        try {
+            const citada = await message.getQuotedMessage();
+            if (citada) {
+                const audioCache = recuperarAudioBot(citada);
+                if (audioCache) return audioCache;
+                if (citada.hasMedia) return citada;
+            }
+        } catch (_) {}
+
+        // Algumas versões recentes do WhatsApp Web expõem a mensagem citada
+        // apenas dentro de _data/rawData. Tentamos o ID diretamente para o
+        // cache antes de recorrer ao download normal.
+        const quotedRaw = message.rawData?.quotedMsg || message._data?.quotedMsg;
+        if (quotedRaw) {
+            const audioCache = recuperarAudioBot(quotedRaw);
+            if (audioCache) return audioCache;
+        }
     }
+
     return null;
 }
 
@@ -16441,7 +16503,8 @@ async function modificarAudio(message, comando) {
             const audio = new MessageMedia('audio/ogg; codecs=opus', dados.toString('base64'), `${comando}.ogg`);
             await reagir(message, '🎙️');
             await responderCitando(message, `┏═•❃༺🎙️༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ ${efeito.nome}\n│   _Áudio processado com sucesso!_\n│\n┗═•❃༺🎙️༻❃•═┓`);
-            await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+            const mensagemEnviada = await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+            guardarAudioBot(mensagemEnviada, audio);
         } finally {
             await Promise.allSettled([fs.promises.unlink(entrada), fs.promises.unlink(saida)]);
         }
@@ -16502,7 +16565,8 @@ async function comandoTTS(message, argumentos) {
 
             await reagir(message, '🗣️');
             await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Voz gerada com sucesso!_\n│   _Seu áudio está logo abaixo._\n│\n┗═•❃༺🗣️༻❃•═┓`);
-            await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+            const mensagemEnviada = await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
+            guardarAudioBot(mensagemEnviada, audio);
         } finally {
             await Promise.allSettled([
                 fs.promises.unlink(entrada),
