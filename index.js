@@ -44,11 +44,58 @@ const confirmacoesLimparPiadas = new Map();
 const usuariosAFK = new Map();
 const avisos = new Map();
 const confirmacoesRemoverAviso = new Map();
+
 const dadosXP = new Map();
+
+// ============================================================
+// 🎖️ SISTEMA DE CONQUISTAS
+// ============================================================
+
+const conquistasUsuarios = new Map();
+
+const CONQUISTAS = {
+    primeiroPasso: {
+        nome: 'Primeiro Passo',
+        emoji: '🌱',
+        descricao: 'Ganhe XP pela primeira vez.'
+    },
+
+    tagarela: {
+        nome: 'Tagarela',
+        emoji: '💬',
+        descricao: 'Envie 100 mensagens.'
+    },
+
+    faladorProfissional: {
+        nome: 'Falador Profissional',
+        emoji: '🗣️',
+        descricao: 'Envie 1.000 mensagens.'
+    },
+
+    nivel5: {
+        nome: 'Subindo de Nível',
+        emoji: '⭐',
+        descricao: 'Alcance o nível 5.'
+    },
+
+    nivel10: {
+        nome: 'Veterano',
+        emoji: '🚀',
+        descricao: 'Alcance o nível 10.'
+    },
+
+    nivel25: {
+        nome: 'Lenda',
+        emoji: '👑',
+        descricao: 'Alcance o nível 25.'
+    }
+};
 
 const numeroOiAuto = '553298631752@c.us';
 
 let oiAutoAtivo = new Map();
+
+
 // ========================================
 // 💾 SISTEMA DE PERSISTÊNCIA
 // ========================================
@@ -84,6 +131,9 @@ const arquivoOiAuto = `${pastaDados}/oi-auto.json`;
 const arquivoXP = `${pastaDados}/xp.json`;
 const arquivoControleXP =
     `${pastaDados}/xp-controle.json`;
+
+const arquivoConquistas =
+    `${pastaDados}/conquistas.json`;
 
 // Cria a pasta dados se ela não existir
 if (!fs.existsSync(pastaDados)) {
@@ -1068,6 +1118,235 @@ function carregarXP() {
 }
 
 carregarXP();
+
+// ============================================================
+// 🎖️ CARREGAR CONQUISTAS
+// ============================================================
+
+function carregarConquistas() {
+
+    try {
+
+        if (
+            !fs.existsSync(
+                arquivoConquistas
+            )
+        ) {
+            return;
+        }
+
+        const dados =
+            JSON.parse(
+                fs.readFileSync(
+                    arquivoConquistas,
+                    'utf8'
+                )
+            );
+
+        conquistasUsuarios.clear();
+
+        for (
+            const [
+                usuarioId,
+                conquistas
+            ] of Object.entries(dados)
+        ) {
+
+            if (
+                Array.isArray(conquistas)
+            ) {
+                conquistasUsuarios.set(
+                    usuarioId,
+                    new Set(conquistas)
+                );
+            }
+        }
+
+        console.log(
+            '🎖️ Conquistas carregadas:',
+            conquistasUsuarios.size,
+            'usuários'
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao carregar conquistas:',
+            erro
+        );
+    }
+}
+
+
+// ============================================================
+// 🎖️ SALVAR CONQUISTAS
+// ============================================================
+
+function salvarConquistas() {
+
+    try {
+
+        const dados = {};
+
+        for (
+            const [
+                usuarioId,
+                conquistas
+            ] of conquistasUsuarios.entries()
+        ) {
+
+            dados[usuarioId] = [
+                ...conquistas
+            ];
+        }
+
+        fs.writeFileSync(
+            arquivoConquistas,
+            JSON.stringify(
+                dados,
+                null,
+                2
+            ),
+            'utf8'
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao salvar conquistas:',
+            erro
+        );
+    }
+}
+
+
+carregarConquistas();
+
+// ============================================================
+// 🎖️ DADOS DE CONQUISTAS DO USUÁRIO
+// ============================================================
+
+function garantirConquistasUsuario(
+    usuarioId
+) {
+
+    if (
+        !conquistasUsuarios.has(
+            usuarioId
+        )
+    ) {
+
+        conquistasUsuarios.set(
+            usuarioId,
+            new Set()
+        );
+    }
+
+    return conquistasUsuarios.get(
+        usuarioId
+    );
+}
+
+
+// ============================================================
+// 🎖️ VERIFICAR SE USUÁRIO POSSUI CONQUISTA
+// ============================================================
+
+function possuiConquista(
+    usuarioId,
+    conquistaId
+) {
+
+    const conquistas =
+        conquistasUsuarios.get(
+            usuarioId
+        );
+
+    return !!(
+        conquistas &&
+        conquistas.has(
+            conquistaId
+        )
+    );
+}
+
+
+// ============================================================
+// 🎖️ DESBLOQUEAR CONQUISTA
+// ============================================================
+
+function desbloquearConquista(
+    usuarioId,
+    conquistaId
+) {
+
+    const conquista =
+        CONQUISTAS[
+            conquistaId
+        ];
+
+    if (!conquista) {
+        return false;
+    }
+
+    const conquistas =
+        garantirConquistasUsuario(
+            usuarioId
+        );
+
+    if (
+        conquistas.has(
+            conquistaId
+        )
+    ) {
+        return false;
+    }
+
+    conquistas.add(
+        conquistaId
+    );
+
+    salvarConquistas();
+
+    console.log(
+        `🎖️ Conquista desbloqueada: ${conquista.nome} → ${usuarioId}`
+    );
+
+    return true;
+}
+
+// ============================================================
+// 🎖️ VERIFICAR CONQUISTAS DO USUÁRIO
+// ============================================================
+
+function verificarConquistas(
+    usuarioId,
+    dadosUsuario
+) {
+    const novasConquistas = [];
+
+    if (
+        dadosUsuario &&
+        Number(dadosUsuario.xp) > 0 &&
+        !possuiConquista(
+            usuarioId,
+            'primeiroPasso'
+        )
+    ) {
+        if (
+            desbloquearConquista(
+                usuarioId,
+                'primeiroPasso'
+            )
+        ) {
+            novasConquistas.push(
+                'primeiroPasso'
+            );
+        }
+    }
+
+    return novasConquistas;
+}
 
 // ============================================================
 // 💤 CONTROLE DE XP OFFLINE
@@ -5396,6 +5675,163 @@ async function mostrarRanking(message) {
         await responderCitando(
             message,
             '❌ _Ocorreu um erro ao carregar o ranking de XP._'
+        );
+    }
+}
+
+// ============================================================
+// 🎖️ MOSTRAR CONQUISTAS
+// ============================================================
+
+async function mostrarConquistas(
+    message
+) {
+
+    try {
+
+        const usuarioId =
+            obterIdRemetente(
+                message
+            );
+
+        if (!usuarioId) {
+
+            await reagir(
+                message,
+                '❌'
+            );
+
+            return;
+        }
+
+        const conquistasDesbloqueadas =
+            garantirConquistasUsuario(
+                usuarioId
+            );
+
+        const listaConquistas =
+            Object.entries(
+                CONQUISTAS
+            );
+
+        let texto =
+            `┏═•❃༺🎖️༻❃•═┓
+│   *🎖️ 𝐒𝐔𝐀𝐒 𝐂𝐎𝐍𝐐𝐔𝐈𝐒𝐓𝐀𝐒*
+├✯
+│
+`;
+
+        let desbloqueadas = 0;
+
+        for (
+            const [
+                id,
+                conquista
+            ] of listaConquistas
+        ) {
+
+            if (
+                conquistasDesbloqueadas.has(
+                    id
+                )
+            ) {
+
+                desbloqueadas++;
+
+                texto +=
+                    `├➤ ${conquista.emoji} *${conquista.nome}* ✅
+│   _${conquista.descricao}_
+│
+`;
+            }
+        }
+
+        if (
+            desbloqueadas === 0
+        ) {
+
+            texto +=
+                `├➤ 🔒 _Você ainda não desbloqueou
+│   nenhuma conquista._
+│
+`;
+        }
+
+        texto +=
+            `├──────────────────
+│
+│ *🔒 CONQUISTAS BLOQUEADAS*
+│
+`;
+
+        let bloqueadas = 0;
+
+        for (
+            const [
+                id,
+                conquista
+            ] of listaConquistas
+        ) {
+
+            if (
+                !conquistasDesbloqueadas.has(
+                    id
+                )
+            ) {
+
+                bloqueadas++;
+
+                texto +=
+                    `├➤ 🔒 ${conquista.emoji} *${conquista.nome}*
+│   _${conquista.descricao}_
+│
+`;
+            }
+        }
+
+        if (
+            bloqueadas === 0
+        ) {
+
+            texto +=
+                `├➤ 🏆 _Todas as conquistas foram desbloqueadas!_
+│
+`;
+        }
+
+        texto +=
+            `├──────────────────
+│
+│ 🎖️ *${desbloqueadas}/${listaConquistas.length}*
+│   conquistas desbloqueadas.
+│
+┗═•❃༺🎖️༻❃•═┛`;
+
+        await reagir(
+            message,
+            '🎖️'
+        );
+
+        await responderCitando(
+            message,
+            texto
+        );
+
+    } catch (erro) {
+
+        console.error(
+            '❌ Erro ao mostrar conquistas:',
+            erro
+        );
+
+        await reagir(
+            message,
+            '❌'
+        );
+
+        await responderCitando(
+            message,
+            '❌ _Ocorreu um erro ao carregar suas conquistas._'
         );
     }
 }
@@ -12971,6 +13407,12 @@ case 'menuutil':
 case 'bot':
 case 'menubot':
     await menuBot(message);
+    break;
+
+case 'conquistas':
+case 'conquista':
+case 'achievements':
+    await mostrarConquistas(message);
     break;
 
 case 'comandos':
