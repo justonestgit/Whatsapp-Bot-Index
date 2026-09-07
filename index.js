@@ -9102,72 +9102,30 @@ function quebrarTextoBrat(texto, caracteresPorLinha) {
 // para aproveitar melhor a imagem.
 
 function calcularLayoutBrat(texto) {
-
     const tamanho = 1000;
-    const margemEsquerda = 68;
-    const margemDireita = 72;
-    const margemSuperior = 68;
-    const margemInferior = 68;
+    const margem = 55;
+    const larguraUtil = tamanho - (margem * 2);
+    const alturaUtil = tamanho - (margem * 2);
 
-    const larguraUtil =
-        tamanho -
-        margemEsquerda -
-        margemDireita;
+    let fonte = 280;
 
-    const alturaUtil =
-        tamanho -
-        margemSuperior -
-        margemInferior;
-
-    let fonte = 170;
-
-    while (fonte >= 40) {
-
-        const proporcao =
-            (fonte - 40) /
-            (170 - 40);
-
-        const letterSpacing =
-            -1.4 -
-            ((1 - proporcao) * 1.8);
-
-        const larguraMediaLetra =
-            fonte * 0.43;
-
-        const palavras =
-            texto
-                .trim()
-                .split(/\s+/)
-                .filter(Boolean);
-
+    while (fonte >= 70) {
+        const letterSpacing = -2.2 - (((fonte - 70) / 210) * 1.0);
+        const larguraMediaLetra = fonte * 0.43;
+        const palavras = texto.trim().split(/\s+/).filter(Boolean);
         const linhas = [];
         let linhaAtual = '';
 
         function medirTexto(textoMedido) {
-            if (!textoMedido) {
-                return 0;
-            }
-
+            if (!textoMedido) return 0;
             const caracteres = textoMedido.length;
-
-            return (
-                caracteres * larguraMediaLetra
-            ) + (
-                Math.max(0, caracteres - 1) * letterSpacing
-            );
+            return (caracteres * larguraMediaLetra) +
+                (Math.max(0, caracteres - 1) * letterSpacing);
         }
 
         for (const palavra of palavras) {
-
-            const tentativa =
-                linhaAtual
-                    ? `${linhaAtual} ${palavra}`
-                    : palavra;
-
-            if (
-                !linhaAtual ||
-                medirTexto(tentativa) <= larguraUtil
-            ) {
+            const tentativa = linhaAtual ? `${linhaAtual} ${palavra}` : palavra;
+            if (!linhaAtual || medirTexto(tentativa) <= larguraUtil) {
                 linhaAtual = tentativa;
             } else {
                 linhas.push(linhaAtual);
@@ -9175,18 +9133,10 @@ function calcularLayoutBrat(texto) {
             }
         }
 
-        if (linhaAtual) {
-            linhas.push(linhaAtual);
-        }
+        if (linhaAtual) linhas.push(linhaAtual);
 
-        const alturaLinha =
-            fonte * (
-                0.88 -
-                ((1 - proporcao) * 0.05)
-            );
-
-        const alturaTotal =
-            linhas.length * alturaLinha;
+        const alturaLinha = fonte * 0.88;
+        const alturaTotal = linhas.length * alturaLinha;
 
         if (alturaTotal <= alturaUtil) {
             return {
@@ -9194,19 +9144,19 @@ function calcularLayoutBrat(texto) {
                 linhas,
                 alturaLinha,
                 letterSpacing,
-                margemEsquerda,
-                margemDireita,
-                margemSuperior,
-                margemInferior,
+                margemEsquerda: margem,
+                margemDireita: margem,
+                margemSuperior: margem,
+                margemInferior: margem,
                 larguraUtil,
                 alturaUtil
             };
         }
 
-        fonte -= 3;
+        fonte -= 4;
     }
 
-    const fonteFinal = 40;
+    const fonteFinal = 70;
     const letterSpacing = -3.2;
     const larguraMediaLetra = fonteFinal * 0.43;
     const palavras = texto.trim().split(/\s+/).filter(Boolean);
@@ -9214,29 +9164,15 @@ function calcularLayoutBrat(texto) {
     let linhaAtual = '';
 
     function medirTextoFinal(textoMedido) {
-        if (!textoMedido) {
-            return 0;
-        }
-
+        if (!textoMedido) return 0;
         const caracteres = textoMedido.length;
-
-        return (
-            caracteres * larguraMediaLetra
-        ) + (
-            Math.max(0, caracteres - 1) * letterSpacing
-        );
+        return (caracteres * larguraMediaLetra) +
+            (Math.max(0, caracteres - 1) * letterSpacing);
     }
 
     for (const palavra of palavras) {
-        const tentativa =
-            linhaAtual
-                ? `${linhaAtual} ${palavra}`
-                : palavra;
-
-        if (
-            !linhaAtual ||
-            medirTextoFinal(tentativa) <= larguraUtil
-        ) {
+        const tentativa = linhaAtual ? `${linhaAtual} ${palavra}` : palavra;
+        if (!linhaAtual || medirTextoFinal(tentativa) <= larguraUtil) {
             linhaAtual = tentativa;
         } else {
             linhas.push(linhaAtual);
@@ -9244,24 +9180,21 @@ function calcularLayoutBrat(texto) {
         }
     }
 
-    if (linhaAtual) {
-        linhas.push(linhaAtual);
-    }
+    if (linhaAtual) linhas.push(linhaAtual);
 
     return {
         fonte: fonteFinal,
         linhas,
-        alturaLinha: fonteFinal * 0.83,
+        alturaLinha: fonteFinal * 0.88,
         letterSpacing,
-        margemEsquerda,
-        margemDireita,
-        margemSuperior,
-        margemInferior,
+        margemEsquerda: margem,
+        margemDireita: margem,
+        margemSuperior: margem,
+        margemInferior: margem,
         larguraUtil,
         alturaUtil
     };
 }
-
 
 function construirSvgBrat(
     layout,
@@ -9283,8 +9216,9 @@ function construirSvgBrat(
         margemSuperior = 68
     } = layout;
 
+    const alturaTotal = linhas.length * alturaLinha;
     const yInicial =
-        margemSuperior +
+        ((tamanho - alturaTotal) / 2) +
         (alturaLinha * 0.78) +
         deslocamentoY;
 
@@ -9297,7 +9231,7 @@ function construirSvgBrat(
 
                 return `
 <tspan
-    x="${margemEsquerda}"
+    x="500"
     y="${y}"
 >${escaparXmlBrat(linha)}</tspan>`;
             })
@@ -9336,12 +9270,13 @@ function construirSvgBrat(
         transform="translate(${deslocamentoX}, 0) scale(${escalaX}, 1)"
     >
         <text
-            x="${margemEsquerda}"
+            x="500"
             y="0"
             font-family="Arial Narrow, Liberation Sans Narrow, Arial, Helvetica, sans-serif"
             font-size="${fonte}"
             font-weight="400"
             font-stretch="condensed"
+            text-anchor="middle"
             letter-spacing="${letterSpacing}"
             fill="#000000"
             filter="url(#bratBlur)"
