@@ -9253,8 +9253,10 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
                 }
             }
 
-            fonte = melhorFonte;
-            linhas = melhoresLinhas;
+            // Mantém o mesmo ajuste de encaixe, mas deixa o resultado
+            // ligeiramente menor para não ocupar tanto espaço na figurinha.
+            fonte = Math.max(fonteMinima, melhorFonte - 10);
+            linhas = await quebrar(texto, fonte);
         }
 
         const alturaLinha = fonte * lineHeightFator;
