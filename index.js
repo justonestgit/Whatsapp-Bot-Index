@@ -18420,6 +18420,30 @@ function formatarHoraConfig(hora) {
     return hora || 'não configurado';
 }
 
+
+async function comandoParceria(message, acao='listar', argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from));
+    if (!Array.isArray(config.parcerias)) config.parcerias=[];
+    const args=String(argumentos||'').trim();
+    if(acao==='adicionar'){if(!args){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}add_parceria nome | contato/link*.`);return;}const partes=args.split('|');const nome=String(partes.shift()||'').trim();const valor=partes.join('|').trim();if(!nome||!valor){await responderCitando(message,'❌ Informe *nome | contato/link* para a parceria.');return;}const item={id:Date.now(),nome,valor,autor:obterIdRemetente(message),data:new Date().toISOString()};config.parcerias.push(item);salvarConfigAdmin();registrarLogAdmin(message,'add_parceria',nome);await responderCitando(message,`🤝 *Parceria adicionada:* ${nome}\n🔗 ${valor}\n🆔 ${item.id}`);return;}
+    if(acao==='remover'){const id=Number(args);const antes=config.parcerias.length;config.parcerias=config.parcerias.filter(x=>x.id!==id);salvarConfigAdmin();registrarLogAdmin(message,'del_parceria',args);await responderCitando(message,antes!==config.parcerias.length?'🗑️ *Parceria removida.*':'❌ _ID de parceria não encontrado._');return;}
+    if(acao==='modo'){const v=args.toLowerCase();if(!['on','off'].includes(v)){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}modoparceria on/off*.`);return;}config.modoParceria=v==='on';salvarConfigAdmin();registrarLogAdmin(message,'modoparceria',v);await responderCitando(message,`🤝 *Modo parceria*: ${config.modoParceria?'🟢 ATIVO':'🔴 INATIVO'}`);return;}
+    const lista=config.parcerias;await responderCitando(message,`┏═•❃༺🤝༻❃•═┓\n│ *𝐏𝐀𝐑𝐂𝐄𝐑𝐈𝐀𝐒*\n├✯\n${lista.length?lista.map((x,i)=>`├➤ *${i+1}.* ${x.nome}\n│   🔗 ${x.valor}\n│   🆔 ${x.id}`).join('\\n'):'├➤ _Nenhuma parceria cadastrada._'}\n├✯\n├➤ Modo: *${config.modoParceria?'🟢 ATIVO':'🔴 INATIVO'}*\n┗═•❃༺🤝༻❃•═┓`);
+}
+
+async function comandoSorteioAvancado(message,tipo,argumentos=''){
+    if(!(await exigirAdmin(message)))return;if(sorteiosGrupos.has(message.from)){await responderCitando(message,'⚠️ Já existe um sorteio ativo neste grupo.');return;}
+    const partes=String(argumentos||'').trim().split(/\s+/);const dur=parseDuracao(partes.shift());if(!dur){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${tipo} 10m prêmio${tipo==='sorteio2'?' 2':''}*.`);return;}
+    let quantidade=tipo==='sorteio2'?2:1;if(tipo==='sorteio2'&&/^\d+$/.test(partes.at(-1)||''))quantidade=Math.max(1,Math.min(10,Number(partes.pop())));const premio=partes.join(' ')||(tipo==='sorteiogold'?'Prêmio Gold':'Prêmio surpresa');const dados={premio,participantes:new Set(),fim:Date.now()+dur,quantidade};sorteiosGrupos.set(message.from,dados);
+    await responderCitando(message,`🎁 *SORTEIO ESPECIAL ABERTO!*\n\nPrêmio: *${premio}*\nDuração: *${Math.round(dur/60000)||1} min*\nGanhadores: *${quantidade}*\nParticipe com *${obterPrefixoGrupo(message.from)}participar*`);
+    dados.timer=setTimeout(async()=>{const atual=sorteiosGrupos.get(message.from);if(!atual)return;sorteiosGrupos.delete(message.from);const pool=[...atual.participantes],vencedores=[];while(pool.length&&vencedores.length<atual.quantidade)vencedores.push(pool.splice(crypto.randomInt(pool.length),1)[0]);if(!vencedores.length){await client.sendMessage(message.from,'🎁 Sorteio encerrado sem participantes.');return;}const linhas=vencedores.map((id,i)=>`├➤ ${i+1}. @${String(id).split('@')[0]}`).join('\\n');await enviarComMencoes(message.from,`🏆 *SORTEIO ENCERRADO!*\n\n🎁 Prêmio: *${atual.premio}*\n${linhas}`,{mentions:vencedores});},dur);
+}
+
+async function comandoAnagramaAdmin(message,argumentos=''){
+    if(!(await exigirAdmin(message)))return;const palavra=String(argumentos||'').trim();if(!palavra){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}anagrama palavra*.`);return;}const chars=[...palavra];for(let i=chars.length-1;i>0;i--){const j=crypto.randomInt(i+1);[chars[i],chars[j]]=[chars[j],chars[i]];}await responderCitando(message,`🔤 *ANAGRAMA*\n\nPalavra: *${palavra}*\nEmbaralhada: *${chars.join('')}*`);
+}
+
 async function comandoPermissaoComandoAdmin(message, acao, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
     const config = obterConfiguracaoPersistente(obterConfigAdmin(message.from));
@@ -19293,7 +19317,7 @@ async function processarComando(
         }
     }
 
-    if (['config','antilink','antiflood','welcome','goodbye','setwelcome','setgoodbye','jogos','economia','xp','cmds','setregras','setnome','setfoto','desc','staff','darxp','removerxp','resetxp','darcoins','removercoins','reseteco','sorteio','cancelarsorteio','limpar','logs','prefixo'].includes(comando)) registrarLogAdmin(message, comando, argumentos);
+    if (['config','antilink','antiflood','welcome','goodbye','setwelcome','setgoodbye','jogos','economia','xp','cmds','setregras','setnome','setfoto','desc','staff','darxp','removerxp','resetxp','darcoins','removercoins','reseteco','sorteio','cancelarsorteio','limpar','logs','prefixo','add_parceria','del_parceria','parceria','modoparceria','sorteio2','sorteiogold','anagrama'].includes(comando)) registrarLogAdmin(message, comando, argumentos);
 
     switch (comando) {
 
@@ -20038,6 +20062,13 @@ case 'filhosranking':
         case 'addcmdadm': case 'addcmdadmin': await comandoPermissaoComandoAdmin(message, 'adicionar', argumentos); break;
         case 'delcmdadm': case 'delcmdadmin': await comandoPermissaoComandoAdmin(message, 'remover', argumentos); break;
         case 'listcmdadm': case 'listcmdadmin': case 'listacmdadm': await comandoPermissaoComandoAdmin(message, 'listar', argumentos); break;
+        case 'add_parceria': case 'addparceria': await comandoParceria(message, 'adicionar', argumentos); break;
+        case 'del_parceria': case 'delparceria': await comandoParceria(message, 'remover', argumentos); break;
+        case 'parceria': case 'parcerias': await comandoParceria(message, 'listar', argumentos); break;
+        case 'modoparceria': await comandoParceria(message, 'modo', argumentos); break;
+        case 'sorteio2': await comandoSorteioAvancado(message, 'sorteio2', argumentos); break;
+        case 'sorteiogold': await comandoSorteioAvancado(message, 'sorteiogold', argumentos); break;
+        case 'anagrama': await comandoAnagramaAdmin(message, argumentos); break;
         case 'config':
         case 'conf':
             await comandoConfigAdmin(message, argumentos); break;
