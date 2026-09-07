@@ -70,7 +70,7 @@ const cooldownsRoubo = new Map();
 const dadosRoubo = new Map();
 
 // ============================================================
-// 🎖️ SISTEMA DE CONQUISTAS
+// ðï¸ SISTEMA DE CONQUISTAS
 // ============================================================
 
 const conquistasUsuarios = new Map();
@@ -78,38 +78,38 @@ const conquistasUsuarios = new Map();
 const CONQUISTAS = {
     primeiroPasso: {
         nome: 'Primeiro Passo',
-        emoji: '🌱',
+        emoji: 'ð±',
         descricao: 'Ganhe XP pela primeira vez.'
     },
 
     tagarela: {
         nome: 'Tagarela',
-        emoji: '💬',
+        emoji: 'ð¬',
         descricao: 'Envie 100 mensagens.'
     },
 
     faladorProfissional: {
         nome: 'Falador Profissional',
-        emoji: '🗣️',
+        emoji: 'ð£ï¸',
         descricao: 'Envie 1.000 mensagens.'
     },
 
     nivel5: {
-        nome: 'Subindo de Nível',
-        emoji: '⭐',
-        descricao: 'Alcance o nível 5.'
+        nome: 'Subindo de NÃ­vel',
+        emoji: 'â­',
+        descricao: 'Alcance o nÃ­vel 5.'
     },
 
     nivel10: {
         nome: 'Veterano',
-        emoji: '🚀',
-        descricao: 'Alcance o nível 10.'
+        emoji: 'ð',
+        descricao: 'Alcance o nÃ­vel 10.'
     },
 
     nivel25: {
         nome: 'Lenda',
-        emoji: '👑',
-        descricao: 'Alcance o nível 25.'
+        emoji: 'ð',
+        descricao: 'Alcance o nÃ­vel 25.'
     }
 };
 
@@ -119,7 +119,7 @@ let oiAutoAtivo = new Map();
 
 
 // ========================================
-// 💾 SISTEMA DE PERSISTÊNCIA
+// ð¾ SISTEMA DE PERSISTÃNCIA
 // ========================================
 
 const pastaDados = './dados';
@@ -166,7 +166,7 @@ const arquivoConquistas =
 const arquivoRanks =
     `${pastaDados}/ranks.json`;
 
-// Cria a pasta dados se ela não existir
+// Cria a pasta dados se ela nÃ£o existir
 if (!fs.existsSync(pastaDados)) {
     fs.mkdirSync(
         pastaDados,
@@ -198,8 +198,8 @@ function obterConfigAdmin(grupoId) {
             limiteTexto: 1000,
             welcome: false,
             goodbye: false,
-            welcomeTexto: '👋 Bem-vindo, @pessoa! Divirta-se no grupo! 🎉',
-            goodbyeTexto: '👋 @pessoa saiu do grupo. Até mais!',
+            welcomeTexto: 'ð Bem-vindo, @pessoa! Divirta-se no grupo! ð',
+            goodbyeTexto: 'ð @pessoa saiu do grupo. AtÃ© mais!',
             jogos: true,
             economia: true,
             xp: true,
@@ -211,6 +211,8 @@ function obterConfigAdmin(grupoId) {
             comandosAdmin: [],
             advertencias: {},
             anotacoes: [],
+            autoresposta: false,
+            respostasAutomaticas: [],
             horarioAbertura: null,
             horarioFechamento: null,
             ultimoHorarioGrupo: null
@@ -225,7 +227,7 @@ function salvarConfigAdmin() {
         for (const [grupo, config] of configuracoesAdminGrupos) dados[grupo] = config;
         fs.writeFileSync(arquivoConfigAdmin, JSON.stringify(dados, null, 2), 'utf8');
     } catch (erro) {
-        console.error('❌ Erro ao salvar configurações administrativas:', erro.message);
+        console.error('â Erro ao salvar configuraÃ§Ãµes administrativas:', erro.message);
     }
 }
 
@@ -237,9 +239,9 @@ function carregarConfigAdmin() {
             const base = obterConfigAdmin(grupo);
             Object.assign(base, salvo);
         }
-        console.log('💾 Configurações administrativas carregadas:', configuracoesAdminGrupos.size, 'grupos');
+        console.log('ð¾ ConfiguraÃ§Ãµes administrativas carregadas:', configuracoesAdminGrupos.size, 'grupos');
     } catch (erro) {
-        console.error('⚠️ Erro ao carregar configurações administrativas:', erro.message);
+        console.error('â ï¸ Erro ao carregar configuraÃ§Ãµes administrativas:', erro.message);
     }
 }
 
@@ -276,100 +278,100 @@ function obterPrefixoGrupo(grupoId) {
 
 function formatarConfiguracaoAdmin(config) {
     const prefixo = config.prefixo || PREFIXO;
-    const estado = valor => valor ? '🟢 𝐎𝐍' : '🔴 𝐎𝐅𝐅';
+    const estado = valor => valor ? 'ð¢ ðð' : 'ð´ ððð';
 
-    return `┏═•❃༺⚙️༻❃•═┓
-│   *⚙️ 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎*
-├✯
-│
-│  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-│
-├➤ 🔗 *${prefixo}config antilink on/off*
-│   _Bloquear links no grupo._
-├➤ 🌊 *${prefixo}config antiflood on/off*
-│   _Limitar excesso de mensagens._
-├➤ 👥 *${prefixo}config antimencao on/off*
-│   _Bloquear marcações._
-├➤ 🤬 *${prefixo}config antipalavra on/off*
-│   _Bloquear palavras cadastradas._
-├➤ 🔨 *${prefixo}config autoban on/off*
-│   _Expulsar automaticamente em infrações._
-├➤ 📏 *${prefixo}config limitexto on/off*
-│   _Limitar tamanho das mensagens._
-│
-├✯
-│  🖼️ *𝐅𝐈𝐋𝐓𝐑𝐎𝐒 𝐃𝐄 𝐌𝐈́𝐃𝐈𝐀*
-│
-├➤ 🖼️ *${prefixo}config antiimg on/off*
-├➤ 🎥 *${prefixo}config antivideo on/off*
-├➤ 🎵 *${prefixo}config antiaudio on/off*
-├➤ 📄 *${prefixo}config antidoc on/off*
-├➤ 🧩 *${prefixo}config antisticker on/off*
-├➤ 🛍️ *${prefixo}config anticatalogo on/off*
-│   _Bloqueiam o respectivo tipo de mídia._
-│
-├✯
-│  👋 *𝐄𝐍𝐓𝐑𝐀𝐃𝐀 𝐄 𝐒𝐀𝐈́𝐃𝐀*
-│
-├➤ 👋 *${prefixo}config welcome on/off*
-├➤ 🚪 *${prefixo}config goodbye on/off*
-│   _Ativar ou desativar mensagens de entrada/saída._
-│
-├✯
-│  🎮 *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒*
-│
-├➤ 🎮 *${prefixo}config jogos on/off*
-├➤ 💰 *${prefixo}config economia on/off*
-├➤ ⭐ *${prefixo}config xp on/off*
-├➤ 📋 *${prefixo}config cmds on/off*
-│   _Controlar os sistemas do grupo._
-│
-├✯
-│  🏠 *𝐆𝐑𝐔𝐏𝐎*
-│
-├➤ 🔣 *${prefixo}config multiprefix on/off*
-├➤ 🔣 *${prefixo}prefixo*
-│   _Configurar o prefixo do grupo._
-├➤ 📜 *${prefixo}regras*
-│   _Consultar as regras do grupo._
-├➤ 📝 *${prefixo}logs on/off*
-│   _Registrar ações administrativas._
-│
-├✯
-│  📋 *𝐋𝐈𝐒𝐓𝐀𝐒 𝐄 𝐀𝐉𝐔𝐒𝐓𝐄𝐒*
-│
-├➤ 🤬 *${prefixo}config palavra add <palavra>*
-├➤ 🤬 *${prefixo}config palavra remove <palavra>*
-├➤ 🤬 *${prefixo}config palavra list*
-├➤ 🟢 *${prefixo}config whitelist add @pessoa*
-├➤ 🔴 *${prefixo}config whitelist remove @pessoa*
-├➤ 🟢 *${prefixo}config whitelist list*
-├➤ 📏 *${prefixo}config limite <número>*
-├➤ 🌊 *${prefixo}config flood <número>*
-│
-├✯
-│  🕐 *𝐇𝐎𝐑𝐀́𝐑𝐈𝐎𝐒*
-│
-├➤ 🔓 *${prefixo}opengp 06:00*
-├➤ 🔒 *${prefixo}closegp 22:00*
-├➤ 🕐 *${prefixo}time-status*
-├➤ 🗑️ *${prefixo}rm_opengp*
-│
-├✯
-│  💡 *𝐕𝐄𝐑 𝐒𝐓𝐀𝐓𝐔𝐒*
-│
-├➤ *${prefixo}config moderacao*
-├➤ *${prefixo}config midia*
-├➤ *${prefixo}config entrada*
-├➤ *${prefixo}config sistemas*
-├➤ *${prefixo}config grupo*
-├➤ *${prefixo}config listas*
-│
-├✯
-│  ℹ️ *Prefixo atual:* *${prefixo}*
-│  ${estado(config.multiprefix)} *Multiprefix*
-│
-┗═•❃༺⚙️༻❃•═┛`;
+    return `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+â   *âï¸ ððððððððððÌ§ðÌð*
+ââ¯
+â
+â  ð¡ï¸ *ðððððððÌ§ðÌð*
+â
+ââ¤ ð *${prefixo}config antilink on/off*
+â   _Bloquear links no grupo._
+ââ¤ ð *${prefixo}config antiflood on/off*
+â   _Limitar excesso de mensagens._
+ââ¤ ð¥ *${prefixo}config antimencao on/off*
+â   _Bloquear marcaÃ§Ãµes._
+ââ¤ ð¤¬ *${prefixo}config antipalavra on/off*
+â   _Bloquear palavras cadastradas._
+ââ¤ ð¨ *${prefixo}config autoban on/off*
+â   _Expulsar automaticamente em infraÃ§Ãµes._
+ââ¤ ð *${prefixo}config limitexto on/off*
+â   _Limitar tamanho das mensagens._
+â
+ââ¯
+â  ð¼ï¸ *ððððððð ðð ððÌððð*
+â
+ââ¤ ð¼ï¸ *${prefixo}config antiimg on/off*
+ââ¤ ð¥ *${prefixo}config antivideo on/off*
+ââ¤ ðµ *${prefixo}config antiaudio on/off*
+ââ¤ ð *${prefixo}config antidoc on/off*
+ââ¤ ð§© *${prefixo}config antisticker on/off*
+ââ¤ ðï¸ *${prefixo}config anticatalogo on/off*
+â   _Bloqueiam o respectivo tipo de mÃ­dia._
+â
+ââ¯
+â  ð *ððððððð ð ðððÌðð*
+â
+ââ¤ ð *${prefixo}config welcome on/off*
+ââ¤ ðª *${prefixo}config goodbye on/off*
+â   _Ativar ou desativar mensagens de entrada/saÃ­da._
+â
+ââ¯
+â  ð® *ðððððððð*
+â
+ââ¤ ð® *${prefixo}config jogos on/off*
+ââ¤ ð° *${prefixo}config economia on/off*
+ââ¤ â­ *${prefixo}config xp on/off*
+ââ¤ ð *${prefixo}config cmds on/off*
+â   _Controlar os sistemas do grupo._
+â
+ââ¯
+â  ð  *ððððð*
+â
+ââ¤ ð£ *${prefixo}config multiprefix on/off*
+ââ¤ ð£ *${prefixo}prefixo*
+â   _Configurar o prefixo do grupo._
+ââ¤ ð *${prefixo}regras*
+â   _Consultar as regras do grupo._
+ââ¤ ð *${prefixo}logs on/off*
+â   _Registrar aÃ§Ãµes administrativas._
+â
+ââ¯
+â  ð *ðððððð ð ððððððð*
+â
+ââ¤ ð¤¬ *${prefixo}config palavra add <palavra>*
+ââ¤ ð¤¬ *${prefixo}config palavra remove <palavra>*
+ââ¤ ð¤¬ *${prefixo}config palavra list*
+ââ¤ ð¢ *${prefixo}config whitelist add @pessoa*
+ââ¤ ð´ *${prefixo}config whitelist remove @pessoa*
+ââ¤ ð¢ *${prefixo}config whitelist list*
+ââ¤ ð *${prefixo}config limite <nÃºmero>*
+ââ¤ ð *${prefixo}config flood <nÃºmero>*
+â
+ââ¯
+â  ð *ððððÌðððð*
+â
+ââ¤ ð *${prefixo}opengp 06:00*
+ââ¤ ð *${prefixo}closegp 22:00*
+ââ¤ ð *${prefixo}time-status*
+ââ¤ ðï¸ *${prefixo}rm_opengp*
+â
+ââ¯
+â  ð¡ *ððð ðððððð*
+â
+ââ¤ *${prefixo}config moderacao*
+ââ¤ *${prefixo}config midia*
+ââ¤ *${prefixo}config entrada*
+ââ¤ *${prefixo}config sistemas*
+ââ¤ *${prefixo}config grupo*
+ââ¤ *${prefixo}config listas*
+â
+ââ¯
+â  â¹ï¸ *Prefixo atual:* *${prefixo}*
+â  ${estado(config.multiprefix)} *Multiprefix*
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ`;
 }
 
 // Carrega os dados salvos
@@ -404,7 +406,7 @@ function carregarDados() {
             }
 
             console.log(
-                '💾 Mutados carregados:',
+                'ð¾ Mutados carregados:',
                 mutados.size,
                 'grupos'
             );
@@ -413,7 +415,7 @@ function carregarDados() {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar mutados:',
+            'â ï¸ Erro ao carregar mutados:',
             erro.message
         );
     }
@@ -443,7 +445,7 @@ function carregarDados() {
             }
 
             console.log(
-                '💾 Blacklist carregada:',
+                'ð¾ Blacklist carregada:',
                 blacklistMute.size,
                 'IDs'
             );
@@ -452,7 +454,7 @@ function carregarDados() {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar blacklist:',
+            'â ï¸ Erro ao carregar blacklist:',
             erro.message
         );
     }
@@ -487,7 +489,7 @@ function carregarDados() {
             }
 
             console.log(
-                '💍 Casamentos carregados:',
+                'ð Casamentos carregados:',
                 casamentos.size
             );
         }
@@ -495,14 +497,14 @@ function carregarDados() {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar casamentos:',
+            'â ï¸ Erro ao carregar casamentos:',
             erro.message
         );
     }
 
 
     // ========================================================
-// 💬 CARREGAR OI AUTO
+// ð¬ CARREGAR OI AUTO
 // ========================================================
 
 try {
@@ -539,7 +541,7 @@ try {
 } catch (erro) {
 
     console.error(
-        '❌ Erro ao carregar OI AUTO:',
+        'â Erro ao carregar OI AUTO:',
         erro
     );
 
@@ -574,7 +576,7 @@ try {
             }
 
             console.log(
-                '💌 Propostas carregadas:',
+                'ð Propostas carregadas:',
                 propostasCasamento.size
             );
         }
@@ -582,12 +584,12 @@ try {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar propostas:',
+            'â ï¸ Erro ao carregar propostas:',
             erro.message
         );
     }
 
-    // FAMÍLIAS
+    // FAMÃLIAS
     try {
 
         if (
@@ -616,7 +618,7 @@ try {
             }
 
             console.log(
-                '👨‍👩‍👧 Famílias carregadas:',
+                'ð¨âð©âð§ FamÃ­lias carregadas:',
                 familias.size
             );
         }
@@ -624,12 +626,12 @@ try {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar famílias:',
+            'â ï¸ Erro ao carregar famÃ­lias:',
             erro.message
         );
     }
 
-        // 👥 PARTICIPANTES DOS GRUPOS
+        // ð¥ PARTICIPANTES DOS GRUPOS
     try {
 
         if (
@@ -660,7 +662,7 @@ try {
             }
 
             console.log(
-                '👥 Participantes carregados:',
+                'ð¥ Participantes carregados:',
                 participantesGrupos.size,
                 'grupos'
             );
@@ -669,7 +671,7 @@ try {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar participantes:',
+            'â ï¸ Erro ao carregar participantes:',
             erro.message
         );
     }
@@ -689,14 +691,14 @@ if (fs.existsSync(arquivoAvisos)) {
             }
         }
 
-        console.log('🔔 Avisos carregados com sucesso!');
+        console.log('ð Avisos carregados com sucesso!');
     } catch (erro) {
-        console.error('❌ Erro ao carregar avisos:', erro);
+        console.error('â Erro ao carregar avisos:', erro);
     }
 }
 
 // ============================================================
-// 💤 AFK
+// ð¤ AFK
 // ============================================================
 
 try {
@@ -729,7 +731,7 @@ try {
         }
 
         console.log(
-            '💤 AFKs carregados:',
+            'ð¤ AFKs carregados:',
             usuariosAFK.size
         );
     }
@@ -737,13 +739,13 @@ try {
 } catch (erro) {
 
     console.log(
-        '⚠️ Erro ao carregar AFKs:',
+        'â ï¸ Erro ao carregar AFKs:',
         erro.message
     );
 }
     
     
-// 😂 PIADAS
+// ð PIADAS
     try {
 
         if (
@@ -778,7 +780,7 @@ try {
             }
 
             console.log(
-                '😂 Piadas carregadas:',
+                'ð Piadas carregadas:',
                 piadas.length
             );
         }
@@ -786,7 +788,7 @@ try {
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao carregar piadas:',
+            'â ï¸ Erro ao carregar piadas:',
             erro.message
         );
     }
@@ -794,7 +796,7 @@ try {
     
 
 // ============================================================
-// 💤 SALVAR AFKs
+// ð¤ SALVAR AFKs
 // ============================================================
 
 function salvarAFK() {
@@ -823,13 +825,13 @@ function salvarAFK() {
         );
 
         console.log(
-            '💤 AFKs salvos!'
+            'ð¤ AFKs salvos!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar AFKs:',
+            'â Erro ao salvar AFKs:',
             erro.message
         );
     }
@@ -864,13 +866,13 @@ function salvarMutados() {
         );
 
         console.log(
-            '💾 Mutados salvos!'
+            'ð¾ Mutados salvos!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar mutados:',
+            'â Erro ao salvar mutados:',
             erro.message
         );
     }
@@ -895,13 +897,13 @@ function salvarBlacklist() {
         );
 
         console.log(
-            '💾 Blacklist salva!'
+            'ð¾ Blacklist salva!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar blacklist:',
+            'â Erro ao salvar blacklist:',
             erro.message
         );
 
@@ -923,12 +925,12 @@ function salvarAvisos() {
             'utf8'
         );
     } catch (erro) {
-        console.error('❌ Erro ao salvar avisos:', erro);
+        console.error('â Erro ao salvar avisos:', erro);
     }
 }
 
 // ========================================================
-// 💾 SALVAR OI AUTO
+// ð¾ SALVAR OI AUTO
 // ========================================================
 
 function salvarOiAuto() {
@@ -959,13 +961,13 @@ function salvarOiAuto() {
         );
 
         console.log(
-            '💾 OI AUTO salvo com sucesso!'
+            'ð¾ OI AUTO salvo com sucesso!'
         );
 
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao salvar OI AUTO:',
+            'â Erro ao salvar OI AUTO:',
             erro
         );
 
@@ -973,7 +975,7 @@ function salvarOiAuto() {
 }
 
 // ============================================================
-// 💍 SALVAR CASAMENTOS
+// ð SALVAR CASAMENTOS
 // ============================================================
 
 function salvarCasamentos() {
@@ -1001,13 +1003,13 @@ function salvarCasamentos() {
         );
 
         console.log(
-            '💍 Casamentos salvos!'
+            'ð Casamentos salvos!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar casamentos:',
+            'â Erro ao salvar casamentos:',
             erro.message
         );
     }
@@ -1015,7 +1017,7 @@ function salvarCasamentos() {
 
 
 // ============================================================
-// 💌 SALVAR PROPOSTAS
+// ð SALVAR PROPOSTAS
 // ============================================================
 
 function salvarPropostasCasamento() {
@@ -1043,20 +1045,20 @@ function salvarPropostasCasamento() {
         );
 
         console.log(
-            '💌 Propostas de casamento salvas!'
+            'ð Propostas de casamento salvas!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar propostas:',
+            'â Erro ao salvar propostas:',
             erro.message
         );
     }
 }
 
 // ============================================================
-// 👨‍👩‍👧 SALVAR FAMÍLIAS
+// ð¨âð©âð§ SALVAR FAMÃLIAS
 // ============================================================
 
 function salvarFamilias() {
@@ -1084,20 +1086,20 @@ function salvarFamilias() {
         );
 
         console.log(
-            '👨‍👩‍👧 Famílias salvas!'
+            'ð¨âð©âð§ FamÃ­lias salvas!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar famílias:',
+            'â Erro ao salvar famÃ­lias:',
             erro.message
         );
     }
 }
 
 // ============================================================
-// 👥 SALVAR PARTICIPANTES DOS GRUPOS
+// ð¥ SALVAR PARTICIPANTES DOS GRUPOS
 // ============================================================
 
 function salvarParticipantesGrupos() {
@@ -1126,58 +1128,58 @@ function salvarParticipantesGrupos() {
         );
 
         console.log(
-            '💾 Participantes dos grupos salvos!'
+            'ð¾ Participantes dos grupos salvos!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar participantes:',
+            'â Erro ao salvar participantes:',
             erro.message
         );
     }
 }
 
 // ============================================================
-// 🎭 SISTEMA DE PERSONALIDADES
+// ð­ SISTEMA DE PERSONALIDADES
 // ============================================================
 
 const PERSONALIDADES = {
     normal: {
         nome: 'Normal',
-        emoji: '🤖',
-        descricao: 'Comportamento padrão do JUST BOT.',
+        emoji: 'ð¤',
+        descricao: 'Comportamento padrÃ£o do JUST BOT.',
         frase: ''
     },
     amigavel: {
-        nome: 'Amigável',
-        emoji: '😊',
-        descricao: 'Mais simpático e acolhedor.',
-        frase: '😊 _Tamo junto!_'
+        nome: 'AmigÃ¡vel',
+        emoji: 'ð',
+        descricao: 'Mais simpÃ¡tico e acolhedor.',
+        frase: 'ð _Tamo junto!_'
     },
     fofa: {
         nome: 'Fofa',
-        emoji: '🥰',
+        emoji: 'ð¥°',
         descricao: 'Carinhosa, doce e cheia de emojis.',
-        frase: '🥰 _Espero ter ajudado! 💖_'
+        frase: 'ð¥° _Espero ter ajudado! ð_'
     },
     sarcastica: {
-        nome: 'Sarcástica',
-        emoji: '😏',
+        nome: 'SarcÃ¡stica',
+        emoji: 'ð',
         descricao: 'Respostas com uma pitada de ironia.',
-        frase: '😏 _Pronto. Agora pode fingir que não sabia._'
+        frase: 'ð _Pronto. Agora pode fingir que nÃ£o sabia._'
     },
     caotica: {
-        nome: 'Caótica',
-        emoji: '🤪',
-        descricao: 'Energia imprevisível e respostas absurdas.',
-        frase: '🤪 _Não faço ideia do que aconteceu, mas gostei._'
+        nome: 'CaÃ³tica',
+        emoji: 'ð¤ª',
+        descricao: 'Energia imprevisÃ­vel e respostas absurdas.',
+        frase: 'ð¤ª _NÃ£o faÃ§o ideia do que aconteceu, mas gostei._'
     },
     seria: {
-        nome: 'Séria',
-        emoji: '🧐',
+        nome: 'SÃ©ria',
+        emoji: 'ð§',
         descricao: 'Mais direta, formal e objetiva.',
-        frase: '🧐 _Operação concluída._'
+        frase: 'ð§ _OperaÃ§Ã£o concluÃ­da._'
     }
 };
 
@@ -1191,7 +1193,7 @@ function salvarPersonalidades() {
         }
         fs.writeFileSync(arquivoPersonalidades, JSON.stringify(dados, null, 2), 'utf8');
     } catch (erro) {
-        console.error('❌ Erro ao salvar personalidades:', erro);
+        console.error('â Erro ao salvar personalidades:', erro);
     }
 }
 
@@ -1205,9 +1207,9 @@ function carregarPersonalidades() {
                 personalidadesGrupos.set(grupoId, personalidade);
             }
         }
-        console.log('🎭 Personalidades carregadas:', personalidadesGrupos.size, 'grupos');
+        console.log('ð­ Personalidades carregadas:', personalidadesGrupos.size, 'grupos');
     } catch (erro) {
-        console.error('❌ Erro ao carregar personalidades:', erro);
+        console.error('â Erro ao carregar personalidades:', erro);
     }
 }
 
@@ -1225,8 +1227,8 @@ function aplicarPersonalidade(conteudo, grupoId) {
 async function definirPersonalidade(message, argumentos) {
     try {
         if (!message.from || !message.from.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ _Esse comando só funciona em grupos._\n│\n┗═•❃༺🎭༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nââ¯ *ððððððððððððð*\nâ\nââ¤ _Esse comando sÃ³ funciona em grupos._\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
             return;
         }
 
@@ -1239,35 +1241,35 @@ async function definirPersonalidade(message, argumentos) {
             const atualDados = PERSONALIDADES[atual];
             let lista = '';
             for (const [id, personalidade] of Object.entries(PERSONALIDADES)) {
-                lista += `├➤ ${personalidade.emoji} *${id}* — ${personalidade.descricao}\n`;
+                lista += `ââ¤ ${personalidade.emoji} *${id}* â ${personalidade.descricao}\n`;
             }
-            await reagir(message, '🎭');
-            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n├✯\n│\n├➤ 🎭 Atual: *${atualDados.nome}*\n│\n${lista}\n├✯\n│\n├➤ *𝐔𝐒𝐀𝐑:*\n│   *${PREFIXO}personalidade <nome>*\n│\n├➤ *𝐄𝐗𝐄𝐌𝐏𝐋𝐎:*\n│   *${PREFIXO}personalidade sarcastica*\n│\n┗═•❃༺🎭༻❃•═┛`);
+            await reagir(message, 'ð­');
+            await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nâ      *ððððððððððððð*\nââ¯\nâ\nââ¤ ð­ Atual: *${atualDados.nome}*\nâ\n${lista}\nââ¯\nâ\nââ¤ *ðððð:*\nâ   *${PREFIXO}personalidade <nome>*\nâ\nââ¤ *ððððððð:*\nâ   *${PREFIXO}personalidade sarcastica*\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
             return;
         }
 
         if (['desligar', 'desativar', 'off'].includes(escolha)) {
             personalidadesGrupos.delete(message.from);
             salvarPersonalidades();
-            await reagir(message, '🔴');
-            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ 🔴 _Personalidade desativada._\n├➤ O JUST BOT voltou ao comportamento *Normal*.\n│\n┗═•❃༺🎭༻❃•═┓`);
+            await reagir(message, 'ð´');
+            await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nââ¯ *ððððððððððððð*\nâ\nââ¤ ð´ _Personalidade desativada._\nââ¤ O JUST BOT voltou ao comportamento *Normal*.\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
             return;
         }
 
         const personalidade = PERSONALIDADES[escolha];
         if (!personalidade) {
-            await reagir(message, '❌');
-            await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐈𝐍𝐕𝐀́𝐋𝐈𝐃𝐀*\n│\n├➤ _Essa personalidade não existe._\n│\n├➤ Use *${PREFIXO}personalidades* para ver as opções.\n│\n┗═•❃༺🎭༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nââ¯ *ððððððððððððð ððððÌðððð*\nâ\nââ¤ _Essa personalidade nÃ£o existe._\nâ\nââ¤ Use *${PREFIXO}personalidades* para ver as opÃ§Ãµes.\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
             return;
         }
 
         personalidadesGrupos.set(message.from, escolha);
         salvarPersonalidades();
         await reagir(message, personalidade.emoji);
-        await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n├✯ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐀𝐓𝐈𝐕𝐀*\n│\n├➤ ${personalidade.emoji} *${personalidade.nome}*\n│\n├➤ _${personalidade.descricao}_\n│\n├➤ Essa personalidade agora está ativa neste grupo.\n│\n┗═•❃༺🎭༻❃•═┓`);
+        await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nââ¯ *ððððððððððððð ððððð*\nâ\nââ¤ ${personalidade.emoji} *${personalidade.nome}*\nâ\nââ¤ _${personalidade.descricao}_\nâ\nââ¤ Essa personalidade agora estÃ¡ ativa neste grupo.\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro ao definir personalidade:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro ao definir personalidade:', erro);
+        await reagir(message, 'â');
     }
 }
 
@@ -1276,18 +1278,18 @@ async function listarPersonalidades(message) {
     const atualDados = PERSONALIDADES[atual];
     let lista = '';
     for (const [id, personalidade] of Object.entries(PERSONALIDADES)) {
-        const marcador = id === atual ? '✅' : '▫️';
-        lista += `├➤ ${marcador} ${personalidade.emoji} *${id}*\n│   _${personalidade.descricao}_\n`;
+        const marcador = id === atual ? 'â' : 'â«ï¸';
+        lista += `ââ¤ ${marcador} ${personalidade.emoji} *${id}*\nâ   _${personalidade.descricao}_\n`;
     }
-    await reagir(message, '🎭');
-    await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄𝐒*\n├✯\n│\n├➤ 🎭 Atual: *${atualDados.nome}*\n│\n${lista}\n├✯\n│\n├➤ Para alterar, um administrador deve usar:\n│   *${PREFIXO}personalidade <nome>*\n│\n┗═•❃༺🎭༻❃•═┓`);
+    await reagir(message, 'ð­');
+    await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nâ      *ðððððððððððððð*\nââ¯\nâ\nââ¤ ð­ Atual: *${atualDados.nome}*\nâ\n${lista}\nââ¯\nâ\nââ¤ Para alterar, um administrador deve usar:\nâ   *${PREFIXO}personalidade <nome>*\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
 }
 
 carregarPersonalidades();
 
 // Carrega tudo ao iniciar
 // ============================================================
-// 🔒 SISTEMA SOMENTE ADM
+// ð SISTEMA SOMENTE ADM
 // ============================================================
 
 function carregarSoAdm() {
@@ -1305,11 +1307,11 @@ function carregarSoAdm() {
         }
 
         console.log(
-            '🔒 Grupos em modo somente ADM carregados:',
+            'ð Grupos em modo somente ADM carregados:',
             soAdmGrupos.size
         );
     } catch (erro) {
-        console.error('⚠️ Erro ao carregar modo somente ADM:', erro.message);
+        console.error('â ï¸ Erro ao carregar modo somente ADM:', erro.message);
     }
 }
 
@@ -1321,9 +1323,9 @@ function salvarSoAdm() {
             'utf8'
         );
 
-        console.log('💾 Modo somente ADM salvo!');
+        console.log('ð¾ Modo somente ADM salvo!');
     } catch (erro) {
-        console.error('❌ Erro ao salvar modo somente ADM:', erro.message);
+        console.error('â Erro ao salvar modo somente ADM:', erro.message);
     }
 }
 
@@ -1393,7 +1395,7 @@ async function usuarioEhAdminDoGrupo(message) {
         );
     } catch (erro) {
         console.error(
-            '❌ Erro ao verificar administrador no modo somente ADM:',
+            'â Erro ao verificar administrador no modo somente ADM:',
             erro
         );
         return false;
@@ -1405,10 +1407,10 @@ async function soAdm(message) {
         const chatId = message?.from;
 
         if (!chatId || !chatId.endsWith('@g.us')) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
             await responderCitando(
                 message,
-                '❌ _O ;soadm só funciona em grupos._'
+                'â _O ;soadm sÃ³ funciona em grupos._'
             );
             return;
         }
@@ -1416,10 +1418,10 @@ async function soAdm(message) {
         const admin = await usuarioEhAdminDoGrupo(message);
 
         if (!admin) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
             await responderCitando(
                 message,
-                '❌ _Apenas administradores do grupo podem ativar ou desativar o modo somente ADM._'
+                'â _Apenas administradores do grupo podem ativar ou desativar o modo somente ADM._'
             );
             return;
         }
@@ -1428,17 +1430,17 @@ async function soAdm(message) {
             soAdmGrupos.delete(chatId);
             salvarSoAdm();
 
-            await reagir(message, '🔓');
+            await reagir(message, 'ð');
             await responderCitando(
                 message,
-                `┏═•❃༺🔓༻❃•═┓
-├✯ *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌 𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐃𝐎*
-│
-├➤ _Todos os membros podem usar os comandos novamente._
-│
-├➤ 👑 _Administradores continuam sujeitos às permissões específicas de cada comando._
-│
-┗═•❃༺🔓༻❃•═┛`
+                `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððð ððððððð ððð ðððððððððð*
+â
+ââ¤ _Todos os membros podem usar os comandos novamente._
+â
+ââ¤ ð _Administradores continuam sujeitos Ã s permissÃµes especÃ­ficas de cada comando._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
             );
             return;
         }
@@ -1446,24 +1448,24 @@ async function soAdm(message) {
         soAdmGrupos.add(chatId);
         salvarSoAdm();
 
-        await reagir(message, '🔒');
+        await reagir(message, 'ð');
         await responderCitando(
             message,
-            `┏═•❃༺🔒༻❃•═┓
-├✯ *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌 𝐀𝐓𝐈𝐕𝐀𝐃𝐎*
-│
-├➤ 👑 _Agora apenas administradores do grupo podem usar os comandos._
-│
-├➤ 🔁 _Use ${PREFIXO}soadm novamente para desativar._
-│
-┗═•❃༺🔒༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððð ððððððð ððð ððððððð*
+â
+ââ¤ ð _Agora apenas administradores do grupo podem usar os comandos._
+â
+ââ¤ ð _Use ${PREFIXO}soadm novamente para desativar._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
     } catch (erro) {
-        console.error('❌ Erro no modo somente ADM:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro no modo somente ADM:', erro);
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            '❌ _Não foi possível alterar o modo somente ADM._'
+            'â _NÃ£o foi possÃ­vel alterar o modo somente ADM._'
         );
     }
 }
@@ -1472,7 +1474,7 @@ carregarDados();
 carregarConfigAdmin();
 
 // ============================================================
-// 🏆 SISTEMA DE RANKS VARIADOS
+// ð SISTEMA DE RANKS VARIADOS
 // ============================================================
 
 function obterConfiguracaoRank(grupoId) {
@@ -1496,7 +1498,7 @@ function salvarConfiguracoesRanks() {
             'utf8'
         );
     } catch (erro) {
-        console.error('❌ Erro ao salvar configurações de ranks:', erro);
+        console.error('â Erro ao salvar configuraÃ§Ãµes de ranks:', erro);
     }
 }
 
@@ -1519,9 +1521,9 @@ function carregarConfiguracoesRanks() {
                     : {}
             });
         }
-        console.log('🏆 Configurações de ranks carregadas:', configuracoesRanks.size);
+        console.log('ð ConfiguraÃ§Ãµes de ranks carregadas:', configuracoesRanks.size);
     } catch (erro) {
-        console.error('❌ Erro ao carregar configurações de ranks:', erro);
+        console.error('â Erro ao carregar configuraÃ§Ãµes de ranks:', erro);
     }
 }
 
@@ -1529,40 +1531,40 @@ carregarConfiguracoesRanks();
 
 const DEFINICOES_RANK = {
     ranklindo: {
-        titulo: '𝐑𝐀𝐍𝐊 𝐋𝐈𝐍𝐃𝐎',
-        emoji: '😍',
-        descricao: 'nível de beleza do cidadão',
-        comentario: valor => valor >= 90 ? 'Uma ameaça à autoestima alheia. ✨' : valor >= 70 ? 'Bonito(a) com certificado do bot. 😎' : valor >= 50 ? 'Tem seu charme. 👀' : 'A beleza está em manutenção. 🛠️'
+        titulo: 'ðððð ððððð',
+        emoji: 'ð',
+        descricao: 'nÃ­vel de beleza do cidadÃ£o',
+        comentario: valor => valor >= 90 ? 'Uma ameaÃ§a Ã  autoestima alheia. â¨' : valor >= 70 ? 'Bonito(a) com certificado do bot. ð' : valor >= 50 ? 'Tem seu charme. ð' : 'A beleza estÃ¡ em manutenÃ§Ã£o. ð ï¸'
     },
     rankfeio: {
-        titulo: '𝐑𝐀𝐍𝐊 𝐅𝐄𝐈𝐎',
-        emoji: '👹',
-        descricao: 'nível de feiura detectado',
-        comentario: valor => valor >= 90 ? 'O espelho pediu demissão. 😭' : valor >= 70 ? 'O departamento de estética entrou em alerta. 🚨' : valor >= 50 ? 'Uma feiura respeitável. 🤨' : 'Quase escapou ileso. 😌'
+        titulo: 'ðððð ðððð',
+        emoji: 'ð¹',
+        descricao: 'nÃ­vel de feiura detectado',
+        comentario: valor => valor >= 90 ? 'O espelho pediu demissÃ£o. ð­' : valor >= 70 ? 'O departamento de estÃ©tica entrou em alerta. ð¨' : valor >= 50 ? 'Uma feiura respeitÃ¡vel. ð¤¨' : 'Quase escapou ileso. ð'
     },
     rankgay: {
-        titulo: '𝐑𝐀𝐍𝐊 𝐆𝐀𝐘',
-        emoji: '🏳️‍🌈',
-        descricao: 'índice aleatório deste rank',
-        comentario: valor => valor >= 90 ? 'O arco-íris chegou antes. 🌈' : valor >= 70 ? 'O radar detectou fortes sinais de brilho. ✨' : valor >= 50 ? 'O radar está indeciso. 📡' : 'O radar quase não apitou. 📻'
+        titulo: 'ðððð ððð',
+        emoji: 'ð³ï¸âð',
+        descricao: 'Ã­ndice aleatÃ³rio deste rank',
+        comentario: valor => valor >= 90 ? 'O arco-Ã­ris chegou antes. ð' : valor >= 70 ? 'O radar detectou fortes sinais de brilho. â¨' : valor >= 50 ? 'O radar estÃ¡ indeciso. ð¡' : 'O radar quase nÃ£o apitou. ð»'
     },
     rankhetero: {
-        titulo: '𝐑𝐀𝐍𝐊 𝐇𝐄𝐓𝐄𝐑𝐎',
-        emoji: '💘',
-        descricao: 'índice aleatório deste rank',
-        comentario: valor => valor >= 90 ? 'O radar hetero está em órbita. 🛰️' : valor >= 70 ? 'O radar marcou presença. 📡' : valor >= 50 ? 'Situação indefinida no radar. 🤔' : 'O radar está praticamente desligado. 📴'
+        titulo: 'ðððð ðððððð',
+        emoji: 'ð',
+        descricao: 'Ã­ndice aleatÃ³rio deste rank',
+        comentario: valor => valor >= 90 ? 'O radar hetero estÃ¡ em Ã³rbita. ð°ï¸' : valor >= 70 ? 'O radar marcou presenÃ§a. ð¡' : valor >= 50 ? 'SituaÃ§Ã£o indefinida no radar. ð¤' : 'O radar estÃ¡ praticamente desligado. ð´'
     },
     ranklesbico: {
-        titulo: '𝐑𝐀𝐍𝐊 𝐋𝐄𝐒𝐁𝐈𝐂𝐎',
-        emoji: '💜',
-        descricao: 'índice aleatório deste rank',
-        comentario: valor => valor >= 90 ? 'O radar roxo entrou em combustão. 💜' : valor >= 70 ? 'O radar captou sinais fortes. 📡' : valor >= 50 ? 'O radar está analisando. 🔎' : 'Poucos sinais detectados. 📻'
+        titulo: 'ðððð ððððððð',
+        emoji: 'ð',
+        descricao: 'Ã­ndice aleatÃ³rio deste rank',
+        comentario: valor => valor >= 90 ? 'O radar roxo entrou em combustÃ£o. ð' : valor >= 70 ? 'O radar captou sinais fortes. ð¡' : valor >= 50 ? 'O radar estÃ¡ analisando. ð' : 'Poucos sinais detectados. ð»'
     },
     rankinteligente: {
-        titulo: '𝐑𝐀𝐍𝐊 𝐈𝐍𝐓𝐄𝐋𝐈𝐆𝐄𝐍𝐓𝐄',
-        emoji: '🧠',
-        descricao: 'nível de inteligência do cidadão',
-        comentario: valor => valor >= 90 ? 'Einstein acaba de ganhar concorrência. 🧠' : valor >= 70 ? 'Processador mental acima da média. ⚡' : valor >= 50 ? 'Funcionando dentro dos parâmetros. 👍' : 'O cérebro está em modo economia de energia. 🔋'
+        titulo: 'ðððð ððððððððððð',
+        emoji: 'ð§ ',
+        descricao: 'nÃ­vel de inteligÃªncia do cidadÃ£o',
+        comentario: valor => valor >= 90 ? 'Einstein acaba de ganhar concorrÃªncia. ð§ ' : valor >= 70 ? 'Processador mental acima da mÃ©dia. â¡' : valor >= 50 ? 'Funcionando dentro dos parÃ¢metros. ð' : 'O cÃ©rebro estÃ¡ em modo economia de energia. ð'
     }
 };
 
@@ -1630,7 +1632,7 @@ async function obterParticipantesDoGrupoParaRank(message) {
         }, message.from);
         return [...new Set(dados || [])];
     } catch (erro) {
-        console.log('⚠️ Erro ao obter participantes para rank:', erro.message);
+        console.log('â ï¸ Erro ao obter participantes para rank:', erro.message);
         return [];
     }
 }
@@ -1638,13 +1640,13 @@ async function obterParticipantesDoGrupoParaRank(message) {
 async function comandoRankVariado(message, tipo) {
     try {
         if (!message?.from?.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐕𝐀𝐑𝐈𝐀𝐃𝐎*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🏆༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððð ððððððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
             return;
         }
 
@@ -1655,13 +1657,13 @@ async function comandoRankVariado(message, tipo) {
         if (configuracao.exibicao === 'top') {
             const ids = await obterParticipantesDoGrupoParaRank(message);
             if (!ids.length) {
-                await reagir(message, '❌');
-                await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
-│
-├➤ _Não consegui obter os participantes do grupo agora._
-│
-┗═•❃༺❌༻❃•═┓`);
+                await reagir(message, 'â');
+                await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ
+ââ¯ *ðððð ðð ððððð*
+â
+ââ¤ _NÃ£o consegui obter os participantes do grupo agora._
+â
+âââ¢âà¼ºâà¼»ââ¢ââ`);
                 return;
             }
 
@@ -1669,23 +1671,23 @@ async function comandoRankVariado(message, tipo) {
             resultados.sort((a, b) => b.valor - a.valor || a.id.localeCompare(b.id));
             const top = resultados.slice(0, configuracao.quantidadeTop);
             const idsMencao = top.map(item => item.id);
-            const medalhas = ['🥇', '🥈', '🥉'];
-            let texto = `┏═•❃༺${definicao.emoji}༻❃•═┓
-│       *${definicao.titulo}*
-├✯
-│
-├➤ 🏆 *TOP ${top.length} DO GRUPO*
-│
+            const medalhas = ['ð¥', 'ð¥', 'ð¥'];
+            let texto = `âââ¢âà¼º${definicao.emoji}à¼»ââ¢ââ
+â       *${definicao.titulo}*
+ââ¯
+â
+ââ¤ ð *TOP ${top.length} DO GRUPO*
+â
 `;
             top.forEach((item, i) => {
-                const medalha = medalhas[i] || `${i + 1}º`;
+                const medalha = medalhas[i] || `${i + 1}Âº`;
                 const percentual = configuracao.mostrarPorcentagem ? ` *${item.valor}%*` : '';
-                texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}${percentual}
-│   ${definicao.comentario(item.valor)}
-│
+                texto += `ââ¤ ${medalha} ${mencaoDaPessoa(item.id)}${percentual}
+â   ${definicao.comentario(item.valor)}
+â
 `;
             });
-            texto += `┗═•❃༺${definicao.emoji}༻❃•═┓`;
+            texto += `âââ¢âà¼º${definicao.emoji}à¼»ââ¢ââ`;
             await reagir(message, definicao.emoji);
             await enviarComMencoes(message.from, texto, { mentions: idsMencao });
             return;
@@ -1698,25 +1700,25 @@ async function comandoRankVariado(message, tipo) {
         const nome = pessoa ? mencaoDaPessoa(pessoa) : mencaoDaPessoa(idPessoa);
         const percentual = configuracao.mostrarPorcentagem ? ` *${valor}%*` : '';
         await reagir(message, definicao.emoji);
-        await responderComMencoes(message, `┏═•❃༺${definicao.emoji}༻❃•═┓
-│       *${definicao.titulo}*
-├✯
-│
-├➤ 👤 ${nome}
-├➤ 📊 ${definicao.descricao}:${percentual}
-│
-├➤ ${definicao.comentario(valor)}
-│
-┗═•❃༺${definicao.emoji}༻❃•═┓`, { mentions: [idPessoa] });
+        await responderComMencoes(message, `âââ¢âà¼º${definicao.emoji}à¼»ââ¢ââ
+â       *${definicao.titulo}*
+ââ¯
+â
+ââ¤ ð¤ ${nome}
+ââ¤ ð ${definicao.descricao}:${percentual}
+â
+ââ¤ ${definicao.comentario(valor)}
+â
+âââ¢âà¼º${definicao.emoji}à¼»ââ¢ââ`, { mentions: [idPessoa] });
     } catch (erro) {
-        console.error(`❌ Erro no ${tipo}:`, erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-├✯ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐑𝐀𝐍𝐊*
-│
-├➤ _Não consegui gerar este rank agora._
-│
-┗═•❃༺❌༻❃•═┓`);
+        console.error(`â Erro no ${tipo}:`, erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ
+ââ¯ *ðððð ðð ðððð*
+â
+ââ¤ _NÃ£o consegui gerar este rank agora._
+â
+âââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
@@ -1736,25 +1738,25 @@ function obterValorRankCustomizado(grupoId, criterio, idPessoa) {
 async function comandoRankCustomizado(message, argumentos) {
     const textoRank = String(argumentos || '').trim();
     if (!textoRank) {
-        await reagir(message, '❓');
-        await responderCitando(message, `┏═•❃༺🎨༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
-│
-├➤ _Digite o que deseja avaliar._
-│
-├➤ *Exemplo:* ${PREFIXO}csrank engraçado
-│
-┗═•❃༺🎨༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºð¨à¼»ââ¢ââ
+ââ¯ *ðððð ððððððððððð*
+â
+ââ¤ _Digite o que deseja avaliar._
+â
+ââ¤ *Exemplo:* ${PREFIXO}csrank engraÃ§ado
+â
+âââ¢âà¼ºð¨à¼»ââ¢ââ`);
         return;
     }
     if (!message?.from?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🎨༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🎨༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºð¨à¼»ââ¢ââ
+ââ¯ *ðððð ððððððððððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºð¨à¼»ââ¢ââ`);
         return;
     }
 
@@ -1762,38 +1764,38 @@ async function comandoRankCustomizado(message, argumentos) {
     if (configuracao.exibicao === 'top') {
         const ids = await obterParticipantesDoGrupoParaRank(message);
         if (!ids.length) {
-            await reagir(message, '❌');
-            await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
-│
-├➤ _Não consegui obter os participantes do grupo agora._
-│
-┗═•❃༺❌༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ
+ââ¯ *ðððð ððððððððððð*
+â
+ââ¤ _NÃ£o consegui obter os participantes do grupo agora._
+â
+âââ¢âà¼ºâà¼»ââ¢ââ`);
             return;
         }
         const resultados = ids.map(id => ({ id, valor: obterValorRankCustomizado(message.from, textoRank, id) }));
         resultados.sort((a, b) => b.valor - a.valor || a.id.localeCompare(b.id));
         const top = resultados.slice(0, configuracao.quantidadeTop);
         const idsMencao = top.map(item => item.id);
-        const medalhas = ['🥇', '🥈', '🥉'];
-        let texto = `┏═•❃༺🎨༻❃•═┓
-│       *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
-├✯
-│
-├➤ 🎯 Critério: *${textoRank}*
-├➤ 🏆 *TOP ${top.length} DO GRUPO*
-│
+        const medalhas = ['ð¥', 'ð¥', 'ð¥'];
+        let texto = `âââ¢âà¼ºð¨à¼»ââ¢ââ
+â       *ðððð ððððððððððð*
+ââ¯
+â
+ââ¤ ð¯ CritÃ©rio: *${textoRank}*
+ââ¤ ð *TOP ${top.length} DO GRUPO*
+â
 `;
         top.forEach((item, i) => {
-            const medalha = medalhas[i] || `${i + 1}º`;
+            const medalha = medalhas[i] || `${i + 1}Âº`;
             const percentual = configuracao.mostrarPorcentagem ? ` *${item.valor}%*` : '';
-            texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}${percentual}
-│   ${item.valor >= 90 ? 'Nível absurdo. 🤯' : item.valor >= 70 ? 'Resultado forte. 📈' : item.valor >= 50 ? 'Resultado mediano, mas respeitável. 😎' : 'Tem espaço para evolução. 🛠️'}
-│
+            texto += `ââ¤ ${medalha} ${mencaoDaPessoa(item.id)}${percentual}
+â   ${item.valor >= 90 ? 'NÃ­vel absurdo. ð¤¯' : item.valor >= 70 ? 'Resultado forte. ð' : item.valor >= 50 ? 'Resultado mediano, mas respeitÃ¡vel. ð' : 'Tem espaÃ§o para evoluÃ§Ã£o. ð ï¸'}
+â
 `;
         });
-        texto += `┗═•❃༺🎨༻❃•═┓`;
-        await reagir(message, '🎨');
+        texto += `âââ¢âà¼ºð¨à¼»ââ¢ââ`;
+        await reagir(message, 'ð¨');
         await enviarComMencoes(message.from, texto, { mentions: idsMencao });
         return;
     }
@@ -1803,31 +1805,31 @@ async function comandoRankCustomizado(message, argumentos) {
     const valor = obterValorRankCustomizado(message.from, textoRank, idPessoa);
     const nome = mencaoDaPessoa(idPessoa);
     const percentual = configuracao.mostrarPorcentagem ? ` *${valor}%*` : '';
-    const comentario = valor >= 90 ? 'Nível absurdo. O bot ficou impressionado. 🤯' : valor >= 70 ? 'Resultado forte. 📈' : valor >= 50 ? 'Resultado mediano, mas respeitável. 😎' : 'Tem espaço para evolução. 🛠️';
-    await reagir(message, '🎨');
-    await responderComMencoes(message, `┏═•❃༺🎨༻❃•═┓
-│       *𝐑𝐀𝐍𝐊 𝐂𝐔𝐒𝐓𝐎𝐌𝐈𝐙𝐀𝐃𝐎*
-├✯
-│
-├➤ 👤 ${nome}
-├➤ 🎯 Critério: *${textoRank}*
-├➤ 📊 Resultado:${percentual}
-│
-├➤ ${comentario}
-│
-┗═•❃༺🎨༻❃•═┓`, { mentions: [idPessoa] });
+    const comentario = valor >= 90 ? 'NÃ­vel absurdo. O bot ficou impressionado. ð¤¯' : valor >= 70 ? 'Resultado forte. ð' : valor >= 50 ? 'Resultado mediano, mas respeitÃ¡vel. ð' : 'Tem espaÃ§o para evoluÃ§Ã£o. ð ï¸';
+    await reagir(message, 'ð¨');
+    await responderComMencoes(message, `âââ¢âà¼ºð¨à¼»ââ¢ââ
+â       *ðððð ððððððððððð*
+ââ¯
+â
+ââ¤ ð¤ ${nome}
+ââ¤ ð¯ CritÃ©rio: *${textoRank}*
+ââ¤ ð Resultado:${percentual}
+â
+ââ¤ ${comentario}
+â
+âââ¢âà¼ºð¨à¼»ââ¢ââ`, { mentions: [idPessoa] });
 }
 
 async function comandoRankPobre(message) {
     try {
         if (!message?.from?.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, `┏═•❃༺🪙༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🪙༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºðªà¼»ââ¢ââ
+ââ¯ *ðððð ððððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðªà¼»ââ¢ââ`);
             return;
         }
         const configuracao = obterConfiguracaoRank(message.from);
@@ -1836,8 +1838,8 @@ async function comandoRankPobre(message) {
             const canonico = await resolverIdEconomia(idPessoa);
             const carteira = canonico ? obterCarteiraEconomia(canonico) : null;
             const saldo = Number(carteira?.saldo) || 0;
-            await reagir(message, '🪙');
-            await responderComMencoes(message, `┏═•❃༺🪙༻❃•═┓\n│       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*\n├✯\n│\n├➤ 👤 ${mencaoDaPessoa(idPessoa)}\n├➤ 🪙 Saldo: *${formatarMoedas(saldo)} moedas*\n│\n├➤ _Modo pessoal: apenas seu resultado é exibido._\n│\n┗═•❃༺🪙༻❃•═┓`, { mentions: [idPessoa] });
+            await reagir(message, 'ðª');
+            await responderComMencoes(message, `âââ¢âà¼ºðªà¼»ââ¢ââ\nâ       *ðððð ððððð*\nââ¯\nâ\nââ¤ ð¤ ${mencaoDaPessoa(idPessoa)}\nââ¤ ðª Saldo: *${formatarMoedas(saldo)} moedas*\nâ\nââ¤ _Modo pessoal: apenas seu resultado Ã© exibido._\nâ\nâââ¢âà¼ºðªà¼»ââ¢ââ`, { mentions: [idPessoa] });
             return;
         }
         const ids = await obterParticipantesDoGrupoParaRank(message);
@@ -1848,60 +1850,60 @@ async function comandoRankPobre(message) {
             participantes.push({ id, saldo: Number(carteira?.saldo) || 0 });
         }
         if (!participantes.length) {
-            await reagir(message, '🪙');
-            await responderCitando(message, `┏═•❃༺🪙༻❃•═┓
-│       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
-├✯
-│
-├➤ 📊 _Ainda não há carteiras suficientes no grupo._
-│
-┗═•❃༺🪙༻❃•═┓`);
+            await reagir(message, 'ðª');
+            await responderCitando(message, `âââ¢âà¼ºðªà¼»ââ¢ââ
+â       *ðððð ððððð*
+ââ¯
+â
+ââ¤ ð _Ainda nÃ£o hÃ¡ carteiras suficientes no grupo._
+â
+âââ¢âà¼ºðªà¼»ââ¢ââ`);
             return;
         }
         participantes.sort((a, b) => a.saldo - b.saldo || a.id.localeCompare(b.id));
         const top = participantes.slice(0, configuracao.quantidadeTop);
         const idsMencao = top.map(item => item.id);
-        let texto = `┏═•❃༺🪙༻❃•═┓
-│       *𝐑𝐀𝐍𝐊 𝐏𝐎𝐁𝐑𝐄*
-├✯
-│
-├➤ 🏆 *TOP ${top.length} DO GRUPO*
-├➤ _Ranking baseado nas moedas do bot._
-│
+        let texto = `âââ¢âà¼ºðªà¼»ââ¢ââ
+â       *ðððð ððððð*
+ââ¯
+â
+ââ¤ ð *TOP ${top.length} DO GRUPO*
+ââ¤ _Ranking baseado nas moedas do bot._
+â
 `;
-        const medalhas = ['🥇', '🥈', '🥉'];
+        const medalhas = ['ð¥', 'ð¥', 'ð¥'];
         top.forEach((item, i) => {
-            const medalha = medalhas[i] || `${i + 1}º`;
-            texto += `├➤ ${medalha} ${mencaoDaPessoa(item.id)}
-│   🪙 *${formatarMoedas(item.saldo)} moedas*
-│
+            const medalha = medalhas[i] || `${i + 1}Âº`;
+            texto += `ââ¤ ${medalha} ${mencaoDaPessoa(item.id)}
+â   ðª *${formatarMoedas(item.saldo)} moedas*
+â
 `;
         });
-        texto += `┗═•❃༺🪙༻❃•═┓`;
-        await reagir(message, '🪙');
+        texto += `âââ¢âà¼ºðªà¼»ââ¢ââ`;
+        await reagir(message, 'ðª');
         await enviarComMencoes(message.from, texto, { mentions: idsMencao });
     } catch (erro) {
-        console.error('❌ Erro no rank pobre:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-├✯ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐑𝐀𝐍𝐊*
-│
-├➤ _Não consegui consultar as moedas do grupo._
-│
-┗═•❃༺❌༻❃•═┓`);
+        console.error('â Erro no rank pobre:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ
+ââ¯ *ðððð ðð ðððð*
+â
+ââ¤ _NÃ£o consegui consultar as moedas do grupo._
+â
+âââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
 async function comandoRankShip(message) {
     try {
         if (!message?.from?.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, `┏═•❃༺💘༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐒𝐇𝐈𝐏*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺💘༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððð ðððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
             return;
         }
 
@@ -1929,131 +1931,131 @@ async function comandoRankShip(message) {
         }
 
         if (pessoas.length < 2) {
-            await reagir(message, '❓');
-            await responderCitando(message, `┏═•❃༺💘༻❃•═┓
-├✯ *𝐑𝐀𝐍𝐊 𝐒𝐇𝐈𝐏*
-│
-├➤ _Mencione duas pessoas para fazer o ship._
-│
-├➤ *Exemplo:* ${PREFIXO}rankship @pessoa1 @pessoa2
-│
-┗═•❃༺💘༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððð ðððð*
+â
+ââ¤ _Mencione duas pessoas para fazer o ship._
+â
+ââ¤ *Exemplo:* ${PREFIXO}rankship @pessoa1 @pessoa2
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
             return;
         }
 
         const ids = pessoas.slice(0, 2);
         const valor = obterValorRankPar(message.from, 'ship', ids);
-        const comentarios = valor >= 90 ? 'Casamento marcado pelo algoritmo. 💍' : valor >= 70 ? 'Tem química! 👀❤️' : valor >= 50 ? 'Existe alguma faísca escondida. ✨' : valor >= 25 ? 'O algoritmo está vendo amizade. 😂' : 'O ship afundou antes de zarpar. 🚢💀';
+        const comentarios = valor >= 90 ? 'Casamento marcado pelo algoritmo. ð' : valor >= 70 ? 'Tem quÃ­mica! ðâ¤ï¸' : valor >= 50 ? 'Existe alguma faÃ­sca escondida. â¨' : valor >= 25 ? 'O algoritmo estÃ¡ vendo amizade. ð' : 'O ship afundou antes de zarpar. ð¢ð';
         const mencao1 = mencaoDaPessoa(ids[0]);
         const mencao2 = mencaoDaPessoa(ids[1]);
 
-        await reagir(message, '💘');
+        await reagir(message, 'ð');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺💘༻❃•═┓
-│        *𝐑𝐀𝐍𝐊 𝐒𝐇𝐈𝐏*
-├✯
-│
-├➤ 💕 ${mencao1} × ${mencao2}
-├➤ 💞 Compatibilidade: *${valor}%*
-│
-├➤ ${comentarios}
-│
-┗═•❃༺💘༻❃•═┓`,
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â        *ðððð ðððð*
+ââ¯
+â
+ââ¤ ð ${mencao1} Ã ${mencao2}
+ââ¤ ð Compatibilidade: *${valor}%*
+â
+ââ¤ ${comentarios}
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
             { mentions: ids }
         );
     } catch (erro) {
-        console.error('❌ Erro no rank ship:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-├✯ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐒𝐇𝐈𝐏*
-│
-├➤ _Não consegui calcular esse ship agora._
-│
-┗═•❃༺❌༻❃•═┓`);
+        console.error('â Erro no rank ship:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ
+ââ¯ *ðððð ðð ðððð*
+â
+ââ¤ _NÃ£o consegui calcular esse ship agora._
+â
+âââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
 async function mostrarConfiguracoesRanks(message) {
     if (!message?.from?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
-├✯ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐄 𝐑𝐀𝐍𝐊𝐒*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🏆༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððððððððÃÃð ðð ððððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
     if (!(await exigirAdmin(message))) return;
 
     const c = obterConfiguracaoRank(message.from);
-    const exibicao = c.exibicao === 'top' ? `🏆 TOP ${c.quantidadeTop} DO GRUPO` : '👤 APENAS VOCÊ';
-    const sorteio = c.modo === 'fixo' ? '📌 FIXO' : '🎲 ALEATÓRIO';
-    const porcentagem = c.mostrarPorcentagem ? '🟢 ATIVADA' : '🔴 DESATIVADA';
+    const exibicao = c.exibicao === 'top' ? `ð TOP ${c.quantidadeTop} DO GRUPO` : 'ð¤ APENAS VOCÃ';
+    const sorteio = c.modo === 'fixo' ? 'ð FIXO' : 'ð² ALEATÃRIO';
+    const porcentagem = c.mostrarPorcentagem ? 'ð¢ ATIVADA' : 'ð´ DESATIVADA';
 
-    await reagir(message, '⚙️');
-    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
-│       *𝐏𝐀𝐈𝐍𝐄𝐋 𝐃𝐄 𝐑𝐀𝐍𝐊𝐈𝐍𝐆𝐒*
-├✯
-│
-│  📋 *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀Ç𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋*
-│
-├➤ 🏆 Exibição: *${exibicao}*
-├➤ 🔢 Tamanho do TOP: *${c.quantidadeTop}*
-├➤ 🎲 Resultados: *${sorteio}*
-├➤ 📊 Porcentagem: *${porcentagem}*
-│
-├✯
-│
-│  🛠️ *𝐄𝐗𝐈𝐁𝐈Ç𝐀̃𝐎*
-│
-├➤ 🏆 *${PREFIXO}srank top*
-│   _Mostra os melhores do grupo._
-│
-├➤ 👤 *${PREFIXO}srank pessoal*
-│   _Mostra apenas o seu resultado._
-│
-├➤ 🔢 *${PREFIXO}srank qtd 10*
-│   _Define o TOP entre 1 e 50._
-│
-├✯
-│
-│  🎲 *𝐑𝐄𝐒𝐔𝐋𝐓𝐀𝐃𝐎𝐒*
-│
-├➤ 📌 *${PREFIXO}srank fixo*
-│   _Mantém os resultados salvos._
-│
-├➤ 🎲 *${PREFIXO}srank aleatorio*
-│   _Sorteia novamente a cada uso._
-│
-├✯
-│
-│  📊 *𝐏𝐎𝐑𝐂𝐄𝐍𝐓𝐀𝐆𝐄𝐌*
-│
-├➤ 🟢 *${PREFIXO}srank porcentagem on*
-│   _Exibe a porcentagem._
-│
-├➤ 🔴 *${PREFIXO}srank porcentagem off*
-│   _Oculta a porcentagem._
-│
-├✯
-│
-├➤ 💾 _Configurações salvas por grupo._
-├➤ 👑 _Somente administradores podem alterar._
-│
-┗═•❃༺⚙️༻❃•═┓`);
+    await reagir(message, 'âï¸');
+    await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+â       *ðððððð ðð ðððððððð*
+ââ¯
+â
+â  ð *ðððððððððÃðÌð ððððð*
+â
+ââ¤ ð ExibiÃ§Ã£o: *${exibicao}*
+ââ¤ ð¢ Tamanho do TOP: *${c.quantidadeTop}*
+ââ¤ ð² Resultados: *${sorteio}*
+ââ¤ ð Porcentagem: *${porcentagem}*
+â
+ââ¯
+â
+â  ð ï¸ *ðððððÃðÌð*
+â
+ââ¤ ð *${PREFIXO}srank top*
+â   _Mostra os melhores do grupo._
+â
+ââ¤ ð¤ *${PREFIXO}srank pessoal*
+â   _Mostra apenas o seu resultado._
+â
+ââ¤ ð¢ *${PREFIXO}srank qtd 10*
+â   _Define o TOP entre 1 e 50._
+â
+ââ¯
+â
+â  ð² *ðððððððððð*
+â
+ââ¤ ð *${PREFIXO}srank fixo*
+â   _MantÃ©m os resultados salvos._
+â
+ââ¤ ð² *${PREFIXO}srank aleatorio*
+â   _Sorteia novamente a cada uso._
+â
+ââ¯
+â
+â  ð *ððððððððððð*
+â
+ââ¤ ð¢ *${PREFIXO}srank porcentagem on*
+â   _Exibe a porcentagem._
+â
+ââ¤ ð´ *${PREFIXO}srank porcentagem off*
+â   _Oculta a porcentagem._
+â
+ââ¯
+â
+ââ¤ ð¾ _ConfiguraÃ§Ãµes salvas por grupo._
+ââ¤ ð _Somente administradores podem alterar._
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ`);
 }
 
 async function configurarRanksPorComando(message, argumentos) {
     if (!message?.from?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
-├✯ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐄 𝐑𝐀𝐍𝐊𝐒*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🏆༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððððððððÃÃð ðð ððððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
     if (!(await exigirAdmin(message))) return;
@@ -2066,60 +2068,60 @@ async function configurarRanksPorComando(message, argumentos) {
     else if (acao === 'qtd' || acao === 'quantidade' || acao === 'topqtd') {
         const n = Number(partes[1]);
         if (!Number.isInteger(n) || n < 1 || n > 50) {
-            await reagir(message, '❓');
-            await responderCitando(message, `┏═•❃༺🔢༻❃•═┓
-├✯ *𝐐𝐔𝐀𝐍𝐓𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐓𝐎𝐏*
-│
-├➤ _Use um número inteiro entre 1 e 50._
-├➤ *Exemplo:* ${PREFIXO}srank qtd 10
-│
-┗═•❃༺🔢༻❃•═┓`);
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºð¢à¼»ââ¢ââ
+ââ¯ *ðððððððððð ðð ððð*
+â
+ââ¤ _Use um nÃºmero inteiro entre 1 e 50._
+ââ¤ *Exemplo:* ${PREFIXO}srank qtd 10
+â
+âââ¢âà¼ºð¢à¼»ââ¢ââ`);
             return;
         }
         c.quantidadeTop = n;
     } else if (acao === 'porcentagem' || acao === 'porcentagens' || acao === 'percentual') {
         const valor = (partes[1] || '').toLowerCase();
-        if (!['on','off','sim','nao','não','true','false'].includes(valor)) {
-            await reagir(message, '❓');
-            await responderCitando(message, `┏═•❃༺📊༻❃•═┓
-├✯ *𝐏𝐎𝐑𝐂𝐄𝐍𝐓𝐀𝐆𝐄𝐌*
-│
-├➤ _Use on/off._
-├➤ *Exemplo:* ${PREFIXO}srank porcentagem off
-│
-┗═•❃༺📊༻❃•═┓`);
+        if (!['on','off','sim','nao','nÃ£o','true','false'].includes(valor)) {
+            await reagir(message, 'â');
+            await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ððððððððððð*
+â
+ââ¤ _Use on/off._
+ââ¤ *Exemplo:* ${PREFIXO}srank porcentagem off
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
             return;
         }
         c.mostrarPorcentagem = ['on', 'sim', 'true'].includes(valor);
     } else if (acao === 'fixo') c.modo = 'fixo';
-    else if (acao === 'aleatorio' || acao === 'aleatório' || acao === 'random') c.modo = 'aleatorio';
+    else if (acao === 'aleatorio' || acao === 'aleatÃ³rio' || acao === 'random') c.modo = 'aleatorio';
     else {
         await mostrarConfiguracoesRanks(message);
         return;
     }
 
     salvarConfiguracoesRanks();
-    const rotulo = acao === 'top' ? `🏆 TOP ${c.quantidadeTop} DO GRUPO` : acao === 'pessoal' || acao === 'individual' ? '👤 APENAS VOCÊ' : acao.startsWith('qtd') || acao === 'quantidade' || acao === 'topqtd' ? `🔢 TOP ${c.quantidadeTop}` : acao.startsWith('porcent') || acao === 'percentual' ? `📊 PORCENTAGEM ${c.mostrarPorcentagem ? 'ATIVADA' : 'DESATIVADA'}` : c.modo === 'fixo' ? '📌 MODO FIXO' : '🎲 MODO ALEATÓRIO';
-    await reagir(message, '✅');
-    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
-│       *𝐑𝐀𝐍𝐊𝐒 𝐀𝐓𝐔𝐀𝐋𝐈𝐙𝐀𝐃𝐎𝐒*
-├✯
-│
-├➤ ✅ ${rotulo}
-├➤ 💾 _Configuração salva para este grupo._
-│
-┗═•❃༺⚙️༻❃•═┓`);
+    const rotulo = acao === 'top' ? `ð TOP ${c.quantidadeTop} DO GRUPO` : acao === 'pessoal' || acao === 'individual' ? 'ð¤ APENAS VOCÃ' : acao.startsWith('qtd') || acao === 'quantidade' || acao === 'topqtd' ? `ð¢ TOP ${c.quantidadeTop}` : acao.startsWith('porcent') || acao === 'percentual' ? `ð PORCENTAGEM ${c.mostrarPorcentagem ? 'ATIVADA' : 'DESATIVADA'}` : c.modo === 'fixo' ? 'ð MODO FIXO' : 'ð² MODO ALEATÃRIO';
+    await reagir(message, 'â');
+    await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+â       *ððððð ððððððððððð*
+ââ¯
+â
+ââ¤ â ${rotulo}
+ââ¤ ð¾ _ConfiguraÃ§Ã£o salva para este grupo._
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ`);
 }
 
 async function configurarModoRank(message, modo) {
     if (!message?.from?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🏆༻❃•═┓
-├✯ *𝐌𝐎𝐃𝐎 𝐃𝐎𝐒 𝐑𝐀𝐍𝐊𝐒*
-│
-├➤ ❌ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🏆༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððð ððð ððððð*
+â
+ââ¤ â _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
     if (!(await exigirAdmin(message))) return;
@@ -2129,22 +2131,22 @@ async function configurarModoRank(message, modo) {
     salvarConfiguracoesRanks();
 
     const fixo = configuracao.modo === 'fixo';
-    await reagir(message, fixo ? '📌' : '🎲');
-    await responderCitando(message, `┏═•❃༺${fixo ? '📌' : '🎲'}༻❃•═┓
-│       *𝐌𝐎𝐃𝐎 𝐃𝐎𝐒 𝐑𝐀𝐍𝐊𝐒*
-├✯
-│
-├➤ ${fixo ? '📌' : '🎲'} Modo atual: *${fixo ? 'FIXO' : 'ALEATÓRIO'}*
-│
-├➤ ${fixo ? '_A mesma pessoa manterá o mesmo resultado em cada rank._' : '_Os resultados serão sorteados novamente a cada uso._'}
-│
-├➤ 👑 _Apenas administradores podem alterar esta opção._
-│
-┗═•❃༺${fixo ? '📌' : '🎲'}༻❃•═┓`);
+    await reagir(message, fixo ? 'ð' : 'ð²');
+    await responderCitando(message, `âââ¢âà¼º${fixo ? 'ð' : 'ð²'}à¼»ââ¢ââ
+â       *ðððð ððð ððððð*
+ââ¯
+â
+ââ¤ ${fixo ? 'ð' : 'ð²'} Modo atual: *${fixo ? 'FIXO' : 'ALEATÃRIO'}*
+â
+ââ¤ ${fixo ? '_A mesma pessoa manterÃ¡ o mesmo resultado em cada rank._' : '_Os resultados serÃ£o sorteados novamente a cada uso._'}
+â
+ââ¤ ð _Apenas administradores podem alterar esta opÃ§Ã£o._
+â
+âââ¢âà¼º${fixo ? 'ð' : 'ð²'}à¼»ââ¢ââ`);
 }
 
 // ============================================================
-// ✨ SISTEMA DE XP
+// â¨ SISTEMA DE XP
 // ============================================================
 
 const XP_POR_MENSAGEM = 5;
@@ -2257,7 +2259,7 @@ function salvarXP() {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao salvar XP:',
+            'â Erro ao salvar XP:',
             erro
         );
     }
@@ -2327,13 +2329,13 @@ function carregarXP() {
         }
 
         console.log(
-            '✨ Sistema de XP carregado!'
+            'â¨ Sistema de XP carregado!'
         );
 
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao carregar XP:',
+            'â Erro ao carregar XP:',
             erro
         );
     }
@@ -2417,7 +2419,7 @@ function salvarMoedas() {
             'utf8'
         );
     } catch (erro) {
-        console.error('❌ Erro ao salvar economia:', erro);
+        console.error('â Erro ao salvar economia:', erro);
     }
 }
 
@@ -2525,16 +2527,16 @@ function carregarMoedas() {
             cooldownsRoubo.set(chave, timestamp);
         }
 
-        console.log('💰 Economia carregada:', moedasUsuarios.size, 'usuários');
+        console.log('ð° Economia carregada:', moedasUsuarios.size, 'usuÃ¡rios');
     } catch (erro) {
-        console.error('❌ Erro ao carregar economia:', erro);
+        console.error('â Erro ao carregar economia:', erro);
     }
 }
 
 // ============================================================
-// 🪪 IDENTIDADE DAS CARTEIRAS
-// Mantém LID e JID da mesma pessoa na mesma carteira.
-// Nunca assume que dois números são iguais sem confirmação do WhatsApp.
+// ðªª IDENTIDADE DAS CARTEIRAS
+// MantÃ©m LID e JID da mesma pessoa na mesma carteira.
+// Nunca assume que dois nÃºmeros sÃ£o iguais sem confirmaÃ§Ã£o do WhatsApp.
 // ============================================================
 
 function normalizarIdEconomia(id) {
@@ -2636,7 +2638,7 @@ async function resolverIdEconomia(usuarioIdOuContato) {
             if (contato) ids = await obterIdsPessoa(contato);
         }
     } catch (erro) {
-        console.log('⚠️ Não foi possível resolver identidade da carteira:', erro?.message || erro);
+        console.log('â ï¸ NÃ£o foi possÃ­vel resolver identidade da carteira:', erro?.message || erro);
     }
 
     return registrarIdentidadeEconomia([...ids], original);
@@ -2706,22 +2708,22 @@ const INTERVALO_MESMA_VITIMA = 6 * 60 * 60 * 1000;
 
 const ITENS_LOJA = {
     picareta: {
-        nome: 'Picareta Reforçada',
-        emoji: '⛏️',
+        nome: 'Picareta ReforÃ§ada',
+        emoji: 'âï¸',
         preco: 1200,
-        descricao: 'Reduz o cooldown da mineração e aumenta seus ganhos.'
+        descricao: 'Reduz o cooldown da mineraÃ§Ã£o e aumenta seus ganhos.'
     },
     luvas: {
-        nome: 'Luvas de Ladrão',
-        emoji: '🥷',
+        nome: 'Luvas de LadrÃ£o',
+        emoji: 'ð¥·',
         preco: 1500,
         descricao: 'Aumenta sua chance de escapar quando tentar roubar.'
     },
     colete: {
-        nome: 'Colete Anti-Punição',
-        emoji: '🛡️',
+        nome: 'Colete Anti-PuniÃ§Ã£o',
+        emoji: 'ð¡ï¸',
         preco: 2000,
-        descricao: 'Protege uma vez contra a punição de ser pego duas vezes.'
+        descricao: 'Protege uma vez contra a puniÃ§Ã£o de ser pego duas vezes.'
     }
 };
 
@@ -2730,7 +2732,7 @@ carregarMoedas();
 carregarXP();
 
 // ============================================================
-// 🎖️ CARREGAR CONQUISTAS
+// ðï¸ CARREGAR CONQUISTAS
 // ============================================================
 
 function carregarConquistas() {
@@ -2773,15 +2775,15 @@ function carregarConquistas() {
         }
 
         console.log(
-            '🎖️ Conquistas carregadas:',
+            'ðï¸ Conquistas carregadas:',
             conquistasUsuarios.size,
-            'usuários'
+            'usuÃ¡rios'
         );
 
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao carregar conquistas:',
+            'â Erro ao carregar conquistas:',
             erro
         );
     }
@@ -2789,7 +2791,7 @@ function carregarConquistas() {
 
 
 // ============================================================
-// 🎖️ SALVAR CONQUISTAS
+// ðï¸ SALVAR CONQUISTAS
 // ============================================================
 
 function salvarConquistas() {
@@ -2823,7 +2825,7 @@ function salvarConquistas() {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao salvar conquistas:',
+            'â Erro ao salvar conquistas:',
             erro
         );
     }
@@ -2833,7 +2835,7 @@ function salvarConquistas() {
 carregarConquistas();
 
 // ============================================================
-// 🎖️ DADOS DE CONQUISTAS DO USUÁRIO
+// ðï¸ DADOS DE CONQUISTAS DO USUÃRIO
 // ============================================================
 
 function garantirConquistasUsuario(
@@ -2859,7 +2861,7 @@ function garantirConquistasUsuario(
 
 
 // ============================================================
-// 🎖️ VERIFICAR SE USUÁRIO POSSUI CONQUISTA
+// ðï¸ VERIFICAR SE USUÃRIO POSSUI CONQUISTA
 // ============================================================
 
 function possuiConquista(
@@ -2882,7 +2884,7 @@ function possuiConquista(
 
 
 // ============================================================
-// 🎖️ DESBLOQUEAR CONQUISTA
+// ðï¸ DESBLOQUEAR CONQUISTA
 // ============================================================
 
 function desbloquearConquista(
@@ -2919,14 +2921,14 @@ function desbloquearConquista(
     salvarConquistas();
 
     console.log(
-        `🎖️ Conquista desbloqueada: ${conquista.nome} → ${usuarioId}`
+        `ðï¸ Conquista desbloqueada: ${conquista.nome} â ${usuarioId}`
     );
 
     return true;
 }
 
 // ============================================================
-// 🎖️ VERIFICAR CONQUISTAS DO USUÁRIO
+// ðï¸ VERIFICAR CONQUISTAS DO USUÃRIO
 // ============================================================
 
 function verificarConquistas(
@@ -2941,7 +2943,7 @@ function verificarConquistas(
     }
 
     // ========================================================
-    // 🌱 PRIMEIRO PASSO
+    // ð± PRIMEIRO PASSO
     // ========================================================
 
     if (
@@ -2966,7 +2968,7 @@ function verificarConquistas(
     }
 
     // ========================================================
-    // 💬 TAGARELA
+    // ð¬ TAGARELA
     // ========================================================
 
     if (
@@ -2991,7 +2993,7 @@ function verificarConquistas(
     }
 
 // ========================================================
-// 🗣️ FALADOR PROFISSIONAL
+// ð£ï¸ FALADOR PROFISSIONAL
 // ========================================================
 
 if (
@@ -3016,7 +3018,7 @@ if (
 }
     
 // ========================================================
-// ⭐ SUBINDO DE NÍVEL
+// â­ SUBINDO DE NÃVEL
 // ========================================================
 
 if (
@@ -3041,7 +3043,7 @@ if (
 }    
 
 // ========================================================
-// 🚀 VETERANO
+// ð VETERANO
 // ========================================================
 
 if (
@@ -3066,7 +3068,7 @@ if (
 }    
 
 // ========================================================
-// 👑 LENDA
+// ð LENDA
 // ========================================================
 
 if (
@@ -3095,7 +3097,7 @@ return novasConquistas;
 
 
 // ============================================================
-// 💤 CONTROLE DE XP OFFLINE
+// ð¤ CONTROLE DE XP OFFLINE
 // ============================================================
 
 const controleXP = new Map();
@@ -3128,7 +3130,7 @@ function salvarControleXP() {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao salvar controle do XP:',
+            'â Erro ao salvar controle do XP:',
             erro
         );
     }
@@ -3166,13 +3168,13 @@ function carregarControleXP() {
         }
 
         console.log(
-            '💤 Controle de XP offline carregado!'
+            'ð¤ Controle de XP offline carregado!'
         );
 
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao carregar controle de XP:',
+            'â Erro ao carregar controle de XP:',
             erro
         );
     }
@@ -3182,7 +3184,7 @@ carregarControleXP();
 
 
 // ============================================================
-// 💤 OBTER MENSAGENS DO GRUPO DIRETAMENTE DO WHATSAPP WEB
+// ð¤ OBTER MENSAGENS DO GRUPO DIRETAMENTE DO WHATSAPP WEB
 // Evita client.getChatById() e fetchMessages()
 // ============================================================
 
@@ -3211,7 +3213,7 @@ async function obterMensagensGrupoDireto(
                             return {
                                 sucesso: false,
                                 erro:
-                                    'WAWebCollections não disponível.'
+                                    'WAWebCollections nÃ£o disponÃ­vel.'
                             };
                         }
 
@@ -3222,18 +3224,18 @@ async function obterMensagensGrupoDireto(
                             return {
                                 sucesso: false,
                                 erro:
-                                    'Coleção Chat não disponível.'
+                                    'ColeÃ§Ã£o Chat nÃ£o disponÃ­vel.'
                             };
                         }
 
                         // ====================================================
-                        // TENTAR PEGAR O CHAT DIRETAMENTE DA COLEÇÃO
+                        // TENTAR PEGAR O CHAT DIRETAMENTE DA COLEÃÃO
                         // ====================================================
 
                         let chat =
                             Chat.get(chatId);
 
-                        // Caso não esteja carregado,
+                        // Caso nÃ£o esteja carregado,
                         // tentar localizar pelo WID
                         if (!chat) {
 
@@ -3260,7 +3262,7 @@ async function obterMensagensGrupoDireto(
                             } catch (erroFind) {
 
                                 console.log(
-                                    '⚠️ Chat.find falhou:',
+                                    'â ï¸ Chat.find falhou:',
                                     String(
                                         erroFind?.message ||
                                         erroFind
@@ -3274,12 +3276,12 @@ async function obterMensagensGrupoDireto(
                             return {
                                 sucesso: false,
                                 erro:
-                                    'Grupo não encontrado na coleção do WhatsApp.'
+                                    'Grupo nÃ£o encontrado na coleÃ§Ã£o do WhatsApp.'
                             };
                         }
 
                         // ====================================================
-                        // PEGAR MENSAGENS JÁ CARREGADAS
+                        // PEGAR MENSAGENS JÃ CARREGADAS
                         // ====================================================
 
                         let mensagens =
@@ -3349,7 +3351,7 @@ async function obterMensagensGrupoDireto(
                             } catch (erroHistorico) {
 
                                 console.log(
-                                    '⚠️ Não foi possível carregar mensagens antigas:',
+                                    'â ï¸ NÃ£o foi possÃ­vel carregar mensagens antigas:',
                                     String(
                                         erroHistorico?.message ||
                                         erroHistorico
@@ -3359,7 +3361,7 @@ async function obterMensagensGrupoDireto(
                         }
 
                         // ====================================================
-                        // LIMITAR ÀS ÚLTIMAS MENSAGENS
+                        // LIMITAR ÃS ÃLTIMAS MENSAGENS
                         // ====================================================
 
                         mensagens =
@@ -3481,7 +3483,7 @@ async function obterMensagensGrupoDireto(
         ) {
 
             console.log(
-                `⚠️ Não foi possível obter mensagens do grupo ${grupoId}:`,
+                `â ï¸ NÃ£o foi possÃ­vel obter mensagens do grupo ${grupoId}:`,
                 resultado?.erro ||
                     'erro desconhecido'
             );
@@ -3497,7 +3499,7 @@ async function obterMensagensGrupoDireto(
     } catch (erro) {
 
         console.error(
-            `❌ Erro ao acessar mensagens diretamente do grupo ${grupoId}:`,
+            `â Erro ao acessar mensagens diretamente do grupo ${grupoId}:`,
             erro
         );
 
@@ -3506,13 +3508,13 @@ async function obterMensagensGrupoDireto(
 }
 
 // ============================================================
-// 💤 PROCESSAR MENSAGENS ENVIADAS ENQUANTO O BOT ESTAVA OFFLINE
+// ð¤ PROCESSAR MENSAGENS ENVIADAS ENQUANTO O BOT ESTAVA OFFLINE
 // ============================================================
 
 async function processarXPOffline() {
 
     console.log(
-        '💤 Verificando mensagens enviadas enquanto o bot estava offline...'
+        'ð¤ Verificando mensagens enviadas enquanto o bot estava offline...'
     );
 
     try {
@@ -3520,12 +3522,12 @@ async function processarXPOffline() {
         let totalMensagens = 0;
         let totalXP = 0;
 
-        // Usa os grupos que o próprio bot já conhece
+        // Usa os grupos que o prÃ³prio bot jÃ¡ conhece
         const gruposConhecidos =
             [...participantesGrupos.keys()];
 
         console.log(
-            `💤 Grupos conhecidos para XP: ${gruposConhecidos.length}`
+            `ð¤ Grupos conhecidos para XP: ${gruposConhecidos.length}`
         );
 
         for (
@@ -3556,7 +3558,7 @@ async function processarXPOffline() {
                     );
 
                     console.log(
-                        `💤 Primeiro registro de XP para ${grupoId}`
+                        `ð¤ Primeiro registro de XP para ${grupoId}`
                     );
 
                     continue;
@@ -3585,7 +3587,7 @@ async function processarXPOffline() {
                 ) {
 
                     console.log(
-                        `💤 Nenhuma mensagem disponível no grupo ${grupoId}.`
+                        `ð¤ Nenhuma mensagem disponÃ­vel no grupo ${grupoId}.`
                     );
 
                     continue;
@@ -3622,14 +3624,14 @@ async function processarXPOffline() {
                     of mensagensOffline
                 ) {
 
-                    // Ignorar mensagens do próprio bot
+                    // Ignorar mensagens do prÃ³prio bot
                     if (
                         mensagem.fromMe
                     ) {
                         continue;
                     }
 
-                    // Ignorar notificações do sistema
+                    // Ignorar notificaÃ§Ãµes do sistema
                     if (
                         mensagem.type ===
                             'notification' ||
@@ -3677,13 +3679,13 @@ async function processarXPOffline() {
                 );
 
                 console.log(
-                    `💤 ${grupoId}: ${quantidadeGrupo} mensagens recuperadas.`
+                    `ð¤ ${grupoId}: ${quantidadeGrupo} mensagens recuperadas.`
                 );
 
             } catch (erroGrupo) {
 
                 console.error(
-                    `⚠️ Erro ao processar XP do grupo ${grupoId}:`,
+                    `â ï¸ Erro ao processar XP do grupo ${grupoId}:`,
                     erroGrupo
                 );
             }
@@ -3697,13 +3699,13 @@ async function processarXPOffline() {
         salvarControleXP();
 
         console.log(
-            `💤 XP OFFLINE CONCLUÍDO: ${totalMensagens} mensagens = +${totalXP} XP`
+            `ð¤ XP OFFLINE CONCLUÃDO: ${totalMensagens} mensagens = +${totalXP} XP`
         );
 
     } catch (erro) {
 
         console.error(
-            '❌ Erro geral ao processar XP offline:',
+            'â Erro geral ao processar XP offline:',
             erro
         );
     }
@@ -3711,7 +3713,7 @@ async function processarXPOffline() {
 
 
 // ============================================================
-// ⏱️ ATUALIZAR CONTROLE DO XP ENQUANTO O BOT ESTÁ ONLINE
+// â±ï¸ ATUALIZAR CONTROLE DO XP ENQUANTO O BOT ESTÃ ONLINE
 // ============================================================
 
 function atualizarControleXPOnline(
@@ -3744,7 +3746,7 @@ function atualizarControleXPOnline(
     } catch (erro) {
 
         console.error(
-            '⚠️ Erro ao atualizar controle de XP online:',
+            'â ï¸ Erro ao atualizar controle de XP online:',
             erro
         );
     }
@@ -3752,7 +3754,7 @@ function atualizarControleXPOnline(
 
 
 // ============================================================
-// 💾 SALVAR CONTROLE PERIODICAMENTE
+// ð¾ SALVAR CONTROLE PERIODICAMENTE
 // ============================================================
 
 setInterval(
@@ -3765,7 +3767,7 @@ setInterval(
 );
 
 // ============================================================
-// 😂 SALVAR PIADAS
+// ð SALVAR PIADAS
 // ============================================================
 
 function salvarPiadas() {
@@ -3783,20 +3785,20 @@ function salvarPiadas() {
         );
 
         console.log(
-            '💾 Piadas salvas!'
+            'ð¾ Piadas salvas!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ Erro ao salvar piadas:',
+            'â Erro ao salvar piadas:',
             erro.message
         );
     }
 }
 
 // ============================================================
-// CONEXÃO
+// CONEXÃO
 // ============================================================
 
 client.on('qr', qr => {
@@ -3809,7 +3811,7 @@ client.on(
     async () => {
 
         console.log(
-            '✅ BOT CONECTADO!'
+            'â BOT CONECTADO!'
         );
 
         await processarXPOffline();
@@ -3822,7 +3824,7 @@ client.on(
 client.on('auth_failure', mensagem => {
 
     console.error(
-        '❌ Falha na autenticação:',
+        'â Falha na autenticaÃ§Ã£o:',
         mensagem
     );
 
@@ -3832,7 +3834,7 @@ client.on('auth_failure', mensagem => {
 client.on('disconnected', motivo => {
 
     console.log(
-        '⚠️ Bot desconectado:',
+        'â ï¸ Bot desconectado:',
         motivo
     );
 
@@ -3877,13 +3879,13 @@ function aplicarEstiloMensagem(conteudo) {
 
     const texto = String(conteudo);
 
-    // Mensagens que já usam o layout do bot permanecem exatamente como estão.
-    if (texto.includes('┏═•❃') || texto.includes('┗═•❃')) {
+    // Mensagens que jÃ¡ usam o layout do bot permanecem exatamente como estÃ£o.
+    if (texto.includes('âââ¢â') || texto.includes('âââ¢â')) {
         return texto;
     }
 
     const linhas = texto.split('\n');
-    return `┏═•❃༺💬༻❃•═┓\n│\n${linhas.map(linha => `├➤ ${linha}`).join('\n')}\n│\n┗═•❃༺💬༻❃•═┛`;
+    return `âââ¢âà¼ºð¬à¼»ââ¢ââ\nâ\n${linhas.map(linha => `ââ¤ ${linha}`).join('\n')}\nâ\nâââ¢âà¼ºð¬à¼»ââ¢ââ`;
 }
 
 async function responderCitando(message, conteudo, opcoes = {}) {
@@ -3912,14 +3914,14 @@ async function responderCitando(message, conteudo, opcoes = {}) {
         );
 
     } catch (erro) {
-        console.error('❌ ERRO AO ENVIAR MENSAGEM:', erro);
+        console.error('â ERRO AO ENVIAR MENSAGEM:', erro);
         throw erro;
     }
 }
 
 
 // ============================================================
-// REAÇÕES
+// REAÃÃES
 // ============================================================
 
 async function reagir(message, emoji) {
@@ -3927,7 +3929,7 @@ async function reagir(message, emoji) {
         await message.react(emoji);
     } catch (erro) {
         console.log(
-            '⚠️ Não foi possível reagir:',
+            'â ï¸ NÃ£o foi possÃ­vel reagir:',
             erro.message
         );
     }
@@ -3935,7 +3937,7 @@ async function reagir(message, emoji) {
 
 
 // ============================================================
-// MENÇÕES
+// MENÃÃES
 // ============================================================
 
 async function obterPessoaMarcada(message) {
@@ -3956,26 +3958,26 @@ async function obterPessoaMarcada(message) {
                         const contato = await mensagemCitada.getContact();
                         if (contato) return contato;
                     } catch (erroContato) {
-                        console.log('⚠️ Não foi possível obter o contato da mensagem citada:', erroContato.message);
+                        console.log('â ï¸ NÃ£o foi possÃ­vel obter o contato da mensagem citada:', erroContato.message);
                     }
                 }
 
                 return { id: { _serialized: idAutor } };
             } catch (erroResposta) {
-                console.log('⚠️ Erro ao obter pessoa pela resposta:', erroResposta.message);
+                console.log('â ï¸ Erro ao obter pessoa pela resposta:', erroResposta.message);
             }
         }
 
         return null;
     } catch (erro) {
-        console.log('⚠️ Erro ao obter menção/resposta:', erro.message);
+        console.log('â ï¸ Erro ao obter menÃ§Ã£o/resposta:', erro.message);
         return null;
     }
 }
 
 function nomeDaPessoa(contato) {
     if (!contato) {
-        return 'alguém';
+        return 'alguÃ©m';
     }
 
     return (
@@ -3983,7 +3985,7 @@ function nomeDaPessoa(contato) {
         contato.name ||
         contato.shortName ||
         contato.number ||
-        'alguém'
+        'alguÃ©m'
     );
 }
 
@@ -4008,22 +4010,22 @@ function mencaoDaPessoa(contato) {
     const id = obterIdDeMencao(contato);
 
     if (!id) {
-        return '@alguém';
+        return '@alguÃ©m';
     }
 
     // IMPORTANTE: o texto precisa usar exatamente o mesmo identificador
-    // que vai em `mentions`. Isso é especialmente importante para LIDs.
+    // que vai em `mentions`. Isso Ã© especialmente importante para LIDs.
     return `@${id.split('@')[0]}`;
 }
 
 // ============================================================
-// MENÇÕES
+// MENÃÃES
 // ============================================================
 // Mantemos exatamente o ID fornecido pelo WhatsApp.
-// Não convertemos LID -> @c.us aqui: o PPP e os comandos de casamento
-// que já funcionam usam o ID original do participante/contato, e o
-// texto da menção usa o mesmo prefixo. Alterar esse ID no envio pode
-// fazer o WhatsApp renderizar apenas um @123... sem transformar em menção.
+// NÃ£o convertemos LID -> @c.us aqui: o PPP e os comandos de casamento
+// que jÃ¡ funcionam usam o ID original do participante/contato, e o
+// texto da menÃ§Ã£o usa o mesmo prefixo. Alterar esse ID no envio pode
+// fazer o WhatsApp renderizar apenas um @123... sem transformar em menÃ§Ã£o.
 
 async function prepararMencoesParaEnvio(texto, mentions) {
     if (!Array.isArray(mentions) || mentions.length === 0) {
@@ -4046,7 +4048,7 @@ async function prepararMencoesParaEnvio(texto, mentions) {
 
         if (prefixo) {
             // Garante que o @ exibido no texto corresponda ao ID real
-            // que está sendo enviado na propriedade `mentions`.
+            // que estÃ¡ sendo enviado na propriedade `mentions`.
             const variantes = [
                 `@${prefixo}`
             ];
@@ -4130,7 +4132,7 @@ async function responderComMencoes(message, conteudo, chatIdOuOpcoes, opcoes = {
 }
 
 // O ID usado pelos outros sistemas continua sendo o ID interno original.
-// A conversão para menção real acontece somente no momento do envio.
+// A conversÃ£o para menÃ§Ã£o real acontece somente no momento do envio.
 function idDaPessoa(contato) {
     if (!contato || !contato.id) {
         return null;
@@ -4151,19 +4153,19 @@ async function exigirPessoa(message) {
     const pessoa = await obterPessoaMarcada(message);
 
     if (!pessoa) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `┏═•❃༺✿༻❃•═┓
-├✯ *𝐌𝐄𝐍𝐂̧𝐀̃𝐎 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐀*
-│
-├➤ _Mencione alguém ou responda à mensagem dela._
-│
-├➤ *𝐄𝐗𝐄𝐌𝐏𝐋𝐎:*
-│   *${PREFIXO}tapa @pessoa*
-│
-┗═•❃༺✿༻❃•═┛`
+            `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ððððÌ§ðÌð ððÌð ðððððððððð*
+â
+ââ¤ _Mencione alguÃ©m ou responda Ã  mensagem dela._
+â
+ââ¤ *ððððððð:*
+â   *${PREFIXO}tapa @pessoa*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
         );
 
         return null;
@@ -4174,7 +4176,7 @@ async function exigirPessoa(message) {
 
 
 // ============================================================
-// PERMISSÕES DE ADMIN
+// PERMISSÃES DE ADMIN
 // ============================================================
 
 function obterIdRemetente(message) {
@@ -4215,9 +4217,9 @@ function idsIguais(id1, id2) {
     const tipoA = textoA.includes('@') ? textoA.split('@')[1] : '';
     const tipoB = textoB.includes('@') ? textoB.split('@')[1] : '';
 
-    // Nunca consideramos um LID igual a um telefone só porque
-    // ambos têm números antes do @. LIDs e JIDs podem ter valores
-    // numéricos completamente diferentes.
+    // Nunca consideramos um LID igual a um telefone sÃ³ porque
+    // ambos tÃªm nÃºmeros antes do @. LIDs e JIDs podem ter valores
+    // numÃ©ricos completamente diferentes.
     const saoTelefones =
         (!tipoA || tipoA === 'c.us') &&
         (!tipoB || tipoB === 'c.us');
@@ -4297,7 +4299,7 @@ async function obterIdsPessoa(contatoOuId) {
         } catch (erro) {
 
             console.log(
-                '⚠️ Não foi possível obter LID:',
+                'â ï¸ NÃ£o foi possÃ­vel obter LID:',
                 erro.message
             );
         }
@@ -4307,7 +4309,7 @@ async function obterIdsPessoa(contatoOuId) {
 }
 
 // ============================================================
-// VERIFICAR SE O BOT É ADMIN
+// VERIFICAR SE O BOT Ã ADMIN
 // ============================================================
 async function ehBotAdmin(chat) {
     try {
@@ -4325,7 +4327,7 @@ async function ehBotAdmin(chat) {
         }
 
         // ========================================================
-        // OBTER IDS POSSÍVEIS DO BOT
+        // OBTER IDS POSSÃVEIS DO BOT
         // ========================================================
 
         const botIds = new Set();
@@ -4340,7 +4342,7 @@ async function ehBotAdmin(chat) {
             botIds.add(botIdPrincipal);
         }
 
-        // Tentar obter número/LID relacionados ao bot
+        // Tentar obter nÃºmero/LID relacionados ao bot
         try {
             if (
                 botIdPrincipal &&
@@ -4374,7 +4376,7 @@ async function ehBotAdmin(chat) {
             }
         } catch (erroLid) {
             console.log(
-                '⚠️ Não foi possível obter LID do bot:',
+                'â ï¸ NÃ£o foi possÃ­vel obter LID do bot:',
                 erroLid?.message ||
                     erroLid
             );
@@ -4400,7 +4402,7 @@ async function ehBotAdmin(chat) {
                             return {
                                 sucesso: false,
                                 erro:
-                                    'Coleção Chat não disponível.'
+                                    'ColeÃ§Ã£o Chat nÃ£o disponÃ­vel.'
                             };
                         }
 
@@ -4413,7 +4415,7 @@ async function ehBotAdmin(chat) {
                             return {
                                 sucesso: false,
                                 erro:
-                                    'Grupo não encontrado.'
+                                    'Grupo nÃ£o encontrado.'
                             };
                         }
 
@@ -4426,7 +4428,7 @@ async function ehBotAdmin(chat) {
                             return {
                                 sucesso: false,
                                 erro:
-                                    'Participantes do grupo não disponíveis.'
+                                    'Participantes do grupo nÃ£o disponÃ­veis.'
                             };
                         }
 
@@ -4495,7 +4497,7 @@ async function ehBotAdmin(chat) {
             !participantes.sucesso
         ) {
             console.log(
-                '⚠️ Não foi possível obter participantes:',
+                'â ï¸ NÃ£o foi possÃ­vel obter participantes:',
                 participantes?.erro ||
                     'erro desconhecido'
             );
@@ -4512,7 +4514,7 @@ async function ehBotAdmin(chat) {
                 participante => {
 
                     // Melhor indicador:
-                    // o próprio WhatsApp marcou este participante
+                    // o prÃ³prio WhatsApp marcou este participante
                     // como sendo a conta atual.
                     if (
                         participante.isMe
@@ -4540,7 +4542,7 @@ async function ehBotAdmin(chat) {
 
         if (!participanteBot) {
             console.log(
-                '⚠️ Bot não foi encontrado nos participantes do grupo.'
+                'â ï¸ Bot nÃ£o foi encontrado nos participantes do grupo.'
             );
 
             return false;
@@ -4557,12 +4559,12 @@ async function ehBotAdmin(chat) {
             );
 
         console.log(
-            '🤖 Bot encontrado:',
+            'ð¤ Bot encontrado:',
             participanteBot.id
         );
 
         console.log(
-            '👑 Bot é admin:',
+            'ð Bot Ã© admin:',
             botAdmin
         );
 
@@ -4570,7 +4572,7 @@ async function ehBotAdmin(chat) {
 
     } catch (erro) {
         console.error(
-            '❌ Erro ao verificar se o bot é admin:',
+            'â Erro ao verificar se o bot Ã© admin:',
             erro
         );
 
@@ -4579,7 +4581,7 @@ async function ehBotAdmin(chat) {
 }
 
 // ============================================================
-// VERIFICAR ADMIN DO USUÁRIO
+// VERIFICAR ADMIN DO USUÃRIO
 // ============================================================
 
 function ehAdminDoGrupo(message, chat) {
@@ -4596,12 +4598,12 @@ function ehAdminDoGrupo(message, chat) {
 
 
 // ============================================================
-// 👥 REGISTRAR PARTICIPANTE DO GRUPO
+// ð¥ REGISTRAR PARTICIPANTE DO GRUPO
 // ============================================================
 
-console.log('👥 TESTE PARTICIPANTE');
-console.log('📍 CHAT:', message.from);
-console.log('👤 REMETENTE:', idRemetente);
+console.log('ð¥ TESTE PARTICIPANTE');
+console.log('ð CHAT:', message.from);
+console.log('ð¤ REMETENTE:', idRemetente);
 
 if (
     message.from.endsWith('@g.us') &&
@@ -4666,7 +4668,7 @@ if (
     } catch (erro) {
 
         console.log(
-            '⚠️ Erro ao verificar admin:',
+            'â ï¸ Erro ao verificar admin:',
             erro.message
         );
 
@@ -4680,7 +4682,7 @@ if (
 // EXIGIR ADMIN
 // ============================================================
 
-console.log('🔥 EXIGIR ADMIN NOVA VERSÃO');
+console.log('ð¥ EXIGIR ADMIN NOVA VERSÃO');
 
 async function exigirAdmin(message) {
 
@@ -4689,21 +4691,21 @@ async function exigirAdmin(message) {
         const chatId = message.from;
 
         // ========================================================
-        // VERIFICAR SE É GRUPO
+        // VERIFICAR SE Ã GRUPO
         // ========================================================
 
         if (!chatId || !chatId.endsWith('@g.us')) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐃𝐄 𝐆𝐑𝐔𝐏𝐎*
-│
-├➤ _Esse comando só funciona em grupos._
-│
-┗═•❃༺✿༻❃•═┛`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ððððððð ðð ððððð*
+â
+ââ¤ _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return false;
@@ -4744,12 +4746,12 @@ async function exigirAdmin(message) {
         } catch (erroLid) {
 
             console.log(
-                '⚠️ Erro ao obter LID do bot:',
+                'â ï¸ Erro ao obter LID do bot:',
                 erroLid?.message || erroLid
             );
         }
 
-        // Garantir número normal
+        // Garantir nÃºmero normal
         if (!botIds.includes(`${botNumero}@c.us`)) {
 
             botIds.push(
@@ -4758,7 +4760,7 @@ async function exigirAdmin(message) {
         }
 
         console.log(
-            '🔥 IDS DO BOT OBTIDOS:',
+            'ð¥ IDS DO BOT OBTIDOS:',
             JSON.stringify(
                 botIds,
                 null,
@@ -4877,22 +4879,22 @@ async function exigirAdmin(message) {
         ) {
 
             console.error(
-                '❌ Erro ao obter dados do grupo:',
+                'â Erro ao obter dados do grupo:',
                 dadosChat?.erro
             );
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                '❌ _Não foi possível verificar as permissões do grupo._'
+                'â _NÃ£o foi possÃ­vel verificar as permissÃµes do grupo._'
             );
 
             return false;
         }
 
         // ========================================================
-        // VERIFICAR ADMIN DO USUÁRIO
+        // VERIFICAR ADMIN DO USUÃRIO
         // ========================================================
 
         const idRemetente =
@@ -4939,29 +4941,29 @@ async function exigirAdmin(message) {
             );
 
         // ========================================================
-        // USUÁRIO NÃO É ADMIN
+        // USUÃRIO NÃO Ã ADMIN
         // ========================================================
 
         if (!usuarioAdmin) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐀𝐂𝐄𝐒𝐒𝐎 𝐍𝐄𝐆𝐀𝐃𝐎*
-│
-├➤ _Você precisa ser administrador_
-│   _para usar esse comando._
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðððððð ðððððð*
+â
+ââ¤ _VocÃª precisa ser administrador_
+â   _para usar esse comando._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return false;
         }
 
         // ========================================================
-        // VERIFICAR SE O BOT É ADMIN
+        // VERIFICAR SE O BOT Ã ADMIN
         // ========================================================
 
         console.log(
@@ -5012,33 +5014,33 @@ async function exigirAdmin(message) {
         );
 
         console.log(
-            'BOT É ADMIN:',
+            'BOT Ã ADMIN:',
             botAdmin
         );
 
         // ========================================================
-        // BOT NÃO É ADMIN
+        // BOT NÃO Ã ADMIN
         // ========================================================
 
         if (!botAdmin) {
 
             console.log(
-                '⚠️ Bot não encontrado como administrador.'
+                'â ï¸ Bot nÃ£o encontrado como administrador.'
             );
 
-            await reagir(message, '⚠️');
+            await reagir(message, 'â ï¸');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐁𝐎𝐓 NÃO É ADMIN*
-│
-├➤ _Eu preciso ser administrador_
-│   _do grupo para fazer isso._
-│
-├➤ _Promova o JUST BOT e tente novamente._
-│
-┗═•❃༺✿༻❃•═┛`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ððð NÃO Ã ADMIN*
+â
+ââ¤ _Eu preciso ser administrador_
+â   _do grupo para fazer isso._
+â
+ââ¤ _Promova o JUST BOT e tente novamente._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return false;
@@ -5049,7 +5051,7 @@ async function exigirAdmin(message) {
         // ========================================================
 
         console.log(
-            '✅ USUÁRIO E BOT SÃO ADMINISTRADORES!'
+            'â USUÃRIO E BOT SÃO ADMINISTRADORES!'
         );
 
         return true;
@@ -5057,15 +5059,15 @@ async function exigirAdmin(message) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao verificar permissões:',
+            'â Erro ao verificar permissÃµes:',
             erro
         );
 
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            '❌ _Não foi possível verificar as permissões do grupo._'
+            'â _NÃ£o foi possÃ­vel verificar as permissÃµes do grupo._'
         );
 
         return false;
@@ -5073,1174 +5075,1174 @@ async function exigirAdmin(message) {
 }
 
 // ============================================================
-// 🏠 MENU PRINCIPAL
+// ð  MENU PRINCIPAL
 // ============================================================
 
 async function menuPrincipal(message) {
 
     await reagir(
         message,
-        '📋'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│     *𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
-│       *𝐕${VERSAO}*
-├✯
-│
-│  💘 *𝐑𝐄𝐋𝐀𝐂𝐈𝐎𝐍𝐀𝐌𝐄𝐍𝐓𝐎𝐒*
-│  _Casamentos, família e romance_
-│
-│  😂 *𝐃𝐈𝐕𝐄𝐑𝐒𝐀̃𝐎*
-│  _Piadas e diversão_
-│
-│  🎮 *𝐉𝐎𝐆𝐎𝐒*
-│  _Jogos e desafios_
-│
-│  ⚔️ *𝐑𝐏𝐆*
-│  _Ações, combate e aventura_
-│
-│  🖼️ *𝐌𝐈́𝐃𝐈𝐀*
-│  _Figurinhas, emojis e música_
-│
-│  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-│  _Ferramentas para administradores_
-│
-│  🌐 *𝐀𝐏𝐈𝐒*
-│  _Serviços e informações online_
-│
-│  ⚙️ *𝐔𝐓𝐈𝐋𝐈𝐃𝐀𝐃𝐄𝐒*
-│  _Ferramentas gerais_
-│
-│  🤖 *𝐁𝐎𝐓*
-│  _Informações e comandos do bot_
-│
-├✯
-│
-│  💡 *𝐂𝐎𝐌𝐎 𝐔𝐒𝐀𝐑*
-│  _Digite o comando da categoria_
-│  _para abrir seu menu._
-│
-┗═•❃༺✿༻❃•═┛
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â     *ðððð ððð*
+â       *ð${VERSAO}*
+ââ¯
+â
+â  ð *ððððððððððððððð*
+â  _Casamentos, famÃ­lia e romance_
+â
+â  ð *ðððððððÌð*
+â  _Piadas e diversÃ£o_
+â
+â  ð® *ððððð*
+â  _Jogos e desafios_
+â
+â  âï¸ *ððð*
+â  _AÃ§Ãµes, combate e aventura_
+â
+â  ð¼ï¸ *ððÌððð*
+â  _Figurinhas, emojis e mÃºsica_
+â
+â  ð¡ï¸ *ðððððððÌ§ðÌð*
+â  _Ferramentas para administradores_
+â
+â  ð *ðððð*
+â  _ServiÃ§os e informaÃ§Ãµes online_
+â
+â  âï¸ *ðððððððððð*
+â  _Ferramentas gerais_
+â
+â  ð¤ *ððð*
+â  _InformaÃ§Ãµes e comandos do bot_
+â
+ââ¯
+â
+â  ð¡ *ðððð ðððð*
+â  _Digite o comando da categoria_
+â  _para abrir seu menu._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ
 
-*𝐄𝐗𝐄𝐌𝐏𝐋𝐎:*
-*${PREFIXO}jogos* 🎮
+*ððððððð:*
+*${PREFIXO}jogos* ð®
 
-*𝐕𝐄𝐑𝐒𝐀̃𝐎 ${VERSAO}*`
+*ðððððÌð ${VERSAO}*`
     );
 }
 
 // ============================================================
-// 📂 MENUS DE CATEGORIAS
+// ð MENUS DE CATEGORIAS
 // ============================================================
 
 // ============================================================
-// 💘 MENU RELACIONAMENTOS
+// ð MENU RELACIONAMENTOS
 // ============================================================
 
 async function menuRelacionamentos(message) {
 
     await reagir(
         message,
-        '💘'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺💘༻❃•═┓
-│  *💘 𝐑𝐄𝐋𝐀𝐂𝐈𝐎𝐍𝐀𝐌𝐄𝐍𝐓𝐎𝐒*
-├✯
-│
-├➤ 💍 *${PREFIXO}casar @pessoa*
-│   _Fazer uma proposta de casamento_
-│
-├➤ 💔 *${PREFIXO}divorcio*
-│   _Solicitar um divórcio_
-│
-├➤ 👶 *${PREFIXO}adotar @pessoa*
-│   _Fazer uma proposta de adoção_
-│
-├➤ 👨‍👩‍👧 *${PREFIXO}familia*
-│   _Ver sua família_
-│
-├➤ 💞 *${PREFIXO}casal*
-│   _Formar um casal aleatório_
-│
-├➤ 💘 *${PREFIXO}shipar @pessoa @pessoa*
-│   _Calcular compatibilidade_
-│
-├➤ 😏 *${PREFIXO}cantada*
-│   _Receber uma cantada_
-│
-├✯
-│
-│  📩 *𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀𝐒*
-│
-├➤ 💍 *${PREFIXO}aceitar*
-│   _Aceitar uma proposta_
-│
-├➤ 💔 *${PREFIXO}recusar*
-│   _Recusar uma proposta_
-│
-┗═•❃༺💘༻❃•═┛`
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â  *ð ððððððððððððððð*
+ââ¯
+â
+ââ¤ ð *${PREFIXO}casar @pessoa*
+â   _Fazer uma proposta de casamento_
+â
+ââ¤ ð *${PREFIXO}divorcio*
+â   _Solicitar um divÃ³rcio_
+â
+ââ¤ ð¶ *${PREFIXO}adotar @pessoa*
+â   _Fazer uma proposta de adoÃ§Ã£o_
+â
+ââ¤ ð¨âð©âð§ *${PREFIXO}familia*
+â   _Ver sua famÃ­lia_
+â
+ââ¤ ð *${PREFIXO}casal*
+â   _Formar um casal aleatÃ³rio_
+â
+ââ¤ ð *${PREFIXO}shipar @pessoa @pessoa*
+â   _Calcular compatibilidade_
+â
+ââ¤ ð *${PREFIXO}cantada*
+â   _Receber uma cantada_
+â
+ââ¯
+â
+â  ð© *ððððððððð*
+â
+ââ¤ ð *${PREFIXO}aceitar*
+â   _Aceitar uma proposta_
+â
+ââ¤ ð *${PREFIXO}recusar*
+â   _Recusar uma proposta_
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// 😂 MENU DIVERSÃO
+// ð MENU DIVERSÃO
 // ============================================================
 
 async function menuDiversao(message) {
 
     await reagir(
         message,
-        '😂'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺😂༻❃•═┓
-│
-│      *𝐃𝐈𝐕𝐄𝐑𝐒𝐀̃𝐎*
-│
-├✯
-│
-│  😂 *𝐏𝐈𝐀𝐃𝐀𝐒*
-│
-│  *${PREFIXO}piadas*
-│  _Receba uma piada aleatória._
-│
-│  *${PREFIXO}addpiada*
-│  _Adicione uma piada personalizada._
-│
-│  *${PREFIXO}listapiadas*
-│  _Veja todas as piadas cadastradas._
-│
-│  *${PREFIXO}removerpiada*
-│  _Remova uma piada pelo número._
-│
-│  *${PREFIXO}limparpiadas*
-│  _Apague todas as piadas._
-│
-│  *${PREFIXO}carregarpiadas*
-│  _Importe piadas através de um .txt._
-│
-├✯
-│  🌐 *𝐀𝐏𝐈𝐒*
-│
-│  *${PREFIXO}piada*
-│  _Buscar uma piada em API pública._
-│
-│  *${PREFIXO}anime <nome>*
-│  _Consultar informações de um anime._
-│
-├✯
-│  💘 *𝐑𝐎𝐌𝐀𝐍𝐂𝐄*
-│
-│  *${PREFIXO}cantada*
-│  _Receba uma cantada aleatória._
-│
-│  ☠️ *${PREFIXO}suicidio*
-│  _Comando de humor do bot._
-│
-├✯
-│  🎲 *𝐍𝐎𝐕𝐀𝐒 𝐃𝐈𝐕𝐄𝐑𝐒𝐎̃𝐄𝐒*
-│
-│  *${PREFIXO}verdade*
-│  _Receber uma pergunta de verdade._
-│
-│  *${PREFIXO}desafio*
-│  _Receber um desafio._
-│
-│  *${PREFIXO}vidente pergunta*
-│  _Consultar o futuro._
-│
-│  *${PREFIXO}8ball pergunta*
-│  _Perguntar à Magic 8 Ball._
-│
-│  *${PREFIXO}decidir opção 1 ou opção 2*
-│  _Deixar o bot decidir._
-│
-│  *${PREFIXO}crush @pessoa*
-│  _Medir o crush._
-│
-│  *${PREFIXO}amizade @pessoa*
-│  _Medir a amizade._
-│
-│  *${PREFIXO}inimigos @pessoa*
-│  _Medir a rivalidade._
-│
-│  *${PREFIXO}fbi @pessoa*
-│  _Gerar um relatório fictício do FBI._
-│
-│  *${PREFIXO}laudo @pessoa*
-│  _Gerar um laudo completamente fictício._
-│
-│  *${PREFIXO}curriculo @pessoa*
-│  _Gerar um currículo aleatório._
-│
-│  *${PREFIXO}nota @pessoa*
-│  _Dar uma nota aleatória._
-│
-├✯
-│
-│  💡 Para voltar ao menu:
-│  *${PREFIXO}menu*
-│
-┗═•❃༺😂༻❃•═┛`
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â      *ðððððððÌð*
+â
+ââ¯
+â
+â  ð *ðððððð*
+â
+â  *${PREFIXO}piadas*
+â  _Receba uma piada aleatÃ³ria._
+â
+â  *${PREFIXO}addpiada*
+â  _Adicione uma piada personalizada._
+â
+â  *${PREFIXO}listapiadas*
+â  _Veja todas as piadas cadastradas._
+â
+â  *${PREFIXO}removerpiada*
+â  _Remova uma piada pelo nÃºmero._
+â
+â  *${PREFIXO}limparpiadas*
+â  _Apague todas as piadas._
+â
+â  *${PREFIXO}carregarpiadas*
+â  _Importe piadas atravÃ©s de um .txt._
+â
+ââ¯
+â  ð *ðððð*
+â
+â  *${PREFIXO}piada*
+â  _Buscar uma piada em API pÃºblica._
+â
+â  *${PREFIXO}anime <nome>*
+â  _Consultar informaÃ§Ãµes de um anime._
+â
+ââ¯
+â  ð *ððððððð*
+â
+â  *${PREFIXO}cantada*
+â  _Receba uma cantada aleatÃ³ria._
+â
+â  â ï¸ *${PREFIXO}suicidio*
+â  _Comando de humor do bot._
+â
+ââ¯
+â  ð² *ððððð ðððððððÌðð*
+â
+â  *${PREFIXO}verdade*
+â  _Receber uma pergunta de verdade._
+â
+â  *${PREFIXO}desafio*
+â  _Receber um desafio._
+â
+â  *${PREFIXO}vidente pergunta*
+â  _Consultar o futuro._
+â
+â  *${PREFIXO}8ball pergunta*
+â  _Perguntar Ã  Magic 8 Ball._
+â
+â  *${PREFIXO}decidir opÃ§Ã£o 1 ou opÃ§Ã£o 2*
+â  _Deixar o bot decidir._
+â
+â  *${PREFIXO}crush @pessoa*
+â  _Medir o crush._
+â
+â  *${PREFIXO}amizade @pessoa*
+â  _Medir a amizade._
+â
+â  *${PREFIXO}inimigos @pessoa*
+â  _Medir a rivalidade._
+â
+â  *${PREFIXO}fbi @pessoa*
+â  _Gerar um relatÃ³rio fictÃ­cio do FBI._
+â
+â  *${PREFIXO}laudo @pessoa*
+â  _Gerar um laudo completamente fictÃ­cio._
+â
+â  *${PREFIXO}curriculo @pessoa*
+â  _Gerar um currÃ­culo aleatÃ³rio._
+â
+â  *${PREFIXO}nota @pessoa*
+â  _Dar uma nota aleatÃ³ria._
+â
+ââ¯
+â
+â  ð¡ Para voltar ao menu:
+â  *${PREFIXO}menu*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// ⚔️ MENU RPG
+// âï¸ MENU RPG
 // ============================================================
 
 async function menuRPG(message) {
 
     await reagir(
         message,
-        '⚔️'
+        'âï¸'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺⚔️༻❃•═┓
-│        *⚔️ 𝐑𝐏𝐆*
-├✯
-│
-│  ⚔️ *𝐂𝐎𝐌𝐁𝐀𝐓𝐄*
-│
-├➤ 👋 *${PREFIXO}tapa @pessoa*
-├➤ 👊 *${PREFIXO}soco @pessoa*
-├➤ 🦵 *${PREFIXO}chute @pessoa*
-├➤ 💨 *${PREFIXO}empurrar @pessoa*
-├➤ ⚔️ *${PREFIXO}duelo @pessoa*
-├➤ 💰 *${PREFIXO}roubar @pessoa*
-│
-├✯
-│
-│  ❤️ *𝐈𝐍𝐓𝐄𝐑𝐀𝐂̧𝐎̃𝐄𝐒*
-│
-├➤ 🤗 *${PREFIXO}abracar @pessoa*
-├➤ 🛡️ *${PREFIXO}proteger @pessoa*
-├➤ 💚 *${PREFIXO}curar @pessoa*
-├➤ ⭐ *${PREFIXO}elogiar @pessoa*
-├➤ 😂 *${PREFIXO}zoar @pessoa*
-│
-├✯
-│
-│  🗺️ *𝐀𝐕𝐄𝐍𝐓𝐔𝐑𝐀*
-│
-├➤ 🗺️ *${PREFIXO}aventura*
-│   _Parta para uma aventura_
-│
-┗═•❃༺⚔️༻❃•═┛
+        `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+â        *âï¸ ððð*
+ââ¯
+â
+â  âï¸ *ððððððð*
+â
+ââ¤ ð *${PREFIXO}tapa @pessoa*
+ââ¤ ð *${PREFIXO}soco @pessoa*
+ââ¤ ð¦µ *${PREFIXO}chute @pessoa*
+ââ¤ ð¨ *${PREFIXO}empurrar @pessoa*
+ââ¤ âï¸ *${PREFIXO}duelo @pessoa*
+ââ¤ ð° *${PREFIXO}roubar @pessoa*
+â
+ââ¯
+â
+â  â¤ï¸ *ðððððððÌ§ðÌðð*
+â
+ââ¤ ð¤ *${PREFIXO}abracar @pessoa*
+ââ¤ ð¡ï¸ *${PREFIXO}proteger @pessoa*
+ââ¤ ð *${PREFIXO}curar @pessoa*
+ââ¤ â­ *${PREFIXO}elogiar @pessoa*
+ââ¤ ð *${PREFIXO}zoar @pessoa*
+â
+ââ¯
+â
+â  ðºï¸ *ðððððððð*
+â
+ââ¤ ðºï¸ *${PREFIXO}aventura*
+â   _Parta para uma aventura_
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ
 
-_⚠️ Todas as ações são fictícias._`
+_â ï¸ Todas as aÃ§Ãµes sÃ£o fictÃ­cias._`
     );
 }
 
 
 // ============================================================
-// 🖼️ MENU MÍDIA
+// ð¼ï¸ MENU MÃDIA
 // ============================================================
 
 async function menuMidia(message) {
 
     await reagir(
         message,
-        '🖼️'
+        'ð¼ï¸'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺🖼️༻❃•═┓
-│       *🖼️ 𝐌𝐈́𝐃𝐈𝐀*
-├✯
-│
-├➤ 🖼️ *${PREFIXO}fig*
-│   _Transformar imagem em figurinha_
-│
-├➤ 🖼️ *${PREFIXO}figurinha*
-│   _Criar uma figurinha_
-│
-├➤ 😀 *${PREFIXO}emojimix 😀 😂*
-│   _Combinar dois emojis_
-│
-├➤ 🖤 *${PREFIXO}brat1 texto*
-│   _Criar figurinha Brat_
-│
-├➤ 🖤 *${PREFIXO}brat2 texto*
-│   _Criar Brat animado_
-│
-├➤ 🎵 *${PREFIXO}playm música*
-│   _Buscar música e prévia_
-│
-├➤ 🗣️ *${PREFIXO}tts texto*
-│   _Transformar texto em voz_
-│
-├➤ 🎙️ *𝐄𝐅𝐄𝐈𝐓𝐎𝐒 𝐃𝐄 𝐕𝐎𝐙*
-│
-├➤ 🐿️ *${PREFIXO}esquilo*
-│   _Voz de esquilo_
-├➤ 🐿️ *${PREFIXO}chipmunk*
-│   _Voz ainda mais aguda_
-├➤ 🔊 *${PREFIXO}agudo*
-│   _Deixar a voz mais aguda_
-├➤ 👹 *${PREFIXO}demonio*
-│   _Voz demoníaca_
-├➤ 🗿 *${PREFIXO}grave*
-│   _Deixar a voz mais grave_
-├➤ 🤖 *${PREFIXO}robo*
-│   _Efeito de voz robótica_
-├➤ 📻 *${PREFIXO}radio*
-│   _Efeito de rádio_
-├➤ ☎️ *${PREFIXO}telefone*
-│   _Efeito de telefone_
-├➤ 📢 *${PREFIXO}megafone*
-│   _Efeito de megafone_
-├➤ 🏔️ *${PREFIXO}eco*
-│   _Adicionar eco_
-├➤ 🕳️ *${PREFIXO}cavern*
-│   _Efeito de caverna_
-├➤ 👽 *${PREFIXO}alien*
-│   _Voz alienígena_
-├➤ 💥 *${PREFIXO}distorcido*
-│   _Distorcer a voz_
-├➤ 🔄 *${PREFIXO}reverso*
-│   _Reproduzir o áudio ao contrário_
-│
-├➤ 🔗 _Os efeitos podem ser aplicados_
-│   _respondendo a um áudio._
-│
-├✯
-│
-│  👁️ _Algumas mídias podem ser_
-│  _enviadas como visualização única._
-│
-┗═•❃༺🖼️༻❃•═┛`
+        `âââ¢âà¼ºð¼ï¸à¼»ââ¢ââ
+â       *ð¼ï¸ ððÌððð*
+ââ¯
+â
+ââ¤ ð¼ï¸ *${PREFIXO}fig*
+â   _Transformar imagem em figurinha_
+â
+ââ¤ ð¼ï¸ *${PREFIXO}figurinha*
+â   _Criar uma figurinha_
+â
+ââ¤ ð *${PREFIXO}emojimix ð ð*
+â   _Combinar dois emojis_
+â
+ââ¤ ð¤ *${PREFIXO}brat1 texto*
+â   _Criar figurinha Brat_
+â
+ââ¤ ð¤ *${PREFIXO}brat2 texto*
+â   _Criar Brat animado_
+â
+ââ¤ ðµ *${PREFIXO}playm mÃºsica*
+â   _Buscar mÃºsica e prÃ©via_
+â
+ââ¤ ð£ï¸ *${PREFIXO}tts texto*
+â   _Transformar texto em voz_
+â
+ââ¤ ðï¸ *ððððððð ðð ððð*
+â
+ââ¤ ð¿ï¸ *${PREFIXO}esquilo*
+â   _Voz de esquilo_
+ââ¤ ð¿ï¸ *${PREFIXO}chipmunk*
+â   _Voz ainda mais aguda_
+ââ¤ ð *${PREFIXO}agudo*
+â   _Deixar a voz mais aguda_
+ââ¤ ð¹ *${PREFIXO}demonio*
+â   _Voz demonÃ­aca_
+ââ¤ ð¿ *${PREFIXO}grave*
+â   _Deixar a voz mais grave_
+ââ¤ ð¤ *${PREFIXO}robo*
+â   _Efeito de voz robÃ³tica_
+ââ¤ ð» *${PREFIXO}radio*
+â   _Efeito de rÃ¡dio_
+ââ¤ âï¸ *${PREFIXO}telefone*
+â   _Efeito de telefone_
+ââ¤ ð¢ *${PREFIXO}megafone*
+â   _Efeito de megafone_
+ââ¤ ðï¸ *${PREFIXO}eco*
+â   _Adicionar eco_
+ââ¤ ð³ï¸ *${PREFIXO}cavern*
+â   _Efeito de caverna_
+ââ¤ ð½ *${PREFIXO}alien*
+â   _Voz alienÃ­gena_
+ââ¤ ð¥ *${PREFIXO}distorcido*
+â   _Distorcer a voz_
+ââ¤ ð *${PREFIXO}reverso*
+â   _Reproduzir o Ã¡udio ao contrÃ¡rio_
+â
+ââ¤ ð _Os efeitos podem ser aplicados_
+â   _respondendo a um Ã¡udio._
+â
+ââ¯
+â
+â  ðï¸ _Algumas mÃ­dias podem ser_
+â  _enviadas como visualizaÃ§Ã£o Ãºnica._
+â
+âââ¢âà¼ºð¼ï¸à¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// 🛡️ MENU MODERAÇÃO
+// ð¡ï¸ MENU MODERAÃÃO
 // ============================================================
 
 async function menuModeracao(message) {
 
     await reagir(
         message,
-        '🛡️'
+        'ð¡ï¸'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺🛡️༻❃•═┓
-│    *🛡️ 𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-├✯
-│
-├➤ 🔨 *${PREFIXO}ban @pessoa*
-│   _Expulsar uma pessoa_
-│   _Também funciona respondendo à mensagem_
-│
-├➤ 🔇 *${PREFIXO}mute @pessoa*
-│   _Silenciar uma pessoa_
-│
-├➤ 🔓 *${PREFIXO}unmute @pessoa*
-│   _Remover o mute_
-│
-├➤ 🚫 *${PREFIXO}muteblacklist número*
-│   _Adicionar à blacklist_
-│
-├➤ ✅ *${PREFIXO}unmuteblacklist número*
-│   _Remover da blacklist_
-│
-│ 🔔 *AVISOS AUTOMÁTICOS*
-│
-│ 🔔 ;aviso HH:MM / mensagem
-│    Cria um aviso diário.
-│
-│ 🗑️ ;rem_aviso HH:MM
-│    Remove um aviso.
-│
-│ 📋 ;listaviso
-│    Lista os avisos do grupo.
-│
-├➤ 🔒 *${PREFIXO}soadm*
-│   _Alternar modo somente administradores_
-│
-├➤ 🔒 *${PREFIXO}gp f*
-│   _Somente admins podem enviar mensagens_
-│
-├➤ 🔓 *${PREFIXO}gp a*
-│   _Todos podem enviar mensagens_
-│
-├✯
-│
-│  ⚙️ *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎*
-│
-├➤ ⚙️ *${PREFIXO}config*
-│   _Painel de configurações do grupo_
-├➤ 🔗 *${PREFIXO}antilink on/off*
-│   _Bloquear links não permitidos_
-├➤ 🚨 *${PREFIXO}antiflood on/off*
-│   _Controlar flood de mensagens_
-├➤ 👋 *${PREFIXO}welcome on/off*
-├➤ 🚪 *${PREFIXO}goodbye on/off*
-├➤ 📝 *${PREFIXO}setwelcome texto*
-├➤ 📝 *${PREFIXO}setgoodbye texto*
-├➤ 🎮 *${PREFIXO}jogos on/off*
-├➤ 💰 *${PREFIXO}economia on/off*
-├➤ ⭐ *${PREFIXO}xp on/off*
-├➤ 📋 *${PREFIXO}cmds on/off*
-├➤ 🔣 *${PREFIXO}prefixo !*
-│
-│  🏷️ *𝐆𝐑𝐔𝐏𝐎*
-│
-├➤ ✏️ *${PREFIXO}setnome Novo nome*
-├➤ 🖼️ *${PREFIXO}setfoto* _respondendo uma imagem_
-├➤ 📄 *${PREFIXO}desc*
-├➤ 📝 *${PREFIXO}setdesc Nova descrição*
-├➤ 📜 *${PREFIXO}setregras regras*
-├➤ 📖 *${PREFIXO}regras*
-├➤ 👑 *${PREFIXO}staff*
-│
-│  🎁 *𝐄𝐕𝐄𝐍𝐓𝐎𝐒*
-│
-├➤ 🎁 *${PREFIXO}sorteio 10m prêmio*
-├➤ 🎟️ *${PREFIXO}sorteio2 10m prêmio 2*\n├➤ 🪙 *${PREFIXO}sorteiogold 10m prêmio*\n├➤ 🛑 *${PREFIXO}cancelarsorteio*
-├➤ 🧹 *${PREFIXO}limpar 10*
-├➤ 🤝 *${PREFIXO}add_parceria nome | contato/link*\n├➤ 🤝 *${PREFIXO}del_parceria ID*\n├➤ 🤝 *${PREFIXO}parceria*\n├➤ 🤝 *${PREFIXO}modoparceria on/off*\n│\n│  ⚠️ *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n│\n├➤ *${PREFIXO}adverter @pessoa motivo*\n├➤ *${PREFIXO}rm_adv @pessoa [quantidade]*\n├➤ *${PREFIXO}lista_adv*\n├➤ *${PREFIXO}ver_adv @pessoa*\n├➤ *${PREFIXO}limpar_adv*\n│\n│  📝 *𝐀𝐍𝐎𝐓𝐀𝐂̧𝐎̃𝐄𝐒*\n│\n├➤ *${PREFIXO}anotar título | texto*\n├➤ *${PREFIXO}anotações*\n├➤ *${PREFIXO}rmnota ID*\n│\n│  📋 *𝐋𝐈𝐒𝐓𝐀𝐒*\n│\n├➤ *${PREFIXO}listabranca @pessoa*\n├➤ *${PREFIXO}rmlistabranca @pessoa*\n├➤ *${PREFIXO}listanegra*\n├➤ *${PREFIXO}tirardalista @pessoa*\n├➤ *${PREFIXO}add_palavra palavra*\n├➤ *${PREFIXO}rm_palavra palavra*\n├➤ *${PREFIXO}lista_palavras*\n├➤ 📋 *${PREFIXO}logs on/off*
-│
-│  ⭐ *𝐌𝐀𝐍𝐔𝐓𝐄𝐍𝐂̧𝐀̃𝐎*
-│
-├➤ ⭐ *${PREFIXO}darxp @pessoa 100*
-├➤ ⭐ *${PREFIXO}removerxp @pessoa 100*
-├➤ ♻️ *${PREFIXO}resetxp @pessoa*
-├➤ 💰 *${PREFIXO}darcoins @pessoa 100*
-├➤ 💰 *${PREFIXO}removercoins @pessoa 100*
-├➤ ♻️ *${PREFIXO}reseteco @pessoa*\n├➤ 🔤 *${PREFIXO}anagrama palavra*
-│
-├✯
-│
-│  👑 _O bot precisa ser_
-│  _administrador do grupo._
-│
-┗═•❃༺🛡️༻❃•═┛`
+        `âââ¢âà¼ºð¡ï¸à¼»ââ¢ââ
+â    *ð¡ï¸ ðððððððÌ§ðÌð*
+ââ¯
+â
+ââ¤ ð¨ *${PREFIXO}ban @pessoa*
+â   _Expulsar uma pessoa_
+â   _TambÃ©m funciona respondendo Ã  mensagem_
+â
+ââ¤ ð *${PREFIXO}mute @pessoa*
+â   _Silenciar uma pessoa_
+â
+ââ¤ ð *${PREFIXO}unmute @pessoa*
+â   _Remover o mute_
+â
+ââ¤ ð« *${PREFIXO}muteblacklist nÃºmero*
+â   _Adicionar Ã  blacklist_
+â
+ââ¤ â *${PREFIXO}unmuteblacklist nÃºmero*
+â   _Remover da blacklist_
+â
+â ð *AVISOS AUTOMÃTICOS*
+â
+â ð ;aviso HH:MM / mensagem
+â    Cria um aviso diÃ¡rio.
+â
+â ðï¸ ;rem_aviso HH:MM
+â    Remove um aviso.
+â
+â ð ;listaviso
+â    Lista os avisos do grupo.
+â
+ââ¤ ð *${PREFIXO}soadm*
+â   _Alternar modo somente administradores_
+â
+ââ¤ ð *${PREFIXO}gp f*
+â   _Somente admins podem enviar mensagens_
+â
+ââ¤ ð *${PREFIXO}gp a*
+â   _Todos podem enviar mensagens_
+â
+ââ¯
+â
+â  âï¸ *ððððððððððÌ§ðÌð*
+â
+ââ¤ âï¸ *${PREFIXO}config*
+â   _Painel de configuraÃ§Ãµes do grupo_
+ââ¤ ð *${PREFIXO}antilink on/off*
+â   _Bloquear links nÃ£o permitidos_
+ââ¤ ð¨ *${PREFIXO}antiflood on/off*
+â   _Controlar flood de mensagens_
+ââ¤ ð *${PREFIXO}welcome on/off*
+ââ¤ ðª *${PREFIXO}goodbye on/off*
+ââ¤ ð *${PREFIXO}setwelcome texto*
+ââ¤ ð *${PREFIXO}setgoodbye texto*
+ââ¤ ð® *${PREFIXO}jogos on/off*
+ââ¤ ð° *${PREFIXO}economia on/off*
+ââ¤ â­ *${PREFIXO}xp on/off*
+ââ¤ ð *${PREFIXO}cmds on/off*
+ââ¤ ð£ *${PREFIXO}prefixo !*
+â
+â  ð·ï¸ *ððððð*
+â
+ââ¤ âï¸ *${PREFIXO}setnome Novo nome*
+ââ¤ ð¼ï¸ *${PREFIXO}setfoto* _respondendo uma imagem_
+ââ¤ ð *${PREFIXO}desc*
+ââ¤ ð *${PREFIXO}setdesc Nova descriÃ§Ã£o*
+ââ¤ ð *${PREFIXO}setregras regras*
+ââ¤ ð *${PREFIXO}regras*
+ââ¤ ð *${PREFIXO}staff*
+â
+â  ð *ððððððð*
+â
+ââ¤ ð *${PREFIXO}sorteio 10m prÃªmio*
+ââ¤ ðï¸ *${PREFIXO}sorteio2 10m prÃªmio 2*\nââ¤ ðª *${PREFIXO}sorteiogold 10m prÃªmio*\nââ¤ ð *${PREFIXO}cancelarsorteio*
+ââ¤ ð§¹ *${PREFIXO}limpar 10*
+ââ¤ ð¤ *${PREFIXO}add_parceria nome | contato/link*\nââ¤ ð¤ *${PREFIXO}del_parceria ID*\nââ¤ ð¤ *${PREFIXO}parceria*\nââ¤ ð¤ *${PREFIXO}modoparceria on/off*\nâ\nâ  â ï¸ *ðððððððÌððððð*\nâ\nââ¤ *${PREFIXO}adverter @pessoa motivo*\nââ¤ *${PREFIXO}rm_adv @pessoa [quantidade]*\nââ¤ *${PREFIXO}lista_adv*\nââ¤ *${PREFIXO}ver_adv @pessoa*\nââ¤ *${PREFIXO}limpar_adv*\nâ\nâ  ð *ððððððÌ§ðÌðð*\nâ\nââ¤ *${PREFIXO}anotar tÃ­tulo | texto*\nââ¤ *${PREFIXO}anotaÃ§Ãµes*\nââ¤ *${PREFIXO}rmnota ID*\nâ\nâ  ð *ðððððð*\nâ\nââ¤ *${PREFIXO}listabranca @pessoa*\nââ¤ *${PREFIXO}rmlistabranca @pessoa*\nââ¤ *${PREFIXO}listanegra*\nââ¤ *${PREFIXO}tirardalista @pessoa*\nââ¤ *${PREFIXO}add_palavra palavra*\nââ¤ *${PREFIXO}rm_palavra palavra*\nââ¤ *${PREFIXO}lista_palavras*\nââ¤ ð *${PREFIXO}logs on/off*
+â
+â  â­ *ððððððððÌ§ðÌð*
+â
+ââ¤ â­ *${PREFIXO}darxp @pessoa 100*
+ââ¤ â­ *${PREFIXO}removerxp @pessoa 100*
+ââ¤ â»ï¸ *${PREFIXO}resetxp @pessoa*
+ââ¤ ð° *${PREFIXO}darcoins @pessoa 100*
+ââ¤ ð° *${PREFIXO}removercoins @pessoa 100*
+ââ¤ â»ï¸ *${PREFIXO}reseteco @pessoa*\nââ¤ ð¤ *${PREFIXO}anagrama palavra*
+â
+ââ¯
+â
+â  ð _O bot precisa ser_
+â  _administrador do grupo._
+â
+âââ¢âà¼ºð¡ï¸à¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// 🌐 MENU APIS
+// ð MENU APIS
 // ============================================================
 
 async function menuAPIs(message) {
-    await reagir(message, '🌐');
-    await responderCitando(message, `┏═•❃༺🌐༻❃•═┓\n│        *🌐 𝐀𝐏𝐈𝐒*\n├✯\n│\n├➤ 🎵 *${PREFIXO}shazam*\n│   _Identificar uma música a partir de um áudio._\n│\n├➤ 📱 *${PREFIXO}qr <texto/link>*\n│   _Gerar um QR Code._\n│\n├➤ ⚽ *${PREFIXO}futebol*\n│   _Ver jogos de futebol de hoje._\n│\n├➤ 🔴 *${PREFIXO}futebol ao vivo*\n│   _Ver partidas ao vivo._\n│\n├➤ 🏎️ *${PREFIXO}f1*\n│   _Ver a próxima corrida._\n│\n├➤ 📅 *${PREFIXO}f1 calendario*\n│   _Ver o calendário da temporada._\n│\n├➤ 🏆 *${PREFIXO}f1 classificacao*\n│   _Ver a classificação de pilotos._\n│\n├➤ 🌫️ *${PREFIXO}ar <cidade>*\n│   _Consultar a qualidade do ar._\n│\n┗═•❃༺🌐༻❃•═┛`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ        *ð ðððð*\nââ¯\nâ\nââ¤ ðµ *${PREFIXO}shazam*\nâ   _Identificar uma mÃºsica a partir de um Ã¡udio._\nâ\nââ¤ ð± *${PREFIXO}qr <texto/link>*\nâ   _Gerar um QR Code._\nâ\nââ¤ â½ *${PREFIXO}futebol*\nâ   _Ver jogos de futebol de hoje._\nâ\nââ¤ ð´ *${PREFIXO}futebol ao vivo*\nâ   _Ver partidas ao vivo._\nâ\nââ¤ ðï¸ *${PREFIXO}f1*\nâ   _Ver a prÃ³xima corrida._\nâ\nââ¤ ð *${PREFIXO}f1 calendario*\nâ   _Ver o calendÃ¡rio da temporada._\nâ\nââ¤ ð *${PREFIXO}f1 classificacao*\nâ   _Ver a classificaÃ§Ã£o de pilotos._\nâ\nââ¤ ð«ï¸ *${PREFIXO}ar <cidade>*\nâ   _Consultar a qualidade do ar._\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 // ============================================================
-// ⚙️ MENU UTILIDADES
+// âï¸ MENU UTILIDADES
 // ============================================================
 
 async function menuUtil(message) {
 
     await reagir(
         message,
-        '⚙️'
+        'âï¸'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺⚙️༻❃•═┓
-│     *⚙️ 𝐔𝐓𝐈𝐋𝐈𝐃𝐀𝐃𝐄𝐒*
-├✯
-│
-├➤ 🏓 *${PREFIXO}ping*
-│   _Verificar se o bot está online_
-│
-├➤ 🕐 *${PREFIXO}hora*
-│   _Mostrar a hora atual_
-│
-├➤ 👤 *${PREFIXO}info*
-│   _Mostrar informações_
-│
-├➤ 🌦️ *${PREFIXO}clima <cidade>*
-│   _Consultar o clima atual_
-│
-├➤ ⏱️ *${PREFIXO}uptime*
-│   _Ver há quanto tempo o bot está online_
-├➤ 📊 *${PREFIXO}status*
-│   _Ver o status técnico do bot_
-├➤ 🖼️ *${PREFIXO}avatar @pessoa*
-│   _Ver a foto de perfil_
-├➤ 👑 *${PREFIXO}admins*
-│   _Listar os administradores do grupo_
-├➤ 🆔 *${PREFIXO}id*
-│   _Ver seu ID_
-├➤ 🎯 *${PREFIXO}escolher opção 1 | opção 2*
-│   _Escolher uma opção aleatoriamente_
-├➤ ⏳ *${PREFIXO}contador 10*
-│   _Fazer uma contagem regressiva_
-├➤ ⏱️ *${PREFIXO}cronometro 30s*
-│   _Criar um cronômetro_
-├➤ 🧮 *${PREFIXO}calculadora 2 + 2*
-│   _Fazer cálculos_
-├➤ 📊 *${PREFIXO}porcentagem 20 de 500*
-│   _Calcular porcentagens_
-├➤ 📐 *${PREFIXO}regra3 2 10 5*
-│   _Resolver regra de três_
-├➤ 🔄 *${PREFIXO}converter 10 km mi*
-│   _Converter unidades_
-├➤ 💱 *${PREFIXO}cotacao USD BRL 100*
-│   _Consultar cotação de moedas_
-├➤ 🌐 *${PREFIXO}traduzir en pt texto*
-│   _Traduzir um texto_
-├➤ 🔗 *${PREFIXO}encurtar https://...*
-│   _Encurtar um link_
-├➤ ⭐ *${PREFIXO}level*
-│   _Ver seu nível de XP_
-├➤ 🏆 *${PREFIXO}rank*
-│   _Ver o ranking de XP_
-├➤ 🏆 *${PREFIXO}ranklindo / rankfeio*
-│   _Ranks de aparência_
-├➤ 🌈 *${PREFIXO}rankgay / rankhetero / ranklesbico*
-│   _Ranks variados_
-├➤ 🧠 *${PREFIXO}rankinteligente*
-│   _Rank de inteligência_
-├➤ 🪙 *${PREFIXO}rankpobre*
-│   _Rank baseado nas moedas_
-├➤ 🎨 *${PREFIXO}csrank <critério>*
-│   _Rank personalizado_
-├➤ 💕 *${PREFIXO}rankship @pessoa @pessoa*
-│   _Rank de compatibilidade_
-│
-┗═•❃༺⚙️༻❃•═┛`
+        `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+â     *âï¸ ðððððððððð*
+ââ¯
+â
+ââ¤ ð *${PREFIXO}ping*
+â   _Verificar se o bot estÃ¡ online_
+â
+ââ¤ ð *${PREFIXO}hora*
+â   _Mostrar a hora atual_
+â
+ââ¤ ð¤ *${PREFIXO}info*
+â   _Mostrar informaÃ§Ãµes_
+â
+ââ¤ ð¦ï¸ *${PREFIXO}clima <cidade>*
+â   _Consultar o clima atual_
+â
+ââ¤ â±ï¸ *${PREFIXO}uptime*
+â   _Ver hÃ¡ quanto tempo o bot estÃ¡ online_
+ââ¤ ð *${PREFIXO}status*
+â   _Ver o status tÃ©cnico do bot_
+ââ¤ ð¼ï¸ *${PREFIXO}avatar @pessoa*
+â   _Ver a foto de perfil_
+ââ¤ ð *${PREFIXO}admins*
+â   _Listar os administradores do grupo_
+ââ¤ ð *${PREFIXO}id*
+â   _Ver seu ID_
+ââ¤ ð¯ *${PREFIXO}escolher opÃ§Ã£o 1 | opÃ§Ã£o 2*
+â   _Escolher uma opÃ§Ã£o aleatoriamente_
+ââ¤ â³ *${PREFIXO}contador 10*
+â   _Fazer uma contagem regressiva_
+ââ¤ â±ï¸ *${PREFIXO}cronometro 30s*
+â   _Criar um cronÃ´metro_
+ââ¤ ð§® *${PREFIXO}calculadora 2 + 2*
+â   _Fazer cÃ¡lculos_
+ââ¤ ð *${PREFIXO}porcentagem 20 de 500*
+â   _Calcular porcentagens_
+ââ¤ ð *${PREFIXO}regra3 2 10 5*
+â   _Resolver regra de trÃªs_
+ââ¤ ð *${PREFIXO}converter 10 km mi*
+â   _Converter unidades_
+ââ¤ ð± *${PREFIXO}cotacao USD BRL 100*
+â   _Consultar cotaÃ§Ã£o de moedas_
+ââ¤ ð *${PREFIXO}traduzir en pt texto*
+â   _Traduzir um texto_
+ââ¤ ð *${PREFIXO}encurtar https://...*
+â   _Encurtar um link_
+ââ¤ â­ *${PREFIXO}level*
+â   _Ver seu nÃ­vel de XP_
+ââ¤ ð *${PREFIXO}rank*
+â   _Ver o ranking de XP_
+ââ¤ ð *${PREFIXO}ranklindo / rankfeio*
+â   _Ranks de aparÃªncia_
+ââ¤ ð *${PREFIXO}rankgay / rankhetero / ranklesbico*
+â   _Ranks variados_
+ââ¤ ð§  *${PREFIXO}rankinteligente*
+â   _Rank de inteligÃªncia_
+ââ¤ ðª *${PREFIXO}rankpobre*
+â   _Rank baseado nas moedas_
+ââ¤ ð¨ *${PREFIXO}csrank <critÃ©rio>*
+â   _Rank personalizado_
+ââ¤ ð *${PREFIXO}rankship @pessoa @pessoa*
+â   _Rank de compatibilidade_
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// 🤖 MENU DO BOT
+// ð¤ MENU DO BOT
 // ============================================================
 
 async function menuBot(message) {
 
     await reagir(
         message,
-        '🤖'
+        'ð¤'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺🤖༻❃•═┓
-│       *🤖 𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
-├✯
-│
-├➤ 📋 *${PREFIXO}menu*
-│   _Abrir o menu principal_
-│
-├➤ 📜 *${PREFIXO}comandos*
-│   _Ver todos os comandos_
-│
-├➤ 📝 *${PREFIXO}changelog*
-│   _Ver novidades e alterações_
-│
-├➤ ℹ️ *${PREFIXO}sobre*
-│   _Informações sobre o bot_
-│
-├➤ 🏓 *${PREFIXO}ping*
-│   _Verificar status_
-│
-├➤ ⚙️ *${PREFIXO}info*
-│   _Informações do sistema_
-│
-├➤ 🎭 *${PREFIXO}personalidades*
-│   _Ver as personalidades disponíveis_
-│
-├➤ ⚙️ *${PREFIXO}personalidade <nome>*
-│   _Alterar a personalidade do grupo_
-│
-├✯
-│
-│  🤖 *𝐒𝐓𝐀𝐓𝐔𝐒*
-│
-├➤ 🟢 _Online_
-├➤ 🔢 _Versão ${VERSAO}_
-│
-┗═•❃༺🤖༻❃•═┛`
+        `âââ¢âà¼ºð¤à¼»ââ¢ââ
+â       *ð¤ ðððð ððð*
+ââ¯
+â
+ââ¤ ð *${PREFIXO}menu*
+â   _Abrir o menu principal_
+â
+ââ¤ ð *${PREFIXO}comandos*
+â   _Ver todos os comandos_
+â
+ââ¤ ð *${PREFIXO}changelog*
+â   _Ver novidades e alteraÃ§Ãµes_
+â
+ââ¤ â¹ï¸ *${PREFIXO}sobre*
+â   _InformaÃ§Ãµes sobre o bot_
+â
+ââ¤ ð *${PREFIXO}ping*
+â   _Verificar status_
+â
+ââ¤ âï¸ *${PREFIXO}info*
+â   _InformaÃ§Ãµes do sistema_
+â
+ââ¤ ð­ *${PREFIXO}personalidades*
+â   _Ver as personalidades disponÃ­veis_
+â
+ââ¤ âï¸ *${PREFIXO}personalidade <nome>*
+â   _Alterar a personalidade do grupo_
+â
+ââ¯
+â
+â  ð¤ *ðððððð*
+â
+ââ¤ ð¢ _Online_
+ââ¤ ð¢ _VersÃ£o ${VERSAO}_
+â
+âââ¢âà¼ºð¤à¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 📜 CHANGELOG
+// ð CHANGELOG
 // ============================================================
 
 async function changelog(message) {
 
     await reagir(
         message,
-        '📜'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺📜༻❃•═┓
-│
-│        *𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
-│       *𝐂𝐇𝐀𝐍𝐆𝐄𝐋𝐎𝐆*
-│
-├✯
-│
-│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟗*
-│
-│  🎙️ *𝐓𝐓𝐒 𝐄 𝐄𝐅𝐄𝐈𝐓𝐎𝐒 𝐃𝐄 𝐕𝐎𝐙*
-│
-│  ├➤ *${PREFIXO}tts texto*
-│  │   Converte texto em mensagem de voz.
-│  │
-│  ├➤ *${PREFIXO}esquilo*
-│  ├➤ *${PREFIXO}chipmunk*
-│  ├➤ *${PREFIXO}agudo*
-│  ├➤ *${PREFIXO}demonio*
-│  ├➤ *${PREFIXO}grave*
-│  ├➤ *${PREFIXO}robo*
-│  ├➤ *${PREFIXO}radio*
-│  ├➤ *${PREFIXO}telefone*
-│  ├➤ *${PREFIXO}megafone*
-│  ├➤ *${PREFIXO}eco*
-│  ├➤ *${PREFIXO}cavern*
-│  ├➤ *${PREFIXO}alien*
-│  ├➤ *${PREFIXO}distorcido*
-│  └➤ *${PREFIXO}reverso*
-│      Novos efeitos para modificar áudios.
-│
-│  🔗 *𝐄𝐅𝐄𝐈𝐓𝐎𝐒 𝐏𝐎𝐑 𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀*
-│
-│  ├➤ Efeitos podem ser aplicados respondendo
-│  │   diretamente a um áudio.
-│  └➤ Áudios enviados pelo próprio bot também
-│      possuem suporte de processamento.
-│
-├✯
-│
-│  🆕 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟏𝟕*
-│
-│  🌐 *𝐈𝐍𝐓𝐄𝐆𝐑𝐀𝐂̧𝐀̃𝐎 𝐂𝐎𝐌 𝐀𝐏𝐈𝐒*
-│
-│  ├➤ *${PREFIXO}pokemon <nome>*
-│  │   Consulta dados de Pokémon.
-│  │
-│  ├➤ *${PREFIXO}piada*
-│  │   Busca uma piada em API pública.
-│  │
-│  ├➤ *${PREFIXO}anime <nome>*
-│  │   Consulta informações de anime.
-│  │
-│  ├➤ *${PREFIXO}quiz*
-│  │   Agora usa perguntas aleatórias da Open Trivia DB.
-│  │
-│  └➤ *${PREFIXO}clima <cidade>*
-│      Consulta o clima atual.
-│
-│  🌐 *𝐍𝐎𝐕𝐀𝐒 𝐀𝐏𝐈𝐒*
-│
-│  ├➤ *${PREFIXO}shazam*
-│  │   Identifica músicas enviadas como áudio.
-│  │
-│  ├➤ *${PREFIXO}qr <texto/link>*
-│  │   Gera QR Codes.
-│  │
-│  ├➤ *${PREFIXO}futebol*
-│  │   Consulta jogos de futebol.
-│  │
-│  ├➤ *${PREFIXO}f1*
-│  │   Consulta calendário e classificação da F1.
-│  │
-│  └➤ *${PREFIXO}ar <cidade>*
-│      Consulta a qualidade do ar.
-│
-│  🔒 *𝐌𝐎𝐃𝐎 𝐒𝐎𝐌𝐄𝐍𝐓𝐄 𝐀𝐃𝐌*
-│
-│  ├➤ *${PREFIXO}soadm*
-│  │   Alterna o grupo entre modo normal
-│  │   e modo em que apenas administradores
-│  │   podem usar os comandos.
-│  │
-│  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎 E ALVOS POR RESPOSTA*
-│
-│  ├➤ *${PREFIXO}ban @pessoa*
-│  │   Expulsa participantes do grupo.
-│  │
-│  ├➤ *${PREFIXO}ban* em resposta
-│  │   Identifica o alvo pela mensagem respondida.
-│  │
-│  └➤ Comandos de alvo agora aceitam resposta
-│      além de menções quando aplicável.
-│
-│  💰 *𝐁𝐋𝐈𝐍𝐃𝐀𝐆𝐄𝐌 𝐃𝐀 𝐄𝐂𝐎𝐍𝐎𝐌𝐈𝐀*
-│
-│  ├➤ Identidade LID/JID e carteiras reforçadas.
-│  ├➤ Cooldowns de mineração e roubo persistem após reinício.
-│  ├➤ Apostas, doações e sorteios recebem validação rígida.
-│  ├➤ Histórico dos slots ficou mais completo.
-│  └➤ Rankings não criam carteiras novas.
-│
-│  😂 *𝐒𝐈𝐒𝐓𝐄𝐌𝐀 𝐃𝐄 𝐏𝐈𝐀𝐃𝐀𝐒*
-│
-│  ├➤ *${PREFIXO}addpiada*
-│  │   Adiciona piadas personalizadas.
-│  │
-│  ├➤ *${PREFIXO}listapiadas*
-│  │   Lista todas as piadas cadastradas.
-│  │
-│  ├➤ *${PREFIXO}removerpiada*
-│  │   Remove uma piada pelo número.
-│  │
-│  ├➤ *${PREFIXO}limparpiadas*
-│  │   Remove todas as piadas com confirmação.
-│  │
-│  └➤ *${PREFIXO}carregarpiadas*
-│      Importa várias piadas através
-│      de um arquivo *.txt*.
-│
-│  💾 As piadas agora são salvas
-│     automaticamente e permanecem
-│     após reiniciar o bot.
-│
-├✯
-│
-│  📋 *𝐌𝐄𝐍𝐔 𝐑𝐄𝐃𝐄𝐒𝐄𝐍𝐇𝐀𝐃𝐎*
-│
-│  O sistema de menus foi reorganizado
-│  em categorias para facilitar o uso.
-│
-├✯
-│
-│  🔙 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟖*
-│
-│  ├➤ Novo sistema de menus
-│  ├➤ Menus separados por categoria
-│  └➤ Novo menu principal
-│
-│  🔙 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟕*
-│
-│  ├➤ Sistema de relacionamentos
-│  ├➤ Casamentos e divórcios
-│  ├➤ Sistema de família
-│  ├➤ Adoção
-│  └➤ Diversos comandos novos
-│
-│  🔙 *𝐕𝐄𝐑𝐒𝐀̃𝐎 𝟑.𝟓*
-│
-│  └➤ Atualização do sistema
-│      de figurinhas Brat
-│
-┗═•❃༺📜༻❃•═┛
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â        *ðððð ððð*
+â       *ððððððððð*
+â
+ââ¯
+â
+â  ð *ðððððÌð ð.ðð*
+â
+â  ðï¸ *ððð ð ððððððð ðð ððð*
+â
+â  ââ¤ *${PREFIXO}tts texto*
+â  â   Converte texto em mensagem de voz.
+â  â
+â  ââ¤ *${PREFIXO}esquilo*
+â  ââ¤ *${PREFIXO}chipmunk*
+â  ââ¤ *${PREFIXO}agudo*
+â  ââ¤ *${PREFIXO}demonio*
+â  ââ¤ *${PREFIXO}grave*
+â  ââ¤ *${PREFIXO}robo*
+â  ââ¤ *${PREFIXO}radio*
+â  ââ¤ *${PREFIXO}telefone*
+â  ââ¤ *${PREFIXO}megafone*
+â  ââ¤ *${PREFIXO}eco*
+â  ââ¤ *${PREFIXO}cavern*
+â  ââ¤ *${PREFIXO}alien*
+â  ââ¤ *${PREFIXO}distorcido*
+â  ââ¤ *${PREFIXO}reverso*
+â      Novos efeitos para modificar Ã¡udios.
+â
+â  ð *ððððððð ððð ðððððððð*
+â
+â  ââ¤ Efeitos podem ser aplicados respondendo
+â  â   diretamente a um Ã¡udio.
+â  ââ¤ Ãudios enviados pelo prÃ³prio bot tambÃ©m
+â      possuem suporte de processamento.
+â
+ââ¯
+â
+â  ð *ðððððÌð ð.ðð*
+â
+â  ð *ððððððððÌ§ðÌð ððð ðððð*
+â
+â  ââ¤ *${PREFIXO}pokemon <nome>*
+â  â   Consulta dados de PokÃ©mon.
+â  â
+â  ââ¤ *${PREFIXO}piada*
+â  â   Busca uma piada em API pÃºblica.
+â  â
+â  ââ¤ *${PREFIXO}anime <nome>*
+â  â   Consulta informaÃ§Ãµes de anime.
+â  â
+â  ââ¤ *${PREFIXO}quiz*
+â  â   Agora usa perguntas aleatÃ³rias da Open Trivia DB.
+â  â
+â  ââ¤ *${PREFIXO}clima <cidade>*
+â      Consulta o clima atual.
+â
+â  ð *ððððð ðððð*
+â
+â  ââ¤ *${PREFIXO}shazam*
+â  â   Identifica mÃºsicas enviadas como Ã¡udio.
+â  â
+â  ââ¤ *${PREFIXO}qr <texto/link>*
+â  â   Gera QR Codes.
+â  â
+â  ââ¤ *${PREFIXO}futebol*
+â  â   Consulta jogos de futebol.
+â  â
+â  ââ¤ *${PREFIXO}f1*
+â  â   Consulta calendÃ¡rio e classificaÃ§Ã£o da F1.
+â  â
+â  ââ¤ *${PREFIXO}ar <cidade>*
+â      Consulta a qualidade do ar.
+â
+â  ð *ðððð ððððððð ððð*
+â
+â  ââ¤ *${PREFIXO}soadm*
+â  â   Alterna o grupo entre modo normal
+â  â   e modo em que apenas administradores
+â  â   podem usar os comandos.
+â  â
+â  ð¡ï¸ *ðððððððÌ§ðÌð E ALVOS POR RESPOSTA*
+â
+â  ââ¤ *${PREFIXO}ban @pessoa*
+â  â   Expulsa participantes do grupo.
+â  â
+â  ââ¤ *${PREFIXO}ban* em resposta
+â  â   Identifica o alvo pela mensagem respondida.
+â  â
+â  ââ¤ Comandos de alvo agora aceitam resposta
+â      alÃ©m de menÃ§Ãµes quando aplicÃ¡vel.
+â
+â  ð° *ððððððððð ðð ðððððððð*
+â
+â  ââ¤ Identidade LID/JID e carteiras reforÃ§adas.
+â  ââ¤ Cooldowns de mineraÃ§Ã£o e roubo persistem apÃ³s reinÃ­cio.
+â  ââ¤ Apostas, doaÃ§Ãµes e sorteios recebem validaÃ§Ã£o rÃ­gida.
+â  ââ¤ HistÃ³rico dos slots ficou mais completo.
+â  ââ¤ Rankings nÃ£o criam carteiras novas.
+â
+â  ð *ððððððð ðð ðððððð*
+â
+â  ââ¤ *${PREFIXO}addpiada*
+â  â   Adiciona piadas personalizadas.
+â  â
+â  ââ¤ *${PREFIXO}listapiadas*
+â  â   Lista todas as piadas cadastradas.
+â  â
+â  ââ¤ *${PREFIXO}removerpiada*
+â  â   Remove uma piada pelo nÃºmero.
+â  â
+â  ââ¤ *${PREFIXO}limparpiadas*
+â  â   Remove todas as piadas com confirmaÃ§Ã£o.
+â  â
+â  ââ¤ *${PREFIXO}carregarpiadas*
+â      Importa vÃ¡rias piadas atravÃ©s
+â      de um arquivo *.txt*.
+â
+â  ð¾ As piadas agora sÃ£o salvas
+â     automaticamente e permanecem
+â     apÃ³s reiniciar o bot.
+â
+ââ¯
+â
+â  ð *ðððð ððððððððððð*
+â
+â  O sistema de menus foi reorganizado
+â  em categorias para facilitar o uso.
+â
+ââ¯
+â
+â  ð *ðððððÌð ð.ð*
+â
+â  ââ¤ Novo sistema de menus
+â  ââ¤ Menus separados por categoria
+â  ââ¤ Novo menu principal
+â
+â  ð *ðððððÌð ð.ð*
+â
+â  ââ¤ Sistema de relacionamentos
+â  ââ¤ Casamentos e divÃ³rcios
+â  ââ¤ Sistema de famÃ­lia
+â  ââ¤ AdoÃ§Ã£o
+â  ââ¤ Diversos comandos novos
+â
+â  ð *ðððððÌð ð.ð*
+â
+â  ââ¤ AtualizaÃ§Ã£o do sistema
+â      de figurinhas Brat
+â
+âââ¢âà¼ºðà¼»ââ¢ââ
 
-*𝐕𝐄𝐑𝐒𝐀̃𝐎 𝐀𝐓𝐔𝐀𝐋: 𝟑.𝟏𝟗*`
+*ðððððÌð ððððð: ð.ðð*`
     );
 }
 
 // ============================================================
-// 📋 LISTA COMPLETA DE COMANDOS
+// ð LISTA COMPLETA DE COMANDOS
 // ============================================================
 
 async function listarComandos(message) {
 
     await reagir(
         message,
-        '📋'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺📋༻❃•═┓
-│
-│       *𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
-│   *𝐋𝐈𝐒𝐓𝐀 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀*
-│
-├✯
-│
-│  💘 *𝐑𝐄𝐋𝐀𝐂𝐈𝐎𝐍𝐀𝐌𝐄𝐍𝐓𝐎𝐒*
-│
-├➤ 💍 *${PREFIXO}casar @pessoa*
-│   _Fazer uma proposta de casamento_
-│
-├➤ 💍 *${PREFIXO}aceitar*
-│   _Aceitar uma proposta_
-│
-├➤ 💔 *${PREFIXO}recusar*
-│   _Recusar uma proposta_
-│
-├➤ 💔 *${PREFIXO}divorcio*
-│   _Solicitar divórcio_
-│
-├➤ 👶 *${PREFIXO}adotar @pessoa*
-│   _Propor uma adoção_
-│
-├➤ 👨‍👩‍👧 *${PREFIXO}familia*
-│   _Ver sua família_
-│
-├➤ 💞 *${PREFIXO}casal*
-│   _Formar um casal aleatório_
-│
-├➤ 💘 *${PREFIXO}shipar @pessoa @pessoa*
-│   _Calcular compatibilidade_
-│
-├✯
-│
-│  😂 *𝐃𝐈𝐕𝐄𝐑𝐒𝐀̃𝐎*
-│
-├➤ 😂 *${PREFIXO}piadas*
-│   _Receber uma piada_
-│
-├➤ ➕ *${PREFIXO}addpiada texto*
-│   _Adicionar uma piada_
-│
-├➤ 📋 *${PREFIXO}listapiadas*
-│   _Listar as piadas_
-│
-├➤ 🗑️ *${PREFIXO}removerpiada número*
-│   _Remover uma piada_
-│
-├➤ 🧹 *${PREFIXO}limparpiadas*
-│   _Limpar todas as piadas_
-│
-├➤ 🔄 *${PREFIXO}carregarpiadas*
-│   _Recarregar as piadas_
-│
-├➤ 😏 *${PREFIXO}cantada*
-│   _Receber uma cantada_
-│
-├➤ 😂 *${PREFIXO}piada*
-│   _Buscar uma piada em API pública_
-│
-├➤ 🍥 *${PREFIXO}anime <nome>*
-│   _Consultar informações de um anime_
-│
-├➤ 🎵 *${PREFIXO}shazam*
-│   _Identificar uma música a partir de um áudio_
-│
-├➤ 📱 *${PREFIXO}qr <texto/link>*
-│   _Gerar um QR Code_
-│
-├➤ ⚽ *${PREFIXO}futebol*
-│   _Ver jogos de futebol de hoje_
-│
-├➤ 🏎️ *${PREFIXO}f1*
-│   _Ver a próxima corrida de F1_
-│
-├➤ 🌫️ *${PREFIXO}ar <cidade>*
-│   _Consultar a qualidade do ar_
-│
-├➤ ☠️ *${PREFIXO}suicidio*
-│   _Comando de humor_
-│
-├✯
-│
-│  🎮 *𝐉𝐎𝐆𝐎𝐒*
-│
-├➤ 🎲 *${PREFIXO}dado*
-│   _Rolar um dado_
-│
-├➤ 🪙 *${PREFIXO}moeda*
-│   _Cara ou coroa_
-│
-├➤ 🔮 *${PREFIXO}sn pergunta*
-│   _Responder sim ou não_
-│
-├➤ ✂️ *${PREFIXO}ppt escolha*
-│   _Pedra, papel ou tesoura_
-│
-├➤ 🔢 *${PREFIXO}adivinha*
-│   _Adivinhar um número_
-│
-├➤ 🎯 *${PREFIXO}chute número*
-│   _Dar um chute na adivinhação_
-│
-├➤ 🎯 *${PREFIXO}chuterpg @pessoa*
-│   _Desafiar alguém_
-│
-├➤ 🧠 *${PREFIXO}quiz*
-│   _Iniciar um quiz_
-│
-├➤ 🧠 *${PREFIXO}quiz resposta*
-│   _Responder o quiz_
-│
-├➤ ⚡ *${PREFIXO}pokemon <nome>*
-│   _Consultar um Pokémon_
-│
-├➤ ❤️ *${PREFIXO}ppp*
-│   _Pega,pensa ou passa?_
-│
-├✯
-│
-│  💰 *𝐄𝐂𝐎𝐍𝐎𝐌𝐈𝐀*
-│
-├➤ ⛏️ *${PREFIXO}minerar*
-│   _Minerar e ganhar moedas_
-│
-├➤ 🥷 *${PREFIXO}roubar @pessoa*
-│   _Tentar roubar alguém_
-│
-├➤ 🎰 *${PREFIXO}slots 100*
-│   _Apostar moedas_
-│
-├➤ 💰 *${PREFIXO}saldo*
-│   _Ver seu saldo_
-│
-├➤ 🏪 *${PREFIXO}loja*
-│   _Ver a loja_
-│
-├➤ 🛒 *${PREFIXO}comprar <item>*
-│   _Comprar um item_
-│
-├➤ 🎒 *${PREFIXO}inventario*
-│   _Ver seus itens_
-│
-├➤ 💸 *${PREFIXO}doar 500 @pessoa*
-│   _Doar moedas_
-│
-├➤ 🏆 *${PREFIXO}rankingdinheiro*
-│   _Ranking dos mais ricos_
-│
-├✯
-│  🏆 *𝐑𝐀𝐍𝐊𝐒 𝐕𝐀𝐑𝐈𝐀𝐃𝐎𝐒*
-│
-├➤ 😍 *${PREFIXO}ranklindo @pessoa*
-│   _Rank de beleza_
-├➤ 👹 *${PREFIXO}rankfeio @pessoa*
-│   _Rank de feiura_
-├➤ 🏳️‍🌈 *${PREFIXO}rankgay @pessoa*
-│   _Rank gay aleatório_
-├➤ 💘 *${PREFIXO}rankhetero @pessoa*
-│   _Rank hetero aleatório_
-├➤ 💜 *${PREFIXO}ranklesbico @pessoa*
-│   _Rank lésbico aleatório_
-├➤ 🧠 *${PREFIXO}rankinteligente @pessoa*
-│   _Rank de inteligência_
-├➤ 🪙 *${PREFIXO}rankpobre*
-│   _Ranking dos menores saldos_
-├➤ 🎨 *${PREFIXO}csrank engraçado*
-│   _Criar um rank personalizado_
-├➤ 💕 *${PREFIXO}rankship @pessoa @pessoa*
-│   _Rank de compatibilidade_
-│
-├➤ ⚙️ *${PREFIXO}srank*
-│   _Admins: configurar os rankings_
-├➤ 📌 *${PREFIXO}rfixo*
-│   _Admins: deixar resultados fixos_
-├➤ 🎲 *${PREFIXO}raleatorio*
-│   _Admins: sortear resultados novamente_
-│
-├➤ 🎉 *${PREFIXO}sortearm 500*
-│   _Sortear moedas (admins)_
-│
-├✯
-│
-│  ⚔️ *𝐑𝐏𝐆*
-│
-├➤ 👋 *${PREFIXO}tapa @pessoa*
-│   _Dar um tapa_
-│
-├➤ 👊 *${PREFIXO}soco @pessoa*
-│   _Dar um soco_
-│
-├➤ 🫷 *${PREFIXO}empurrar @pessoa*
-│   _Empurrar alguém_
-│
-├➤ 🤗 *${PREFIXO}abracar @pessoa*
-│   _Abraçar alguém_
-│
-├➤ 🛡️ *${PREFIXO}proteger @pessoa*
-│   _Proteger alguém_
-│
-├➤ ❤️ *${PREFIXO}curar @pessoa*
-│   _Curar alguém_
-│
-├➤ 👏 *${PREFIXO}elogiar @pessoa*
-│   _Elogiar alguém_
-│
-├➤ 😂 *${PREFIXO}zoar @pessoa*
-│   _Zoar alguém_
-│
-├➤ ⚔️ *${PREFIXO}duelo @pessoa*
-│   _Iniciar um duelo_
-│
-├➤ 🥷 *${PREFIXO}roubar @pessoa*
-│   _Tentar roubar alguém_
-│
-├➤ 🗺️ *${PREFIXO}aventura*
-│   _Iniciar uma aventura_
-│
-├✯
-│
-│  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-│
-├➤ 🔇 *${PREFIXO}mute @pessoa*
-│   _Mutar alguém_
-│
-├➤ 🔊 *${PREFIXO}unmute @pessoa*
-│   _Desmutar alguém_
-│
-├➤ 🚫 *${PREFIXO}muteblacklist @pessoa*
-│   _Adicionar à blacklist de mute_
-│
-├➤ ✅ *${PREFIXO}unmuteblacklist @pessoa*
-│   _Remover da blacklist de mute_
-│ 🔔 *;aviso HH:MM / mensagem*
-│    Cria um aviso diário
-│
-│ 🗑️ *;rem_aviso HH:MM*
-│    Remove um aviso
-│
-│ 📋 *;listaviso*
-│    Lista os avisos do grupo
-│
-├✯
-│
-│  ⚙️ *𝐔𝐓𝐈𝐋𝐈𝐃𝐀𝐃𝐄𝐒*
-│
-├➤ 🏓 *${PREFIXO}ping*
-│   _Verificar o tempo de resposta_
-│
-├➤ 🕐 *${PREFIXO}hora*
-│   _Mostrar a hora_
-│
-├➤ ℹ️ *${PREFIXO}info*
-│   _Mostrar informações_
-│
-├➤ 😴 *${PREFIXO}afk motivo*
-│   _Ativar modo AFK_
-│
-├➤ 🎯 *${PREFIXO}ttg*
-│   _Comando TTG_
-│
-├✯
-│
-│  🖼️ *𝐌𝐈́𝐃𝐈𝐀*
-│
-├➤ 🖼️ *${PREFIXO}fig*
-│   _Criar figurinha_
-│
-├➤ 🖼️ *${PREFIXO}figurinha*
-│   _Criar figurinha_
-│
-├➤ 🧩 *${PREFIXO}emojimix emoji emoji*
-│   _Combinar emojis_
-│
-├➤ 📝 *${PREFIXO}brat1 texto*
-│   _Gerar imagem Brat 1_
-│
-├➤ 📝 *${PREFIXO}brat2 texto*
-│   _Gerar imagem Brat 2_
-│
-├➤ 🎵 *${PREFIXO}playm música*
-│   _Tocar música_
-│
-├➤ 🗣️ *${PREFIXO}tts texto*
-│   _Transformar texto em voz_
-│
-├✯
-│
-│  🎙️ *𝐄𝐅𝐄𝐈𝐓𝐎𝐒 𝐃𝐄 𝐕𝐎𝐙*
-│
-├➤ 🐿️ *${PREFIXO}esquilo*
-│   _Voz de esquilo_
-├➤ 🐿️ *${PREFIXO}chipmunk*
-│   _Voz ainda mais aguda_
-├➤ 🔊 *${PREFIXO}agudo*
-│   _Voz aguda_
-├➤ 👹 *${PREFIXO}demonio*
-│   _Voz demoníaca_
-├➤ 🗿 *${PREFIXO}grave*
-│   _Voz grave_
-├➤ 🤖 *${PREFIXO}robo*
-│   _Voz robótica_
-├➤ 📻 *${PREFIXO}radio*
-│   _Efeito de rádio_
-├➤ ☎️ *${PREFIXO}telefone*
-│   _Efeito de telefone_
-├➤ 📢 *${PREFIXO}megafone*
-│   _Efeito de megafone_
-├➤ 🏔️ *${PREFIXO}eco*
-│   _Adicionar eco_
-├➤ 🕳️ *${PREFIXO}cavern*
-│   _Efeito de caverna_
-├➤ 👽 *${PREFIXO}alien*
-│   _Voz alienígena_
-├➤ 💥 *${PREFIXO}distorcido*
-│   _Voz distorcida_
-├➤ 🔄 *${PREFIXO}reverso*
-│   _Reproduzir ao contrário_
-│
-├✯
-│
-│  📋 *𝐌𝐄𝐍𝐔𝐒*
-│
-├➤ 🔒 *${PREFIXO}soadm*
-│   _Alternar modo somente administradores_
-│
-├➤ 📋 *${PREFIXO}menu*
-│   _Menu principal_
-│
-├➤ 💘 *${PREFIXO}relacionamentos*
-│   _Menu de relacionamentos_
-│
-├➤ 😂 *${PREFIXO}diversao*
-│   _Menu de diversão_
-│
-├➤ 🎮 *${PREFIXO}jogos*
-│   _Menu de jogos_
-│
-├➤ ⚔️ *${PREFIXO}rpg*
-│   _Menu RPG_
-│
-├➤ 🖼️ *${PREFIXO}midia*
-│   _Menu de mídia_
-│
-├➤ 🛡️ *${PREFIXO}moderacao*
-│   _Menu de moderação_
-│
-├➤ 🌐 *${PREFIXO}apis*
-│   _Menu de APIs_
-│
-├➤ ⚙️ *${PREFIXO}utilidades*
-│   _Menu de utilidades_
-│
-├➤ 🤖 *${PREFIXO}bot*
-│   _Menu do bot_
-│
-├✯
-│
-│  🎭 *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄*\n│\n├➤ 🎭 *${PREFIXO}personalidades*\n│   _Ver personalidades disponíveis_\n│\n├➤ ⚙️ *${PREFIXO}personalidade <nome>*\n│   _Alterar a personalidade do grupo_\n│\n├✯\n│\n│  🤖 *𝐁𝐎𝐓*
-│
-├➤ 📋 *${PREFIXO}comandos*
-│   _Lista completa de comandos_
-│
-├➤ 📜 *${PREFIXO}changelog*
-│   _Ver alterações do bot_
-│
-├➤ ℹ️ *${PREFIXO}sobre*
-│   _Informações sobre o JUST BOT_
-│
-├✯
-│
-│  💡 *𝐃𝐈𝐂𝐀*
-│
-│  Use *${PREFIXO}menu* para acessar
-│  os menus separados por categoria.
-│
-┗═•❃༺📋༻❃•═┛
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â       *ðððð ððð*
+â   *ððððð ðððððððð*
+â
+ââ¯
+â
+â  ð *ððððððððððððððð*
+â
+ââ¤ ð *${PREFIXO}casar @pessoa*
+â   _Fazer uma proposta de casamento_
+â
+ââ¤ ð *${PREFIXO}aceitar*
+â   _Aceitar uma proposta_
+â
+ââ¤ ð *${PREFIXO}recusar*
+â   _Recusar uma proposta_
+â
+ââ¤ ð *${PREFIXO}divorcio*
+â   _Solicitar divÃ³rcio_
+â
+ââ¤ ð¶ *${PREFIXO}adotar @pessoa*
+â   _Propor uma adoÃ§Ã£o_
+â
+ââ¤ ð¨âð©âð§ *${PREFIXO}familia*
+â   _Ver sua famÃ­lia_
+â
+ââ¤ ð *${PREFIXO}casal*
+â   _Formar um casal aleatÃ³rio_
+â
+ââ¤ ð *${PREFIXO}shipar @pessoa @pessoa*
+â   _Calcular compatibilidade_
+â
+ââ¯
+â
+â  ð *ðððððððÌð*
+â
+ââ¤ ð *${PREFIXO}piadas*
+â   _Receber uma piada_
+â
+ââ¤ â *${PREFIXO}addpiada texto*
+â   _Adicionar uma piada_
+â
+ââ¤ ð *${PREFIXO}listapiadas*
+â   _Listar as piadas_
+â
+ââ¤ ðï¸ *${PREFIXO}removerpiada nÃºmero*
+â   _Remover uma piada_
+â
+ââ¤ ð§¹ *${PREFIXO}limparpiadas*
+â   _Limpar todas as piadas_
+â
+ââ¤ ð *${PREFIXO}carregarpiadas*
+â   _Recarregar as piadas_
+â
+ââ¤ ð *${PREFIXO}cantada*
+â   _Receber uma cantada_
+â
+ââ¤ ð *${PREFIXO}piada*
+â   _Buscar uma piada em API pÃºblica_
+â
+ââ¤ ð¥ *${PREFIXO}anime <nome>*
+â   _Consultar informaÃ§Ãµes de um anime_
+â
+ââ¤ ðµ *${PREFIXO}shazam*
+â   _Identificar uma mÃºsica a partir de um Ã¡udio_
+â
+ââ¤ ð± *${PREFIXO}qr <texto/link>*
+â   _Gerar um QR Code_
+â
+ââ¤ â½ *${PREFIXO}futebol*
+â   _Ver jogos de futebol de hoje_
+â
+ââ¤ ðï¸ *${PREFIXO}f1*
+â   _Ver a prÃ³xima corrida de F1_
+â
+ââ¤ ð«ï¸ *${PREFIXO}ar <cidade>*
+â   _Consultar a qualidade do ar_
+â
+ââ¤ â ï¸ *${PREFIXO}suicidio*
+â   _Comando de humor_
+â
+ââ¯
+â
+â  ð® *ððððð*
+â
+ââ¤ ð² *${PREFIXO}dado*
+â   _Rolar um dado_
+â
+ââ¤ ðª *${PREFIXO}moeda*
+â   _Cara ou coroa_
+â
+ââ¤ ð® *${PREFIXO}sn pergunta*
+â   _Responder sim ou nÃ£o_
+â
+ââ¤ âï¸ *${PREFIXO}ppt escolha*
+â   _Pedra, papel ou tesoura_
+â
+ââ¤ ð¢ *${PREFIXO}adivinha*
+â   _Adivinhar um nÃºmero_
+â
+ââ¤ ð¯ *${PREFIXO}chute nÃºmero*
+â   _Dar um chute na adivinhaÃ§Ã£o_
+â
+ââ¤ ð¯ *${PREFIXO}chuterpg @pessoa*
+â   _Desafiar alguÃ©m_
+â
+ââ¤ ð§  *${PREFIXO}quiz*
+â   _Iniciar um quiz_
+â
+ââ¤ ð§  *${PREFIXO}quiz resposta*
+â   _Responder o quiz_
+â
+ââ¤ â¡ *${PREFIXO}pokemon <nome>*
+â   _Consultar um PokÃ©mon_
+â
+ââ¤ â¤ï¸ *${PREFIXO}ppp*
+â   _Pega,pensa ou passa?_
+â
+ââ¯
+â
+â  ð° *ðððððððð*
+â
+ââ¤ âï¸ *${PREFIXO}minerar*
+â   _Minerar e ganhar moedas_
+â
+ââ¤ ð¥· *${PREFIXO}roubar @pessoa*
+â   _Tentar roubar alguÃ©m_
+â
+ââ¤ ð° *${PREFIXO}slots 100*
+â   _Apostar moedas_
+â
+ââ¤ ð° *${PREFIXO}saldo*
+â   _Ver seu saldo_
+â
+ââ¤ ðª *${PREFIXO}loja*
+â   _Ver a loja_
+â
+ââ¤ ð *${PREFIXO}comprar <item>*
+â   _Comprar um item_
+â
+ââ¤ ð *${PREFIXO}inventario*
+â   _Ver seus itens_
+â
+ââ¤ ð¸ *${PREFIXO}doar 500 @pessoa*
+â   _Doar moedas_
+â
+ââ¤ ð *${PREFIXO}rankingdinheiro*
+â   _Ranking dos mais ricos_
+â
+ââ¯
+â  ð *ððððð ðððððððð*
+â
+ââ¤ ð *${PREFIXO}ranklindo @pessoa*
+â   _Rank de beleza_
+ââ¤ ð¹ *${PREFIXO}rankfeio @pessoa*
+â   _Rank de feiura_
+ââ¤ ð³ï¸âð *${PREFIXO}rankgay @pessoa*
+â   _Rank gay aleatÃ³rio_
+ââ¤ ð *${PREFIXO}rankhetero @pessoa*
+â   _Rank hetero aleatÃ³rio_
+ââ¤ ð *${PREFIXO}ranklesbico @pessoa*
+â   _Rank lÃ©sbico aleatÃ³rio_
+ââ¤ ð§  *${PREFIXO}rankinteligente @pessoa*
+â   _Rank de inteligÃªncia_
+ââ¤ ðª *${PREFIXO}rankpobre*
+â   _Ranking dos menores saldos_
+ââ¤ ð¨ *${PREFIXO}csrank engraÃ§ado*
+â   _Criar um rank personalizado_
+ââ¤ ð *${PREFIXO}rankship @pessoa @pessoa*
+â   _Rank de compatibilidade_
+â
+ââ¤ âï¸ *${PREFIXO}srank*
+â   _Admins: configurar os rankings_
+ââ¤ ð *${PREFIXO}rfixo*
+â   _Admins: deixar resultados fixos_
+ââ¤ ð² *${PREFIXO}raleatorio*
+â   _Admins: sortear resultados novamente_
+â
+ââ¤ ð *${PREFIXO}sortearm 500*
+â   _Sortear moedas (admins)_
+â
+ââ¯
+â
+â  âï¸ *ððð*
+â
+ââ¤ ð *${PREFIXO}tapa @pessoa*
+â   _Dar um tapa_
+â
+ââ¤ ð *${PREFIXO}soco @pessoa*
+â   _Dar um soco_
+â
+ââ¤ ð«· *${PREFIXO}empurrar @pessoa*
+â   _Empurrar alguÃ©m_
+â
+ââ¤ ð¤ *${PREFIXO}abracar @pessoa*
+â   _AbraÃ§ar alguÃ©m_
+â
+ââ¤ ð¡ï¸ *${PREFIXO}proteger @pessoa*
+â   _Proteger alguÃ©m_
+â
+ââ¤ â¤ï¸ *${PREFIXO}curar @pessoa*
+â   _Curar alguÃ©m_
+â
+ââ¤ ð *${PREFIXO}elogiar @pessoa*
+â   _Elogiar alguÃ©m_
+â
+ââ¤ ð *${PREFIXO}zoar @pessoa*
+â   _Zoar alguÃ©m_
+â
+ââ¤ âï¸ *${PREFIXO}duelo @pessoa*
+â   _Iniciar um duelo_
+â
+ââ¤ ð¥· *${PREFIXO}roubar @pessoa*
+â   _Tentar roubar alguÃ©m_
+â
+ââ¤ ðºï¸ *${PREFIXO}aventura*
+â   _Iniciar uma aventura_
+â
+ââ¯
+â
+â  ð¡ï¸ *ðððððððÌ§ðÌð*
+â
+ââ¤ ð *${PREFIXO}mute @pessoa*
+â   _Mutar alguÃ©m_
+â
+ââ¤ ð *${PREFIXO}unmute @pessoa*
+â   _Desmutar alguÃ©m_
+â
+ââ¤ ð« *${PREFIXO}muteblacklist @pessoa*
+â   _Adicionar Ã  blacklist de mute_
+â
+ââ¤ â *${PREFIXO}unmuteblacklist @pessoa*
+â   _Remover da blacklist de mute_
+â ð *;aviso HH:MM / mensagem*
+â    Cria um aviso diÃ¡rio
+â
+â ðï¸ *;rem_aviso HH:MM*
+â    Remove um aviso
+â
+â ð *;listaviso*
+â    Lista os avisos do grupo
+â
+ââ¯
+â
+â  âï¸ *ðððððððððð*
+â
+ââ¤ ð *${PREFIXO}ping*
+â   _Verificar o tempo de resposta_
+â
+ââ¤ ð *${PREFIXO}hora*
+â   _Mostrar a hora_
+â
+ââ¤ â¹ï¸ *${PREFIXO}info*
+â   _Mostrar informaÃ§Ãµes_
+â
+ââ¤ ð´ *${PREFIXO}afk motivo*
+â   _Ativar modo AFK_
+â
+ââ¤ ð¯ *${PREFIXO}ttg*
+â   _Comando TTG_
+â
+ââ¯
+â
+â  ð¼ï¸ *ððÌððð*
+â
+ââ¤ ð¼ï¸ *${PREFIXO}fig*
+â   _Criar figurinha_
+â
+ââ¤ ð¼ï¸ *${PREFIXO}figurinha*
+â   _Criar figurinha_
+â
+ââ¤ ð§© *${PREFIXO}emojimix emoji emoji*
+â   _Combinar emojis_
+â
+ââ¤ ð *${PREFIXO}brat1 texto*
+â   _Gerar imagem Brat 1_
+â
+ââ¤ ð *${PREFIXO}brat2 texto*
+â   _Gerar imagem Brat 2_
+â
+ââ¤ ðµ *${PREFIXO}playm mÃºsica*
+â   _Tocar mÃºsica_
+â
+ââ¤ ð£ï¸ *${PREFIXO}tts texto*
+â   _Transformar texto em voz_
+â
+ââ¯
+â
+â  ðï¸ *ððððððð ðð ððð*
+â
+ââ¤ ð¿ï¸ *${PREFIXO}esquilo*
+â   _Voz de esquilo_
+ââ¤ ð¿ï¸ *${PREFIXO}chipmunk*
+â   _Voz ainda mais aguda_
+ââ¤ ð *${PREFIXO}agudo*
+â   _Voz aguda_
+ââ¤ ð¹ *${PREFIXO}demonio*
+â   _Voz demonÃ­aca_
+ââ¤ ð¿ *${PREFIXO}grave*
+â   _Voz grave_
+ââ¤ ð¤ *${PREFIXO}robo*
+â   _Voz robÃ³tica_
+ââ¤ ð» *${PREFIXO}radio*
+â   _Efeito de rÃ¡dio_
+ââ¤ âï¸ *${PREFIXO}telefone*
+â   _Efeito de telefone_
+ââ¤ ð¢ *${PREFIXO}megafone*
+â   _Efeito de megafone_
+ââ¤ ðï¸ *${PREFIXO}eco*
+â   _Adicionar eco_
+ââ¤ ð³ï¸ *${PREFIXO}cavern*
+â   _Efeito de caverna_
+ââ¤ ð½ *${PREFIXO}alien*
+â   _Voz alienÃ­gena_
+ââ¤ ð¥ *${PREFIXO}distorcido*
+â   _Voz distorcida_
+ââ¤ ð *${PREFIXO}reverso*
+â   _Reproduzir ao contrÃ¡rio_
+â
+ââ¯
+â
+â  ð *ððððð*
+â
+ââ¤ ð *${PREFIXO}soadm*
+â   _Alternar modo somente administradores_
+â
+ââ¤ ð *${PREFIXO}menu*
+â   _Menu principal_
+â
+ââ¤ ð *${PREFIXO}relacionamentos*
+â   _Menu de relacionamentos_
+â
+ââ¤ ð *${PREFIXO}diversao*
+â   _Menu de diversÃ£o_
+â
+ââ¤ ð® *${PREFIXO}jogos*
+â   _Menu de jogos_
+â
+ââ¤ âï¸ *${PREFIXO}rpg*
+â   _Menu RPG_
+â
+ââ¤ ð¼ï¸ *${PREFIXO}midia*
+â   _Menu de mÃ­dia_
+â
+ââ¤ ð¡ï¸ *${PREFIXO}moderacao*
+â   _Menu de moderaÃ§Ã£o_
+â
+ââ¤ ð *${PREFIXO}apis*
+â   _Menu de APIs_
+â
+ââ¤ âï¸ *${PREFIXO}utilidades*
+â   _Menu de utilidades_
+â
+ââ¤ ð¤ *${PREFIXO}bot*
+â   _Menu do bot_
+â
+ââ¯
+â
+â  ð­ *ððððððððððððð*\nâ\nââ¤ ð­ *${PREFIXO}personalidades*\nâ   _Ver personalidades disponÃ­veis_\nâ\nââ¤ âï¸ *${PREFIXO}personalidade <nome>*\nâ   _Alterar a personalidade do grupo_\nâ\nââ¯\nâ\nâ  ð¤ *ððð*
+â
+ââ¤ ð *${PREFIXO}comandos*
+â   _Lista completa de comandos_
+â
+ââ¤ ð *${PREFIXO}changelog*
+â   _Ver alteraÃ§Ãµes do bot_
+â
+ââ¤ â¹ï¸ *${PREFIXO}sobre*
+â   _InformaÃ§Ãµes sobre o JUST BOT_
+â
+ââ¯
+â
+â  ð¡ *ðððð*
+â
+â  Use *${PREFIXO}menu* para acessar
+â  os menus separados por categoria.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ
 
-*𝐕𝐄𝐑𝐒𝐀̃𝐎 ${VERSAO}*`
+*ðððððÌð ${VERSAO}*`
     );
 }
 
@@ -6254,18 +6256,18 @@ async function jogarDado(message) {
     const resultado =
         Math.floor(Math.random() * 6) + 1;
 
-    await reagir(message, '🎲');
+    await reagir(message, 'ð²');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-├✯ *🎲 𝐃𝐀𝐃𝐎*
-│
-├➤ _Você tirou:_
-│
-│       *🎲 ${resultado}*
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ð² ðððð*
+â
+ââ¤ _VocÃª tirou:_
+â
+â       *ð² ${resultado}*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
@@ -6277,36 +6279,36 @@ async function jogarDado(message) {
 async function jogarMoeda(message) {
     const resultado =
         Math.random() < 0.5
-            ? '𝐂𝐀𝐑𝐀'
-            : '𝐂𝐎𝐑𝐎𝐀';
+            ? 'ðððð'
+            : 'ððððð';
 
-    await reagir(message, '🪙');
+    await reagir(message, 'ðª');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-├✯ *🪙 𝐌𝐎𝐄𝐃𝐀*
-│
-├➤ _Resultado:_
-│
-│       *${resultado}*
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðª ððððð*
+â
+ââ¤ _Resultado:_
+â
+â       *${resultado}*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// SIM OU NÃO
+// SIM OU NÃO
 // ============================================================
 
 async function jogarSN(message, pergunta) {
     if (!pergunta || !pergunta.trim()) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `❌ *𝐏𝐄𝐑𝐆𝐔𝐍𝐓𝐀 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐀*
+            `â *ðððððððð ððÌð ðððððððððð*
 
 _Exemplo:_
 *${PREFIXO}sn eu vou conseguir?*`
@@ -6317,29 +6319,29 @@ _Exemplo:_
 
     const resultado =
         Math.random() < 0.5
-            ? '𝐒𝐈𝐌'
-            : '𝐍𝐀̃𝐎';
+            ? 'ððð'
+            : 'ððÌð';
 
     await reagir(
         message,
-        resultado === '𝐒𝐈𝐌'
-            ? '✅'
-            : '❌'
+        resultado === 'ððð'
+            ? 'â'
+            : 'â'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-├✯ *🔮 𝐒𝐈𝐌 𝐎𝐔 𝐍𝐀̃𝐎*
-│
-├➤ *𝐏𝐄𝐑𝐆𝐔𝐍𝐓𝐀:*
-│   _${pergunta}_
-│
-├➤ *𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀:*
-│
-│   ✦ *${resultado}* ✦
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ð® ððð ðð ððÌð*
+â
+ââ¤ *ðððððððð:*
+â   _${pergunta}_
+â
+ââ¤ *ðððððððð:*
+â
+â   â¦ *${resultado}* â¦
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
@@ -6388,15 +6390,15 @@ async function acaoRPG(
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *${emoji} 𝐑𝐏𝐆*
-├✯
-├➤ _${frase} ${mencao}_
-│
-├➤ *𝐀𝐋𝐕𝐎:* ${mencao}
-├➤ *💥 𝐃𝐀𝐍𝐎 𝐅𝐈𝐂𝐓𝐈́𝐂𝐈𝐎:* ${valor}
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *${emoji} ððð*
+ââ¯
+ââ¤ _${frase} ${mencao}_
+â
+ââ¤ *ðððð:* ${mencao}
+ââ¤ *ð¥ ðððð ðððððÌððð:* ${valor}
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6405,11 +6407,11 @@ async function tapa(message) {
     await acaoRPG(
         message,
         'tapa',
-        '🖐️',
+        'ðï¸',
         [
-            'Você deu um tapa cinematográfico em',
-            'Você aplicou um tapinha lendário em',
-            'Você mandou aquele tapa de respeito em'
+            'VocÃª deu um tapa cinematogrÃ¡fico em',
+            'VocÃª aplicou um tapinha lendÃ¡rio em',
+            'VocÃª mandou aquele tapa de respeito em'
         ]
     );
 }
@@ -6418,11 +6420,11 @@ async function soco(message) {
     await acaoRPG(
         message,
         'soco',
-        '👊',
+        'ð',
         [
-            'Você acertou um soco fictício em',
-            'Você lançou um soco poderoso contra',
-            'Você acertou um golpe crítico em'
+            'VocÃª acertou um soco fictÃ­cio em',
+            'VocÃª lanÃ§ou um soco poderoso contra',
+            'VocÃª acertou um golpe crÃ­tico em'
         ]
     );
 }
@@ -6431,11 +6433,11 @@ async function chuteRPG(message) {
     await acaoRPG(
         message,
         'chute',
-        '🦵',
+        'ð¦µ',
         [
-            'Você deu um chute voador em',
-            'Você aplicou um chute giratório em',
-            'Você acertou um chute cinematográfico em'
+            'VocÃª deu um chute voador em',
+            'VocÃª aplicou um chute giratÃ³rio em',
+            'VocÃª acertou um chute cinematogrÃ¡fico em'
         ]
     );
 }
@@ -6444,11 +6446,11 @@ async function empurrar(message) {
     await acaoRPG(
         message,
         'empurrar',
-        '💨',
+        'ð¨',
         [
-            'Você empurrou',
-            'Você deu um empurrão fictício em',
-            'Você lançou'
+            'VocÃª empurrou',
+            'VocÃª deu um empurrÃ£o fictÃ­cio em',
+            'VocÃª lanÃ§ou'
         ]
     );
 }
@@ -6465,7 +6467,7 @@ async function abracar(message) {
     const idPessoa =
         idDaPessoa(pessoa);
 
-    await reagir(message, '🫂');
+    await reagir(message, 'ð«');
 
     const opcoesEnvio = {};
 
@@ -6475,14 +6477,14 @@ async function abracar(message) {
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *🫂 𝐀𝐁𝐑𝐀𝐂̧𝐎*
-├✯
-├➤ _Você deu um abraço em ${mencao}!_
-│
-├➤ *💖 +100 𝐂𝐀𝐑𝐈𝐍𝐇𝐎*
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð« ðððððÌ§ð*
+ââ¯
+ââ¤ _VocÃª deu um abraÃ§o em ${mencao}!_
+â
+ââ¤ *ð +100 ððððððð*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6499,7 +6501,7 @@ async function proteger(message) {
     const idPessoa =
         idDaPessoa(pessoa);
 
-    await reagir(message, '🛡️');
+    await reagir(message, 'ð¡ï¸');
 
     const opcoesEnvio = {};
 
@@ -6509,14 +6511,14 @@ async function proteger(message) {
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *🛡️ 𝐏𝐑𝐎𝐓𝐄𝐆𝐄𝐑*
-├✯
-├➤ _Você está protegendo ${mencao}!_
-│
-├➤ *🛡️ 𝐃𝐄𝐅𝐄𝐒𝐀 𝐀𝐔𝐌𝐄𝐍𝐓𝐀𝐃𝐀*
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð¡ï¸ ðððððððð*
+ââ¯
+ââ¤ _VocÃª estÃ¡ protegendo ${mencao}!_
+â
+ââ¤ *ð¡ï¸ ðððððð ððððððððð*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6538,7 +6540,7 @@ async function curar(message) {
             Math.random() * 41
         ) + 10;
 
-    await reagir(message, '💚');
+    await reagir(message, 'ð');
 
     const opcoesEnvio = {};
 
@@ -6548,14 +6550,14 @@ async function curar(message) {
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *💚 𝐂𝐔𝐑𝐀*
-├✯
-├➤ _Você curou ${mencao}!_
-│
-├➤ *❤️ +${cura} HP 𝐅𝐈𝐂𝐓𝐈́𝐂𝐈𝐎*
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð ðððð*
+ââ¯
+ââ¤ _VocÃª curou ${mencao}!_
+â
+ââ¤ *â¤ï¸ +${cura} HP ðððððÌððð*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6573,11 +6575,11 @@ async function elogiar(message) {
         idDaPessoa(pessoa);
 
     const elogios = [
-        'Você é incrível!',
-        'Você é uma lenda!',
-        'Você é simplesmente brabo!',
-        'Você mandou muito bem!',
-        'Você merece um troféu!'
+        'VocÃª Ã© incrÃ­vel!',
+        'VocÃª Ã© uma lenda!',
+        'VocÃª Ã© simplesmente brabo!',
+        'VocÃª mandou muito bem!',
+        'VocÃª merece um trofÃ©u!'
     ];
 
     const elogio =
@@ -6588,7 +6590,7 @@ async function elogiar(message) {
             )
         ];
 
-    await reagir(message, '⭐');
+    await reagir(message, 'â­');
 
     const opcoesEnvio = {};
 
@@ -6598,14 +6600,14 @@ async function elogiar(message) {
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *⭐ 𝐄𝐋𝐎𝐆𝐈𝐎*
-├✯
-├➤ ${mencao}
-│
-├➤ _${elogio}_
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *â­ ðððððð*
+ââ¯
+ââ¤ ${mencao}
+â
+ââ¤ _${elogio}_
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6623,11 +6625,11 @@ async function zoar(message) {
         idDaPessoa(pessoa);
 
     const zoeiras = [
-        'perdeu até para o tutorial.',
+        'perdeu atÃ© para o tutorial.',
         'precisa urgentemente de um buff.',
-        'foi derrotado pelo próprio lag.',
+        'foi derrotado pelo prÃ³prio lag.',
         'entrou no modo NPC.',
-        'tomou um crítico psicológico.'
+        'tomou um crÃ­tico psicolÃ³gico.'
     ];
 
     const zoeira =
@@ -6638,7 +6640,7 @@ async function zoar(message) {
             )
         ];
 
-    await reagir(message, '😂');
+    await reagir(message, 'ð');
 
     const opcoesEnvio = {};
 
@@ -6648,14 +6650,14 @@ async function zoar(message) {
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *😂 𝐙𝐎𝐀𝐑*
-├✯
-├➤ ${mencao} _${zoeira}_
-│
-├➤ *💀 𝐃𝐀𝐍𝐎 𝐄𝐌𝐎𝐂𝐈𝐎𝐍𝐀𝐋: 999*
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð ðððð*
+ââ¯
+ââ¤ ${mencao} _${zoeira}_
+â
+ââ¤ *ð ðððð ððððððððð: 999*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6686,18 +6688,18 @@ async function duelo(message) {
 
     if (seuPoder > poderInimigo) {
         resultado =
-            '🏆 *𝐕𝐎𝐂𝐄̂ 𝐕𝐄𝐍𝐂𝐄𝐔 𝐎 𝐃𝐔𝐄𝐋𝐎!*';
+            'ð *ððððÌ ðððððð ð ððððð!*';
     } else if (
         seuPoder < poderInimigo
     ) {
         resultado =
-            '💀 *𝐕𝐎𝐂𝐄̂ 𝐏𝐄𝐑𝐃𝐄𝐔 𝐎 𝐃𝐔𝐄𝐋𝐎!*';
+            'ð *ððððÌ ðððððð ð ððððð!*';
     } else {
         resultado =
-            '🤝 *𝐄𝐌𝐏𝐀𝐓𝐄!*';
+            'ð¤ *ðððððð!*';
     }
 
-    await reagir(message, '⚔️');
+    await reagir(message, 'âï¸');
 
     const opcoesEnvio = {};
 
@@ -6707,16 +6709,16 @@ async function duelo(message) {
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *⚔️ 𝐃𝐔𝐄𝐋𝐎*
-├✯
-├➤ *𝐕𝐎𝐂𝐄̂ VS ${mencao}*
-│
-├➤ *𝐒𝐄𝐔 𝐏𝐎𝐃𝐄𝐑:* ${seuPoder}
-├➤ *𝐎𝐏𝐎𝐍𝐄𝐍𝐓𝐄:* ${poderInimigo}
-│
-├✯ ${resultado}
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *âï¸ ððððð*
+ââ¯
+ââ¤ *ððððÌ VS ${mencao}*
+â
+ââ¤ *ððð ððððð:* ${seuPoder}
+ââ¤ *ðððððððð:* ${poderInimigo}
+â
+ââ¯ ${resultado}
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         opcoesEnvio
     );
 }
@@ -6724,8 +6726,8 @@ async function duelo(message) {
 async function roubar(message) {
     try {
         if (!message.from.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ _Roubo só pode ser feito em grupos._');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â _Roubo sÃ³ pode ser feito em grupos._');
             return;
         }
 
@@ -6735,8 +6737,8 @@ async function roubar(message) {
         const ladrao = await resolverIdEconomia(obterIdRemetente(message));
         const vitima = await resolverIdEconomia(pessoa);
         if (!ladrao || !vitima || idsIguais(ladrao, vitima)) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ _Você não pode roubar a si mesmo._');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â _VocÃª nÃ£o pode roubar a si mesmo._');
             return;
         }
 
@@ -6748,8 +6750,8 @@ async function roubar(message) {
         if (ultimoAlvo && restanteAlvo > 0) {
             const horas = Math.floor(restanteAlvo / 3600000);
             const minutos = Math.ceil((restanteAlvo % 3600000) / 60000);
-            await reagir(message, '⏳');
-            await responderCitando(message, `⏳ _Você já tentou roubar ${mencaoDaPessoa(pessoa)} recentemente._\n\nVolte em aproximadamente *${horas}h ${minutos}min*.`, { mentions: [vitima] });
+            await reagir(message, 'â³');
+            await responderCitando(message, `â³ _VocÃª jÃ¡ tentou roubar ${mencaoDaPessoa(pessoa)} recentemente._\n\nVolte em aproximadamente *${horas}h ${minutos}min*.`, { mentions: [vitima] });
             return;
         }
 
@@ -6757,8 +6759,8 @@ async function roubar(message) {
         if (agora - ultimoRoubo < INTERVALO_ROUBO) {
             const restante = INTERVALO_ROUBO - (agora - ultimoRoubo);
             const minutos = Math.ceil(restante / 60000);
-            await reagir(message, '⏳');
-            await responderCitando(message, `⏳ _Você precisa esperar mais *${minutos} min* antes de tentar outro roubo._`);
+            await reagir(message, 'â³');
+            await responderCitando(message, `â³ _VocÃª precisa esperar mais *${minutos} min* antes de tentar outro roubo._`);
             return;
         }
 
@@ -6771,8 +6773,8 @@ async function roubar(message) {
             cooldownsRoubo.set(chaveCooldown, agora);
             cooldownsRoubo.set(`${ladrao}:geral`, agora);
             salvarMoedas();
-            await reagir(message, '💸');
-            await responderCitando(message, `💸 _${mencao} está praticamente sem moedas para roubar._`);
+            await reagir(message, 'ð¸');
+            await responderCitando(message, `ð¸ _${mencao} estÃ¡ praticamente sem moedas para roubar._`);
             return;
         }
 
@@ -6790,16 +6792,16 @@ async function roubar(message) {
             carteiraLadrao.roubosSucesso += 1;
             salvarMoedas();
 
-            await reagir(message, '🥷');
-            await responderCitando(message, `┏═•❃༺🥷༻❃•═┓
-├✯ *𝐑𝐎𝐔𝐁𝐎 𝐁𝐄𝐌-𝐒𝐔𝐂𝐄𝐃𝐈𝐃𝐎!*
-│
-├➤ Você roubou *${formatarMoedas(valorRoubo)} 🪙* de ${mencao}!
-├➤ 🥷 Chance extra das luvas: *${luvas}x*
-│
-├➤ 💰 Seu saldo: *${formatarMoedas(carteiraLadrao.saldo)} 🪙*
-│
-┗═•❃༺🥷༻❃•═┛` , { mentions: [vitima] });
+            await reagir(message, 'ð¥·');
+            await responderCitando(message, `âââ¢âà¼ºð¥·à¼»ââ¢ââ
+ââ¯ *ððððð ððð-ðððððððð!*
+â
+ââ¤ VocÃª roubou *${formatarMoedas(valorRoubo)} ðª* de ${mencao}!
+ââ¤ ð¥· Chance extra das luvas: *${luvas}x*
+â
+ââ¤ ð° Seu saldo: *${formatarMoedas(carteiraLadrao.saldo)} ðª*
+â
+âââ¢âà¼ºð¥·à¼»ââ¢ââ` , { mentions: [vitima] });
             return;
         }
 
@@ -6809,15 +6811,15 @@ async function roubar(message) {
 
         if (dados.pegos < 2) {
             salvarMoedas();
-            await reagir(message, '🚨');
-            await responderCitando(message, `┏═•❃༺🚨༻❃•═┓
-├✯ *𝐕𝐎𝐂𝐄̂ 𝐅𝐎𝐈 𝐏𝐄𝐆𝐎!*
-│
-├➤ ${mencao} percebeu o roubo!
-├➤ 🚨 Primeira captura registrada.
-├➤ ⚠️ Na *segunda captura*, você poderá perder parte do seu saldo para a vítima.
-│
-┗═•❃༺🚨༻❃•═┛`, { mentions: [vitima] });
+            await reagir(message, 'ð¨');
+            await responderCitando(message, `âââ¢âà¼ºð¨à¼»ââ¢ââ
+ââ¯ *ððððÌ ððð ðððð!*
+â
+ââ¤ ${mencao} percebeu o roubo!
+ââ¤ ð¨ Primeira captura registrada.
+ââ¤ â ï¸ Na *segunda captura*, vocÃª poderÃ¡ perder parte do seu saldo para a vÃ­tima.
+â
+âââ¢âà¼ºð¨à¼»ââ¢ââ`, { mentions: [vitima] });
             return;
         }
 
@@ -6826,49 +6828,49 @@ async function roubar(message) {
         if (colete > 0) {
             consumirItem(ladrao, 'colete');
             salvarMoedas();
-            await reagir(message, '🛡️');
-            await responderCitando(message, `┏═•❃༺🛡️༻❃•═┓
-├✯ *𝐂𝐎𝐋𝐄𝐓𝐄 𝐀𝐓𝐈𝐕𝐀𝐃𝐎!*
-│
-├➤ Você foi pego pela *segunda vez*.
-├➤ 🛡️ Seu Colete Anti-Punição absorveu a perda!
-├➤ ${mencao} não recebeu moedas desta vez.
-│
-┗═•❃༺🛡️༻❃•═┛`, { mentions: [vitima] });
+            await reagir(message, 'ð¡ï¸');
+            await responderCitando(message, `âââ¢âà¼ºð¡ï¸à¼»ââ¢ââ
+ââ¯ *ðððððð ððððððð!*
+â
+ââ¤ VocÃª foi pego pela *segunda vez*.
+ââ¤ ð¡ï¸ Seu Colete Anti-PuniÃ§Ã£o absorveu a perda!
+ââ¤ ${mencao} nÃ£o recebeu moedas desta vez.
+â
+âââ¢âà¼ºð¡ï¸à¼»ââ¢ââ`, { mentions: [vitima] });
             return;
         }
 
         const perda = Math.min(carteiraLadrao.saldo, Math.max(100, Math.floor(carteiraLadrao.saldo * 0.20)));
         if (perda > 0) {
-            transferirMoedas(ladrao, vitima, perda, 'punição_roubo', 'Segunda captura no roubo');
+            transferirMoedas(ladrao, vitima, perda, 'puniÃ§Ã£o_roubo', 'Segunda captura no roubo');
         }
 
-        await reagir(message, '💸');
-        await responderCitando(message, `┏═•❃༺💸༻❃•═┓
-├✯ *𝐒𝐄𝐆𝐔𝐍𝐃𝐀 𝐂𝐀𝐏𝐓𝐔𝐑𝐀!*
-│
-├➤ 🚨 Você foi pego roubando ${mencao} pela segunda vez.
-├➤ 💸 Multa: *${formatarMoedas(perda)} 🪙*
-├➤ 💰 Esse dinheiro foi entregue à vítima.
-│
-├➤ Seu saldo: *${formatarMoedas(carteiraLadrao.saldo)} 🪙*
-│
-┗═•❃༺💸༻❃•═┛`, { mentions: [vitima] });
+        await reagir(message, 'ð¸');
+        await responderCitando(message, `âââ¢âà¼ºð¸à¼»ââ¢ââ
+ââ¯ *ððððððð ððððððð!*
+â
+ââ¤ ð¨ VocÃª foi pego roubando ${mencao} pela segunda vez.
+ââ¤ ð¸ Multa: *${formatarMoedas(perda)} ðª*
+ââ¤ ð° Esse dinheiro foi entregue Ã  vÃ­tima.
+â
+ââ¤ Seu saldo: *${formatarMoedas(carteiraLadrao.saldo)} ðª*
+â
+âââ¢âà¼ºð¸à¼»ââ¢ââ`, { mentions: [vitima] });
     } catch (erro) {
-        console.error('❌ Erro no sistema de roubo:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Ocorreu um erro ao executar o roubo._');
+        console.error('â Erro no sistema de roubo:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _Ocorreu um erro ao executar o roubo._');
     }
 }
 
 async function aventura(message) {
     const eventos = [
-        '🏰 Você encontrou um castelo abandonado!',
-        '🐉 Um dragão apareceu no caminho!',
-        '💎 Você encontrou um tesouro escondido!',
-        '🌲 Você entrou em uma floresta misteriosa!',
-        '🧙 Um mago ofereceu uma missão!',
-        '🕳️ Você caiu em uma passagem secreta!'
+        'ð° VocÃª encontrou um castelo abandonado!',
+        'ð Um dragÃ£o apareceu no caminho!',
+        'ð VocÃª encontrou um tesouro escondido!',
+        'ð² VocÃª entrou em uma floresta misteriosa!',
+        'ð§ Um mago ofereceu uma missÃ£o!',
+        'ð³ï¸ VocÃª caiu em uma passagem secreta!'
     ];
 
     const evento =
@@ -6884,19 +6886,19 @@ async function aventura(message) {
             Math.random() * 101
         ) + 20;
 
-    await reagir(message, '🗺️');
+    await reagir(message, 'ðºï¸');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│   *🗺️ 𝐀𝐕𝐄𝐍𝐓𝐔𝐑𝐀*
-├✯
-├➤ _${evento}_
-│
-├➤ *✨ XP GANHO: ${xp}*
-│
-├➤ _A aventura continua..._
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ðºï¸ ðððððððð*
+ââ¯
+ââ¤ _${evento}_
+â
+ââ¤ *â¨ XP GANHO: ${xp}*
+â
+ââ¤ _A aventura continua..._
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
@@ -6915,11 +6917,11 @@ async function jogarPPT(
         .trim();
 
 if (!escolha) {
-    await reagir(message, '❌');
+    await reagir(message, 'â');
 
     await responderCitando(
         message,
-        `❌ *𝐄𝐒𝐂𝐎𝐋𝐇𝐀 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐀.*
+        `â *ððððððð ððÌð ððððððððð.*
 
 _Use:_
 
@@ -6938,11 +6940,11 @@ _Use:_
     ];
 
     if (!opcoes.includes(escolha)) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `❌ *𝐄𝐒𝐂𝐎𝐋𝐇𝐀 𝐈𝐍𝐕𝐀́𝐋𝐈𝐃𝐀!*
+            `â *ððððððð ððððÌðððð!*
 
 _Use:_
 *${PREFIXO}ppt pedra*
@@ -6965,7 +6967,7 @@ _Use:_
 
     if (escolha === bot) {
         resultado =
-            '🤝 *𝐄𝐌𝐏𝐀𝐓𝐄!*';
+            'ð¤ *ðððððð!*';
     } else if (
         (escolha === 'pedra' &&
             bot === 'tesoura') ||
@@ -6975,30 +6977,30 @@ _Use:_
             bot === 'papel')
     ) {
         resultado =
-            '🏆 *𝐕𝐎𝐂𝐄̂ 𝐕𝐄𝐍𝐂𝐄𝐔!*';
+            'ð *ððððÌ ðððððð!*';
     } else {
         resultado =
-            '💀 *𝐕𝐎𝐂𝐄̂ 𝐏𝐄𝐑𝐃𝐄𝐔!*';
+            'ð *ððððÌ ðððððð!*';
     }
 
-    await reagir(message, '🎮');
+    await reagir(message, 'ð®');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│   *🎮 𝐏𝐏𝐓*
-├✯
-├➤ *𝐕𝐎𝐂𝐄̂:* _${escolha}_
-├➤ *𝐁𝐎𝐓:* _${bot}_
-│
-├✯ ${resultado}
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð® ððð*
+ââ¯
+ââ¤ *ððððÌ:* _${escolha}_
+ââ¤ *ððð:* _${bot}_
+â
+ââ¯ ${resultado}
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
 
 // ============================================================
-// ADIVINHAÇÃO
+// ADIVINHAÃÃO
 // ============================================================
 
 async function iniciarAdivinhacao(message) {
@@ -7012,19 +7014,19 @@ async function iniciarAdivinhacao(message) {
         numero
     );
 
-    await reagir(message, '🔢');
+    await reagir(message, 'ð¢');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│   *🔢 𝐀𝐃𝐈𝐕𝐈𝐍𝐇𝐀*
-├✯
-├➤ _Pensei em um número entre 1 e 10!_
-│
-├➤ *🎯 ${PREFIXO}chute número*
-│   _Tente acertar._
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð¢ ðððððððð*
+ââ¯
+ââ¤ _Pensei em um nÃºmero entre 1 e 10!_
+â
+ââ¤ *ð¯ ${PREFIXO}chute nÃºmero*
+â   _Tente acertar._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
@@ -7043,7 +7045,7 @@ async function fazerChute(
     if (!numeroCorreto) {
         await responderCitando(
             message,
-            `❌ *𝐍𝐄𝐍𝐇𝐔𝐌 𝐉𝐎𝐆𝐎 𝐀𝐓𝐈𝐕𝐎.*
+            `â *ðððððð ðððð ððððð.*
 
 _Digite:_
 *${PREFIXO}adivinha*`
@@ -7061,7 +7063,7 @@ _Digite:_
     ) {
         await responderCitando(
             message,
-            '❌ _Digite um número entre 1 e 10._'
+            'â _Digite um nÃºmero entre 1 e 10._'
         );
 
         return;
@@ -7077,26 +7079,26 @@ _Digite:_
 
         await reagir(
             message,
-            '🎉'
+            'ð'
         );
 
         await responderCitando(
             message,
-            `🎉 *𝐀𝐂𝐄𝐑𝐓𝐎𝐔!*
+            `ð *ððððððð!*
 
-_O número era_ *${numeroCorreto}*!`
+_O nÃºmero era_ *${numeroCorreto}*!`
         );
 
         return;
     }
 
-    await reagir(message, '❌');
+    await reagir(message, 'â');
 
     await responderCitando(
         message,
-        `❌ *𝐄𝐑𝐑𝐎𝐔!*
+        `â *ððððð!*
 
-_O número é_ *${numeroEscolhido < numeroCorreto
+_O nÃºmero Ã©_ *${numeroEscolhido < numeroCorreto
             ? 'MAIOR'
             : 'MENOR'}*.`
     );
@@ -7104,7 +7106,7 @@ _O número é_ *${numeroEscolhido < numeroCorreto
 
 
 // ============================================================
-// 🌐 COMANDOS DE APIS PÚBLICAS
+// ð COMANDOS DE APIS PÃBLICAS
 // ============================================================
 
 async function buscarJsonAPI(url, opcoes = {}) {
@@ -7142,15 +7144,15 @@ function nomeFormatadoAPI(nome) {
 
 async function comandoPokemon(message, argumentos) {
     const nome = String(argumentos || '').trim().toLowerCase();
-    if (!nome) { await reagir(message, '❌'); await responderCitando(message, `❌ _Informe um Pokémon._\n\nExemplo: *${PREFIXO}pokemon pikachu*`); return; }
+    if (!nome) { await reagir(message, 'â'); await responderCitando(message, `â _Informe um PokÃ©mon._\n\nExemplo: *${PREFIXO}pokemon pikachu*`); return; }
     try {
         const pokemon = await buscarJsonAPI(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(nome)}`);
         const tipos = (pokemon.types || []).sort((a,b) => a.slot-b.slot).map(item => nomeFormatadoAPI(item.type?.name)).join(' / ');
         const habilidades = (pokemon.abilities || []).filter(item => item.ability?.name).map(item => nomeFormatadoAPI(item.ability.name)).slice(0,3).join(', ');
         const stats = Object.fromEntries((pokemon.stats || []).map(item => [item.stat?.name, item.base_stat]));
-        const texto = `┏═•❃༺⚡༻❃•═┓\n│      *𝐏𝐎𝐊𝐄́𝐌𝐎𝐍*\n├✯\n│\n├➤ 🆔 *#${String(pokemon.id).padStart(4,'0')}*\n├➤ 🐾 *${nomeFormatadoAPI(pokemon.name)}*\n├➤ 🔥 Tipo: *${tipos || 'Desconhecido'}*\n├➤ 📏 Altura: *${(pokemon.height/10).toFixed(1)} m*\n├➤ ⚖️ Peso: *${(pokemon.weight/10).toFixed(1)} kg*\n│\n├➤ ❤️ HP: *${stats.hp ?? '?'}*\n├➤ ⚔️ Ataque: *${stats.attack ?? '?'}*\n├➤ 🛡️ Defesa: *${stats.defense ?? '?'}*\n├➤ ✨ Ataque Esp.: *${stats['special-attack'] ?? '?'}*\n├➤ 🌀 Defesa Esp.: *${stats['special-defense'] ?? '?'}*\n├➤ 💨 Velocidade: *${stats.speed ?? '?'}*\n│\n├➤ 🧬 Habilidades: *${habilidades || 'Desconhecidas'}*\n│\n┗═•❃༺⚡༻❃•═┛`;
-        await reagir(message,'⚡'); await responderCitando(message,texto);
-    } catch (erro) { console.error('❌ Erro na API do Pokémon:',erro.message); await reagir(message,'❌'); await responderCitando(message,`❌ _Não encontrei o Pokémon_ *${nome}* _na PokéAPI._`); }
+        const texto = `âââ¢âà¼ºâ¡à¼»ââ¢ââ\nâ      *ððððÌððð*\nââ¯\nâ\nââ¤ ð *#${String(pokemon.id).padStart(4,'0')}*\nââ¤ ð¾ *${nomeFormatadoAPI(pokemon.name)}*\nââ¤ ð¥ Tipo: *${tipos || 'Desconhecido'}*\nââ¤ ð Altura: *${(pokemon.height/10).toFixed(1)} m*\nââ¤ âï¸ Peso: *${(pokemon.weight/10).toFixed(1)} kg*\nâ\nââ¤ â¤ï¸ HP: *${stats.hp ?? '?'}*\nââ¤ âï¸ Ataque: *${stats.attack ?? '?'}*\nââ¤ ð¡ï¸ Defesa: *${stats.defense ?? '?'}*\nââ¤ â¨ Ataque Esp.: *${stats['special-attack'] ?? '?'}*\nââ¤ ð Defesa Esp.: *${stats['special-defense'] ?? '?'}*\nââ¤ ð¨ Velocidade: *${stats.speed ?? '?'}*\nâ\nââ¤ ð§¬ Habilidades: *${habilidades || 'Desconhecidas'}*\nâ\nâââ¢âà¼ºâ¡à¼»ââ¢ââ`;
+        await reagir(message,'â¡'); await responderCitando(message,texto);
+    } catch (erro) { console.error('â Erro na API do PokÃ©mon:',erro.message); await reagir(message,'â'); await responderCitando(message,`â _NÃ£o encontrei o PokÃ©mon_ *${nome}* _na PokÃ©API._`); }
 }
 
 async function comandoPiadaAPI(message) {
@@ -7159,20 +7161,20 @@ async function comandoPiadaAPI(message) {
         if (dados.error) throw new Error(dados.message || 'API sem piada.');
         const piada = dados.type === 'twopart' ? `${limparTextoAPI(dados.setup)}\n\n${limparTextoAPI(dados.delivery)}` : limparTextoAPI(dados.joke);
         if (!piada) throw new Error('Piada vazia.');
-        await reagir(message,'😂'); await responderCitando(message,`┏═•❃༺😂༻❃•═┓\n│      *𝐏𝐈𝐀𝐃𝐀 𝐃𝐀 𝐀𝐏𝐈*\n├✯\n│\n├➤ ${piada}\n│\n┗═•❃༺😂༻❃•═┛`);
-    } catch (erro) { console.error('❌ Erro na API de piadas:',erro.message); await reagir(message,'❌'); await responderCitando(message,'❌ _Não consegui buscar uma piada agora. Tente novamente em alguns segundos._'); }
+        await reagir(message,'ð'); await responderCitando(message,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ððððð ðð ððð*\nââ¯\nâ\nââ¤ ${piada}\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
+    } catch (erro) { console.error('â Erro na API de piadas:',erro.message); await reagir(message,'â'); await responderCitando(message,'â _NÃ£o consegui buscar uma piada agora. Tente novamente em alguns segundos._'); }
 }
 
 async function comandoAnime(message, argumentos) {
     const busca = String(argumentos || '').trim();
-    if (!busca) { await reagir(message,'❌'); await responderCitando(message,`❌ _Informe o nome de um anime._\n\nExemplo: *${PREFIXO}anime naruto*`); return; }
+    if (!busca) { await reagir(message,'â'); await responderCitando(message,`â _Informe o nome de um anime._\n\nExemplo: *${PREFIXO}anime naruto*`); return; }
     try {
         const dados = await buscarJsonAPI(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(busca)}&limit=1`); const anime = dados?.data?.[0];
-        if (!anime) throw new Error('Anime não encontrado.');
+        if (!anime) throw new Error('Anime nÃ£o encontrado.');
         const ano = anime.year || anime.aired?.prop?.from?.slice?.(0,4) || 'N/A'; const generos = (anime.genres || []).slice(0,5).map(g => g.name).join(', ') || 'N/A';
-        const texto = `┏═•❃༺🍥༻❃•═┓\n│        *𝐀𝐍𝐈𝐌𝐄*\n├✯\n│\n├➤ 🎬 *${limparTextoAPI(anime.title)}*\n├➤ ⭐ Nota: *${anime.score ?? 'N/A'}*\n├➤ 📺 Episódios: *${anime.episodes ?? 'N/A'}*\n├➤ 📅 Ano: *${ano}*\n├➤ 📌 Status: *${limparTextoAPI(anime.status || 'N/A')}*\n├➤ 🏷️ Gêneros: *${limparTextoAPI(generos)}*\n│\n├➤ 📝 *Sinopse:*\n│   ${limitarTextoAPI(anime.synopsis || 'Sinopse não disponível.',650)}\n│\n┗═•❃༺🍥༻❃•═┛`;
-        await reagir(message,'🍥'); await responderCitando(message,texto);
-    } catch (erro) { console.error('❌ Erro na API de anime:',erro.message); await reagir(message,'❌'); await responderCitando(message,`❌ _Não consegui encontrar o anime_ *${busca}* _agora._`); }
+        const texto = `âââ¢âà¼ºð¥à¼»ââ¢ââ\nâ        *ððððð*\nââ¯\nâ\nââ¤ ð¬ *${limparTextoAPI(anime.title)}*\nââ¤ â­ Nota: *${anime.score ?? 'N/A'}*\nââ¤ ðº EpisÃ³dios: *${anime.episodes ?? 'N/A'}*\nââ¤ ð Ano: *${ano}*\nââ¤ ð Status: *${limparTextoAPI(anime.status || 'N/A')}*\nââ¤ ð·ï¸ GÃªneros: *${limparTextoAPI(generos)}*\nâ\nââ¤ ð *Sinopse:*\nâ   ${limitarTextoAPI(anime.synopsis || 'Sinopse nÃ£o disponÃ­vel.',650)}\nâ\nâââ¢âà¼ºð¥à¼»ââ¢ââ`;
+        await reagir(message,'ð¥'); await responderCitando(message,texto);
+    } catch (erro) { console.error('â Erro na API de anime:',erro.message); await reagir(message,'â'); await responderCitando(message,`â _NÃ£o consegui encontrar o anime_ *${busca}* _agora._`); }
 }
 
 function embaralharAPI(lista) { const copia=[...lista]; for(let i=copia.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copia[i],copia[j]]=[copia[j],copia[i]];} return copia; }
@@ -7184,35 +7186,35 @@ async function comandoQuizAPI(message) {
         const bruto=dados.results[0]; const pergunta=limparTextoAPI(decodeURIComponent(bruto.question)); const correta=limparTextoAPI(decodeURIComponent(bruto.correct_answer));
         const alternativas=embaralharAPI([correta,...(bruto.incorrect_answers||[]).map(x=>limparTextoAPI(decodeURIComponent(x)))]); const letras=['a','b','c','d']; const respostaCorreta=letras[alternativas.findIndex(x=>x===correta)];
         const opcoes=alternativas.map((x,i)=>`${letras[i].toUpperCase()}) ${x}`).join('\n'); quizzes.set(message.from,{pergunta,opcoes,resposta:respostaCorreta});
-        await reagir(message,'🧠'); await responderCitando(message,`┏═•❃༺🧠༻❃•═┓\n│      *𝐐𝐔𝐈𝐙 𝐃𝐀 𝐀𝐏𝐈*\n├✯\n│\n├➤ _${pergunta}_\n│\n${opcoes}\n│\n├➤ *📝 ${PREFIXO}quiz a/b/c/d*\n│   _Escolha uma alternativa._\n│\n┗═•❃༺🧠༻❃•═┛`);
-    } catch (erro) { console.error('❌ Erro na API do quiz:',erro.message); await reagir(message,'❌'); await responderCitando(message,'❌ _Não consegui buscar uma pergunta agora. Tente novamente em alguns segundos._'); }
+        await reagir(message,'ð§ '); await responderCitando(message,`âââ¢âà¼ºð§ à¼»ââ¢ââ\nâ      *ðððð ðð ððð*\nââ¯\nâ\nââ¤ _${pergunta}_\nâ\n${opcoes}\nâ\nââ¤ *ð ${PREFIXO}quiz a/b/c/d*\nâ   _Escolha uma alternativa._\nâ\nâââ¢âà¼ºð§ à¼»ââ¢ââ`);
+    } catch (erro) { console.error('â Erro na API do quiz:',erro.message); await reagir(message,'â'); await responderCitando(message,'â _NÃ£o consegui buscar uma pergunta agora. Tente novamente em alguns segundos._'); }
 }
 
 async function comandoClima(message, argumentos) {
-    const cidade=String(argumentos||'').trim(); if(!cidade){await reagir(message,'❌');await responderCitando(message,`❌ _Informe uma cidade._\n\nExemplo: *${PREFIXO}clima São Paulo*`);return;}
+    const cidade=String(argumentos||'').trim(); if(!cidade){await reagir(message,'â');await responderCitando(message,`â _Informe uma cidade._\n\nExemplo: *${PREFIXO}clima SÃ£o Paulo*`);return;}
     try {
-        const geo=await buscarJsonAPI(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`); const local=geo?.results?.[0]; if(!local) throw new Error('Cidade não encontrada.');
+        const geo=await buscarJsonAPI(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`); const local=geo?.results?.[0]; if(!local) throw new Error('Cidade nÃ£o encontrada.');
         const clima=await buscarJsonAPI(`https://api.open-meteo.com/v1/forecast?latitude=${local.latitude}&longitude=${local.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone=auto`);
-        const codigos={0:'☀️ Céu limpo',1:'🌤️ Principalmente limpo',2:'⛅ Parcialmente nublado',3:'☁️ Nublado',45:'🌫️ Nevoeiro',48:'🌫️ Nevoeiro com geada',51:'🌦️ Chuvisco leve',53:'🌦️ Chuvisco moderado',55:'🌧️ Chuvisco intenso',61:'🌦️ Chuva leve',63:'🌧️ Chuva moderada',65:'🌧️ Chuva forte',71:'🌨️ Neve leve',73:'🌨️ Neve moderada',75:'❄️ Neve forte',80:'🌦️ Pancadas de chuva',81:'🌧️ Pancadas moderadas',82:'⛈️ Pancadas fortes',95:'⛈️ Trovoada',96:'⛈️ Trovoada com granizo',99:'⛈️ Trovoada forte com granizo'}; const atual=clima.current||{}; const diaria=clima.daily||{}; const regiao=[local.admin1,local.country].filter(Boolean).join(', ');
-        const texto=`┏═•❃༺🌦️༻❃•═┓\n│       *𝐂𝐋𝐈𝐌𝐀*\n├✯\n│\n├➤ 📍 *${local.name||cidade}*\n├➤ 🌎 ${regiao}\n│\n├➤ ${codigos[atual.weather_code]||'🌡️ Condição desconhecida'}\n├➤ 🌡️ Temperatura: *${atual.temperature_2m??'?'}°C*\n├➤ 🤒 Sensação: *${atual.apparent_temperature??'?'}°C*\n├➤ 💧 Umidade: *${atual.relative_humidity_2m??'?'}%*\n├➤ 💨 Vento: *${atual.wind_speed_10m??'?'} km/h*\n│\n├➤ 🔺 Máxima: *${diaria.temperature_2m_max?.[0]??'?'}°C*\n├➤ 🔻 Mínima: *${diaria.temperature_2m_min?.[0]??'?'}°C*\n├➤ ☔ Chance de chuva: *${diaria.precipitation_probability_max?.[0]??'?'}%*\n│\n┗═•❃༺🌦️༻❃•═┛`; await reagir(message,'🌦️'); await responderCitando(message,texto);
-    } catch(erro){console.error('❌ Erro na API de clima:',erro.message);await reagir(message,'❌');await responderCitando(message,`❌ _Não consegui consultar o clima de_ *${cidade}* _agora._`);}
+        const codigos={0:'âï¸ CÃ©u limpo',1:'ð¤ï¸ Principalmente limpo',2:'â Parcialmente nublado',3:'âï¸ Nublado',45:'ð«ï¸ Nevoeiro',48:'ð«ï¸ Nevoeiro com geada',51:'ð¦ï¸ Chuvisco leve',53:'ð¦ï¸ Chuvisco moderado',55:'ð§ï¸ Chuvisco intenso',61:'ð¦ï¸ Chuva leve',63:'ð§ï¸ Chuva moderada',65:'ð§ï¸ Chuva forte',71:'ð¨ï¸ Neve leve',73:'ð¨ï¸ Neve moderada',75:'âï¸ Neve forte',80:'ð¦ï¸ Pancadas de chuva',81:'ð§ï¸ Pancadas moderadas',82:'âï¸ Pancadas fortes',95:'âï¸ Trovoada',96:'âï¸ Trovoada com granizo',99:'âï¸ Trovoada forte com granizo'}; const atual=clima.current||{}; const diaria=clima.daily||{}; const regiao=[local.admin1,local.country].filter(Boolean).join(', ');
+        const texto=`âââ¢âà¼ºð¦ï¸à¼»ââ¢ââ\nâ       *ððððð*\nââ¯\nâ\nââ¤ ð *${local.name||cidade}*\nââ¤ ð ${regiao}\nâ\nââ¤ ${codigos[atual.weather_code]||'ð¡ï¸ CondiÃ§Ã£o desconhecida'}\nââ¤ ð¡ï¸ Temperatura: *${atual.temperature_2m??'?'}Â°C*\nââ¤ ð¤ SensaÃ§Ã£o: *${atual.apparent_temperature??'?'}Â°C*\nââ¤ ð§ Umidade: *${atual.relative_humidity_2m??'?'}%*\nââ¤ ð¨ Vento: *${atual.wind_speed_10m??'?'} km/h*\nâ\nââ¤ ðº MÃ¡xima: *${diaria.temperature_2m_max?.[0]??'?'}Â°C*\nââ¤ ð» MÃ­nima: *${diaria.temperature_2m_min?.[0]??'?'}Â°C*\nââ¤ â Chance de chuva: *${diaria.precipitation_probability_max?.[0]??'?'}%*\nâ\nâââ¢âà¼ºð¦ï¸à¼»ââ¢ââ`; await reagir(message,'ð¦ï¸'); await responderCitando(message,texto);
+    } catch(erro){console.error('â Erro na API de clima:',erro.message);await reagir(message,'â');await responderCitando(message,`â _NÃ£o consegui consultar o clima de_ *${cidade}* _agora._`);}
 }
 
 // ============================================================
-// 🌐 NOVAS APIS: QR, SHAZAM, FUTEBOL, F1 E QUALIDADE DO AR
+// ð NOVAS APIS: QR, SHAZAM, FUTEBOL, F1 E QUALIDADE DO AR
 // ============================================================
 
 async function comandoQR(message, argumentos) {
     const conteudo = String(argumentos || '').trim();
     if (!conteudo) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe o texto ou link para gerar o QR Code._\n\nExemplo: *${PREFIXO}qr https://youtube.com*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe o texto ou link para gerar o QR Code._\n\nExemplo: *${PREFIXO}qr https://youtube.com*`);
         return;
     }
 
     if (conteudo.length > 900) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _O conteúdo do QR Code é grande demais. Tente usar até 900 caracteres._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _O conteÃºdo do QR Code Ã© grande demais. Tente usar atÃ© 900 caracteres._');
         return;
     }
 
@@ -7224,14 +7226,14 @@ async function comandoQR(message, argumentos) {
         const bytes = Buffer.from(await resposta.arrayBuffer());
         const midia = new MessageMedia('image/png', bytes.toString('base64'), 'qrcode.png');
 
-        await reagir(message, '📱');
+        await reagir(message, 'ð±');
         await client.sendMessage(message.from, midia, {
-            caption: `📱 *𝐐𝐑 𝐂𝐎𝐃𝐄*\n\n🔗 _Conteúdo codificado com sucesso._`
+            caption: `ð± *ðð ðððð*\n\nð _ConteÃºdo codificado com sucesso._`
         });
     } catch (erro) {
-        console.error('❌ Erro na API de QR Code:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui gerar o QR Code agora. Tente novamente em alguns segundos._');
+        console.error('â Erro na API de QR Code:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui gerar o QR Code agora. Tente novamente em alguns segundos._');
     }
 }
 
@@ -7268,12 +7270,12 @@ async function converterAudioParaPCM(caminhoEntrada) {
         processo.on('error', reject);
         processo.on('close', codigo => {
             if (codigo !== 0) {
-                reject(new Error(`FFmpeg terminou com código ${codigo}: ${erroFFmpeg.trim()}`));
+                reject(new Error(`FFmpeg terminou com cÃ³digo ${codigo}: ${erroFFmpeg.trim()}`));
                 return;
             }
             const pcm = Buffer.concat(partes);
             if (!pcm.length) {
-                reject(new Error('Nenhum áudio PCM foi produzido.'));
+                reject(new Error('Nenhum Ã¡udio PCM foi produzido.'));
                 return;
             }
             resolve(pcm);
@@ -7283,14 +7285,14 @@ async function converterAudioParaPCM(caminhoEntrada) {
 
 async function comandoShazam(message) {
     if (!SHAZAM_API_KEY) {
-        await reagir(message, '🔑');
-        await responderCitando(message, '🔑 *𝐒𝐇𝐀𝐙𝐀𝐌 𝐍𝐀̃𝐎 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐃𝐎*\n\n_O comando precisa da variável de ambiente_ `SHAZAM_API_KEY` _no computador/servidor do bot._');
+        await reagir(message, 'ð');
+        await responderCitando(message, 'ð *ðððððð ððÌð ððððððððððð*\n\n_O comando precisa da variÃ¡vel de ambiente_ `SHAZAM_API_KEY` _no computador/servidor do bot._');
         return;
     }
 
     if (!message.hasMedia) {
-        await reagir(message, '🎵');
-        await responderCitando(message, `🎵 _Envie um áudio junto com_ *${PREFIXO}shazam* _ou responda a um áudio com o comando._`);
+        await reagir(message, 'ðµ');
+        await responderCitando(message, `ðµ _Envie um Ã¡udio junto com_ *${PREFIXO}shazam* _ou responda a um Ã¡udio com o comando._`);
         return;
     }
 
@@ -7300,9 +7302,9 @@ async function comandoShazam(message) {
     const arquivoEntrada = path.join(pastaTemporaria, `${idTemporario}.audio`);
 
     try {
-        await reagir(message, '🎵');
+        await reagir(message, 'ðµ');
         const midia = await message.downloadMedia();
-        if (!midia || !midia.data) throw new Error('Não foi possível baixar o áudio.');
+        if (!midia || !midia.data) throw new Error('NÃ£o foi possÃ­vel baixar o Ã¡udio.');
 
         fs.writeFileSync(arquivoEntrada, Buffer.from(midia.data, 'base64'));
         const pcm = await converterAudioParaPCM(arquivoEntrada);
@@ -7331,8 +7333,8 @@ async function comandoShazam(message) {
         const faixa = dados?.track;
 
         if (!faixa || !faixa.title) {
-            await reagir(message, '❓');
-            await responderCitando(message, '❓ _Não consegui identificar essa música. Tente enviar um trecho com áudio mais limpo e com alguns segundos de duração._');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â _NÃ£o consegui identificar essa mÃºsica. Tente enviar um trecho com Ã¡udio mais limpo e com alguns segundos de duraÃ§Ã£o._');
             return;
         }
 
@@ -7343,7 +7345,7 @@ async function comandoShazam(message) {
         const capaUrl = faixa.images?.coverart || faixa.images?.coverarthq || null;
         const urlFaixa = faixa.url || null;
 
-        const texto = `┏═•❃༺🎵༻❃•═┓\n│       *𝐒𝐇𝐀𝐙𝐀𝐌*\n├✯\n│\n├➤ 🎶 *${limparTextoAPI(faixa.title)}*\n├➤ 👤 Artista: *${limparTextoAPI(faixa.subtitle || 'N/A')}*\n├➤ 💿 Álbum: *${limparTextoAPI(album)}*\n├➤ 📅 Lançamento: *${limparTextoAPI(lancamento)}*\n├➤ 🎼 Gênero: *${limparTextoAPI(genero)}*\n${urlFaixa ? `├➤ 🔗 ${urlFaixa}\n` : ''}│\n┗═•❃༺🎵༻❃•═┛`;
+        const texto = `âââ¢âà¼ºðµà¼»ââ¢ââ\nâ       *ðððððð*\nââ¯\nâ\nââ¤ ð¶ *${limparTextoAPI(faixa.title)}*\nââ¤ ð¤ Artista: *${limparTextoAPI(faixa.subtitle || 'N/A')}*\nââ¤ ð¿ Ãlbum: *${limparTextoAPI(album)}*\nââ¤ ð LanÃ§amento: *${limparTextoAPI(lancamento)}*\nââ¤ ð¼ GÃªnero: *${limparTextoAPI(genero)}*\n${urlFaixa ? `ââ¤ ð ${urlFaixa}\n` : ''}â\nâââ¢âà¼ºðµà¼»ââ¢ââ`;
 
         if (capaUrl) {
             try {
@@ -7355,26 +7357,26 @@ async function comandoShazam(message) {
                     return;
                 }
             } catch (erroCapa) {
-                console.log('⚠️ Não foi possível baixar a capa do Shazam:', erroCapa.message);
+                console.log('â ï¸ NÃ£o foi possÃ­vel baixar a capa do Shazam:', erroCapa.message);
             }
         }
 
         await responderCitando(message, texto);
     } catch (erro) {
-        console.error('❌ Erro na API do Shazam:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui identificar a música agora. Verifique se a chave do Shazam está válida e tente novamente._');
+        console.error('â Erro na API do Shazam:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui identificar a mÃºsica agora. Verifique se a chave do Shazam estÃ¡ vÃ¡lida e tente novamente._');
     } finally {
         try {
             if (fs.existsSync(arquivoEntrada)) fs.unlinkSync(arquivoEntrada);
         } catch (erroLimpeza) {
-            console.log('⚠️ Não foi possível limpar arquivo temporário do Shazam:', erroLimpeza.message);
+            console.log('â ï¸ NÃ£o foi possÃ­vel limpar arquivo temporÃ¡rio do Shazam:', erroLimpeza.message);
         }
     }
 }
 
 async function buscarApiFootball(endpoint, parametros = {}) {
-    if (!API_FOOTBALL_KEY) throw new Error('API_FOOTBALL_KEY não configurada.');
+    if (!API_FOOTBALL_KEY) throw new Error('API_FOOTBALL_KEY nÃ£o configurada.');
     const query = new URLSearchParams(parametros).toString();
     const url = `https://v3.football.api-sports.io/${endpoint}${query ? `?${query}` : ''}`;
     const dados = await buscarJsonAPI(url, {
@@ -7413,8 +7415,8 @@ function formatarHoraFutebol(dataISO) {
 
 async function comandoFutebol(message, argumentos) {
     if (!API_FOOTBALL_KEY) {
-        await reagir(message, '🔑');
-        await responderCitando(message, '🔑 *𝐅𝐔𝐓𝐄𝐁𝐎𝐋 𝐍𝐀̃𝐎 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐃𝐎*\n\n_O comando precisa da variável de ambiente_ `API_FOOTBALL_KEY` _no computador/servidor do bot._');
+        await reagir(message, 'ð');
+        await responderCitando(message, 'ð *ððððððð ððÌð ððððððððððð*\n\n_O comando precisa da variÃ¡vel de ambiente_ `API_FOOTBALL_KEY` _no computador/servidor do bot._');
         return;
     }
 
@@ -7427,8 +7429,8 @@ async function comandoFutebol(message, argumentos) {
         const jogos = Array.isArray(dados?.response) ? dados.response : [];
 
         if (!jogos.length) {
-            await reagir(message, '⚽');
-            await responderCitando(message, aoVivo ? '⚽ _Não há partidas ao vivo encontradas agora._' : `⚽ _Não encontrei partidas para_ *${dataHojeSaoPaulo()}* _nas competições disponíveis._`);
+            await reagir(message, 'â½');
+            await responderCitando(message, aoVivo ? 'â½ _NÃ£o hÃ¡ partidas ao vivo encontradas agora._' : `â½ _NÃ£o encontrei partidas para_ *${dataHojeSaoPaulo()}* _nas competiÃ§Ãµes disponÃ­veis._`);
             return;
         }
 
@@ -7442,17 +7444,17 @@ async function comandoFutebol(message, argumentos) {
             const placar = golsCasa !== null && golsCasa !== undefined && golsFora !== null && golsFora !== undefined
                 ? `*${golsCasa} x ${golsFora}*`
                 : `_vs_`;
-            const competicao = jogo.league?.name || 'Competição';
-            return `├➤ 🏆 *${limitarTextoAPI(competicao, 45)}*\n│   🕐 ${tempo} • *${status}*\n│   ⚽ ${limitarTextoAPI(casa, 28)} ${placar} ${limitarTextoAPI(fora, 28)}`;
-        }).join('\n│\n');
+            const competicao = jogo.league?.name || 'CompetiÃ§Ã£o';
+            return `ââ¤ ð *${limitarTextoAPI(competicao, 45)}*\nâ   ð ${tempo} â¢ *${status}*\nâ   â½ ${limitarTextoAPI(casa, 28)} ${placar} ${limitarTextoAPI(fora, 28)}`;
+        }).join('\nâ\n');
 
-        const titulo = aoVivo ? '𝐅𝐔𝐓𝐄𝐁𝐎𝐋 𝐀𝐎 𝐕𝐈𝐕𝐎' : `𝐅𝐔𝐓𝐄𝐁𝐎𝐋 • ${dataHojeSaoPaulo()}`;
-        await reagir(message, '⚽');
-        await responderCitando(message, `┏═•❃༺⚽༻❃•═┓\n│      *${titulo}*\n├✯\n│\n${lista}\n│\n├➤ _Mostrando até 12 partidas._\n┗═•❃༺⚽༻❃•═┛`);
+        const titulo = aoVivo ? 'ððððððð ðð ðððð' : `ððððððð â¢ ${dataHojeSaoPaulo()}`;
+        await reagir(message, 'â½');
+        await responderCitando(message, `âââ¢âà¼ºâ½à¼»ââ¢ââ\nâ      *${titulo}*\nââ¯\nâ\n${lista}\nâ\nââ¤ _Mostrando atÃ© 12 partidas._\nâââ¢âà¼ºâ½à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro na API de futebol:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui consultar os jogos agora. A API pode estar temporariamente indisponível ou a chave pode ter atingido o limite diário._');
+        console.error('â Erro na API de futebol:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui consultar os jogos agora. A API pode estar temporariamente indisponÃ­vel ou a chave pode ter atingido o limite diÃ¡rio._');
     }
 }
 
@@ -7472,71 +7474,71 @@ function extrairMRData(dados) {
 async function comandoF1(message, argumentos) {
     const modo = String(argumentos || '').trim().toLowerCase();
     try {
-        if (!modo || ['proxima', 'próxima', 'next'].includes(modo)) {
+        if (!modo || ['proxima', 'prÃ³xima', 'next'].includes(modo)) {
             const dados = extrairMRData(await buscarF1API('current/next/races/?limit=1'));
             const corrida = dados?.RaceTable?.Races?.[0];
-            if (!corrida) throw new Error('Próxima corrida não encontrada.');
+            if (!corrida) throw new Error('PrÃ³xima corrida nÃ£o encontrada.');
             const data = corrida.date ? new Date(`${corrida.date}T${corrida.time || '00:00:00Z'}`).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'full', timeStyle: 'short' }) : 'N/A';
             const circuito = corrida.Circuit?.circuitName || 'N/A';
             const local = corrida.Circuit?.Location?.locality && corrida.Circuit?.Location?.country ? `${corrida.Circuit.Location.locality}, ${corrida.Circuit.Location.country}` : 'N/A';
-            await reagir(message, '🏎️');
-            await responderCitando(message, `┏═•❃༺🏎️༻❃•═┓\n│       *𝐅𝟏 • 𝐏𝐑𝐎́𝐗𝐈𝐌𝐀*\n├✯\n│\n├➤ 🏁 *${limparTextoAPI(corrida.raceName)}*\n├➤ 📍 ${limparTextoAPI(circuito)}\n├➤ 🌎 ${limparTextoAPI(local)}\n├➤ 📅 ${data}\n├➤ 🔢 Rodada: *${corrida.round || 'N/A'}*\n│\n┗═•❃༺🏎️༻❃•═┛`);
+            await reagir(message, 'ðï¸');
+            await responderCitando(message, `âââ¢âà¼ºðï¸à¼»ââ¢ââ\nâ       *ðð â¢ ðððÌðððð*\nââ¯\nâ\nââ¤ ð *${limparTextoAPI(corrida.raceName)}*\nââ¤ ð ${limparTextoAPI(circuito)}\nââ¤ ð ${limparTextoAPI(local)}\nââ¤ ð ${data}\nââ¤ ð¢ Rodada: *${corrida.round || 'N/A'}*\nâ\nâââ¢âà¼ºðï¸à¼»ââ¢ââ`);
             return;
         }
 
         if (['calendario', 'calendar', 'corridas'].includes(modo)) {
             const dados = extrairMRData(await buscarF1API('current/races/?limit=30'));
             const corridas = dados?.RaceTable?.Races || [];
-            if (!corridas.length) throw new Error('Calendário vazio.');
-            const lista = corridas.map(corrida => `├➤ *${corrida.round || '?'}.* ${limparTextoAPI(corrida.raceName)}\n│   📅 ${corrida.date || 'N/A'} • 📍 ${limparTextoAPI(corrida.Circuit?.circuitName || 'N/A')}`).join('\n│\n');
-            await reagir(message, '📅');
-            await responderCitando(message, `┏═•❃༺🏎️༻❃•═┓\n│       *𝐂𝐀𝐋𝐄𝐍𝐃𝐀́𝐑𝐈𝐎 𝐅𝟏*\n├✯\n│\n${lista}\n│\n┗═•❃༺🏎️༻❃•═┛`);
+            if (!corridas.length) throw new Error('CalendÃ¡rio vazio.');
+            const lista = corridas.map(corrida => `ââ¤ *${corrida.round || '?'}.* ${limparTextoAPI(corrida.raceName)}\nâ   ð ${corrida.date || 'N/A'} â¢ ð ${limparTextoAPI(corrida.Circuit?.circuitName || 'N/A')}`).join('\nâ\n');
+            await reagir(message, 'ð');
+            await responderCitando(message, `âââ¢âà¼ºðï¸à¼»ââ¢ââ\nâ       *ðððððððÌððð ðð*\nââ¯\nâ\n${lista}\nâ\nâââ¢âà¼ºðï¸à¼»ââ¢ââ`);
             return;
         }
 
-        if (['classificacao', 'classificação', 'ranking', 'pilotos'].includes(modo)) {
+        if (['classificacao', 'classificaÃ§Ã£o', 'ranking', 'pilotos'].includes(modo)) {
             const dados = extrairMRData(await buscarF1API('current/driverstandings/?limit=20'));
             const standings = dados?.StandingsTable?.StandingsLists?.[0]?.DriverStandings || [];
-            if (!standings.length) throw new Error('Classificação vazia.');
-            const lista = standings.slice(0, 20).map(item => `├➤ *${item.position || '?'}º* ${limparTextoAPI(`${item.Driver?.givenName || ''} ${item.Driver?.familyName || ''}`)} • *${item.points || 0} pts*\n│   🏎️ ${limparTextoAPI(item.Constructors?.[0]?.name || 'N/A')}`).join('\n│\n');
-            await reagir(message, '🏆');
-            await responderCitando(message, `┏═•❃༺🏆༻❃•═┓\n│      *𝐂𝐋𝐀𝐒𝐒𝐈𝐅𝐈𝐂𝐀𝐂̧𝐀̃𝐎 𝐅𝟏*\n├✯\n│\n${lista}\n│\n┗═•❃༺🏆༻❃•═┛`);
+            if (!standings.length) throw new Error('ClassificaÃ§Ã£o vazia.');
+            const lista = standings.slice(0, 20).map(item => `ââ¤ *${item.position || '?'}Âº* ${limparTextoAPI(`${item.Driver?.givenName || ''} ${item.Driver?.familyName || ''}`)} â¢ *${item.points || 0} pts*\nâ   ðï¸ ${limparTextoAPI(item.Constructors?.[0]?.name || 'N/A')}`).join('\nâ\n');
+            await reagir(message, 'ð');
+            await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ðððððððððððÌ§ðÌð ðð*\nââ¯\nâ\n${lista}\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
             return;
         }
 
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Opção de F1 não reconhecida._\n\nUse:\n*${PREFIXO}f1*\n*${PREFIXO}f1 calendario*\n*${PREFIXO}f1 classificacao*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _OpÃ§Ã£o de F1 nÃ£o reconhecida._\n\nUse:\n*${PREFIXO}f1*\n*${PREFIXO}f1 calendario*\n*${PREFIXO}f1 classificacao*`);
     } catch (erro) {
-        console.error('❌ Erro na API de F1:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui consultar os dados da Fórmula 1 agora. Tente novamente em alguns segundos._');
+        console.error('â Erro na API de F1:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui consultar os dados da FÃ³rmula 1 agora. Tente novamente em alguns segundos._');
     }
 }
 
 async function comandoQualidadeAr(message, argumentos) {
     const cidade = String(argumentos || '').trim();
     if (!cidade) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe uma cidade._\n\nExemplo: *${PREFIXO}ar São Paulo*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe uma cidade._\n\nExemplo: *${PREFIXO}ar SÃ£o Paulo*`);
         return;
     }
 
     try {
         const geo = await buscarJsonAPI(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt&format=json`);
         const local = geo?.results?.[0];
-        if (!local) throw new Error('Cidade não encontrada.');
+        if (!local) throw new Error('Cidade nÃ£o encontrada.');
 
         const dados = await buscarJsonAPI(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${local.latitude}&longitude=${local.longitude}&current=european_aqi,pm2_5,pm10,nitrogen_dioxide,ozone,sulphur_dioxide&timezone=auto`);
         const atual = dados?.current || {};
         const aqi = atual.european_aqi;
-        const classificacao = aqi === undefined || aqi === null ? 'N/A' : aqi <= 20 ? '🟢 Boa' : aqi <= 40 ? '🟡 Razoável' : aqi <= 60 ? '🟠 Moderada' : aqi <= 80 ? '🔴 Ruim' : aqi <= 100 ? '🟣 Muito ruim' : '⚫ Extremamente ruim';
+        const classificacao = aqi === undefined || aqi === null ? 'N/A' : aqi <= 20 ? 'ð¢ Boa' : aqi <= 40 ? 'ð¡ RazoÃ¡vel' : aqi <= 60 ? 'ð  Moderada' : aqi <= 80 ? 'ð´ Ruim' : aqi <= 100 ? 'ð£ Muito ruim' : 'â« Extremamente ruim';
 
-        await reagir(message, '🌫️');
-        await responderCitando(message, `┏═•❃༺🌫️༻❃•═┓\n│    *𝐐𝐔𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐀𝐑*\n├✯\n│\n├➤ 📍 *${limparTextoAPI(local.name)}, ${limparTextoAPI(local.country || '')}*\n├➤ 🌫️ AQI europeu: *${aqi ?? 'N/A'}*\n├➤ 📊 Classificação: *${classificacao}*\n│\n├➤ 💨 PM2.5: *${atual.pm2_5 ?? 'N/A'} µg/m³*\n├➤ 💨 PM10: *${atual.pm10 ?? 'N/A'} µg/m³*\n├➤ 🧪 NO₂: *${atual.nitrogen_dioxide ?? 'N/A'} µg/m³*\n├➤ 🧪 O₃: *${atual.ozone ?? 'N/A'} µg/m³*\n├➤ 🧪 SO₂: *${atual.sulphur_dioxide ?? 'N/A'} µg/m³*\n│\n┗═•❃༺🌫️༻❃•═┛`);
+        await reagir(message, 'ð«ï¸');
+        await responderCitando(message, `âââ¢âà¼ºð«ï¸à¼»ââ¢ââ\nâ    *ððððððððð ðð ðð*\nââ¯\nâ\nââ¤ ð *${limparTextoAPI(local.name)}, ${limparTextoAPI(local.country || '')}*\nââ¤ ð«ï¸ AQI europeu: *${aqi ?? 'N/A'}*\nââ¤ ð ClassificaÃ§Ã£o: *${classificacao}*\nâ\nââ¤ ð¨ PM2.5: *${atual.pm2_5 ?? 'N/A'} Âµg/mÂ³*\nââ¤ ð¨ PM10: *${atual.pm10 ?? 'N/A'} Âµg/mÂ³*\nââ¤ ð§ª NOâ: *${atual.nitrogen_dioxide ?? 'N/A'} Âµg/mÂ³*\nââ¤ ð§ª Oâ: *${atual.ozone ?? 'N/A'} Âµg/mÂ³*\nââ¤ ð§ª SOâ: *${atual.sulphur_dioxide ?? 'N/A'} Âµg/mÂ³*\nâ\nâââ¢âà¼ºð«ï¸à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro na API de qualidade do ar:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Não consegui consultar a qualidade do ar de_ *${cidade}* _agora._`);
+        console.error('â Erro na API de qualidade do ar:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _NÃ£o consegui consultar a qualidade do ar de_ *${cidade}* _agora._`);
     }
 }
 
@@ -7560,7 +7562,7 @@ async function responderQuiz(
     if (!pergunta) {
         await responderCitando(
             message,
-            `❌ *𝐍𝐄𝐍𝐇𝐔𝐌𝐀 𝐏𝐄𝐑𝐆𝐔𝐍𝐓𝐀 𝐀𝐓𝐈𝐕𝐀.*
+            `â *ððððððð ðððððððð ððððð.*
 
 _Digite:_
 *${PREFIXO}quiz*`
@@ -7580,7 +7582,7 @@ _Digite:_
     ) {
         await responderCitando(
             message,
-            '❌ _Responda apenas com A, B, C ou D._'
+            'â _Responda apenas com A, B, C ou D._'
         );
 
         return;
@@ -7596,23 +7598,23 @@ _Digite:_
     ) {
         await reagir(
             message,
-            '🎉'
+            'ð'
         );
 
         await responderCitando(
             message,
-            '🎉 *𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀 𝐂𝐎𝐑𝐑𝐄𝐓𝐀!*'
+            'ð *ðððððððð ððððððð!*'
         );
 
     } else {
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀 𝐄𝐑𝐑𝐀𝐃𝐀!*
+            `â *ðððððððð ðððððð!*
 
 _A resposta correta era:_
 *${pergunta.resposta.toUpperCase()}*`
@@ -7626,13 +7628,13 @@ _A resposta correta era:_
 // ============================================================
 
 async function ping(message) {
-    await reagir(message, '🏓');
+    await reagir(message, 'ð');
 
     await responderCitando(
         message,
-        `🏓 *𝐏𝐎𝐍𝐆!*
+        `ð *ðððð!*
 
-*🤖 ${NOME_BOT}*
+*ð¤ ${NOME_BOT}*
 _Online e funcionando!_`
     );
 }
@@ -7656,16 +7658,16 @@ async function mostrarHora(message) {
             }
         );
 
-    await reagir(message, '🕐');
+    await reagir(message, 'ð');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-├✯ *🕐 𝐇𝐎𝐑𝐀*
-│
-├➤ *${hora}*
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ð ðððð*
+â
+ââ¤ *${hora}*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
@@ -7675,24 +7677,24 @@ async function mostrarHora(message) {
 // ============================================================
 
 async function mostrarInfo(message) {
-    await reagir(message, 'ℹ️');
+    await reagir(message, 'â¹ï¸');
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│   *ℹ️ 𝐈𝐍𝐅𝐎*
-├✯
-├➤ *🤖 𝐁𝐎𝐓:* ${NOME_BOT}
-├➤ *📦 𝐕𝐄𝐑𝐒𝐀̃𝐎:* ${VERSAO}
-├➤ *🟢 𝐒𝐓𝐀𝐓𝐔𝐒:* Online
-├➤ *⚙️ 𝐓𝐄𝐂𝐍𝐎𝐋𝐎𝐆𝐈𝐀:* Node.js
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *â¹ï¸ ðððð*
+ââ¯
+ââ¤ *ð¤ ððð:* ${NOME_BOT}
+ââ¤ *ð¦ ðððððÌð:* ${VERSAO}
+ââ¤ *ð¢ ðððððð:* Online
+ââ¤ *âï¸ ðððððððððð:* Node.js
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 🖼️ OBTER FOTO DE PERFIL DIRETAMENTE DO WHATSAPP WEB
+// ð¼ï¸ OBTER FOTO DE PERFIL DIRETAMENTE DO WHATSAPP WEB
 // ============================================================
 
 async function obterFotoPerfilDireta(idPessoa) {
@@ -7726,7 +7728,7 @@ async function obterFotoPerfilDireta(idPessoa) {
                         if (!wid) {
                             return {
                                 sucesso: false,
-                                erro: 'Não foi possível criar o WID.'
+                                erro: 'NÃ£o foi possÃ­vel criar o WID.'
                             };
                         }
 
@@ -7753,7 +7755,7 @@ async function obterFotoPerfilDireta(idPessoa) {
 
                             return {
                                 sucesso: false,
-                                erro: 'Chat não encontrado.'
+                                erro: 'Chat nÃ£o encontrado.'
                             };
                         }
 
@@ -7776,7 +7778,7 @@ async function obterFotoPerfilDireta(idPessoa) {
 
                             return {
                                 sucesso: false,
-                                erro: 'WhatsApp não retornou uma foto.'
+                                erro: 'WhatsApp nÃ£o retornou uma foto.'
                             };
                         }
 
@@ -7808,7 +7810,7 @@ async function obterFotoPerfilDireta(idPessoa) {
             );
 
         console.log(
-            '🖼️ RESULTADO FOTO DIRETA:',
+            'ð¼ï¸ RESULTADO FOTO DIRETA:',
             resultado
         );
 
@@ -7826,7 +7828,7 @@ async function obterFotoPerfilDireta(idPessoa) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao obter foto diretamente:',
+            'â Erro ao obter foto diretamente:',
             erro
         );
 
@@ -7835,7 +7837,7 @@ async function obterFotoPerfilDireta(idPessoa) {
 }
 
 // ============================================================
-// 👤 MOSTRAR PERFIL
+// ð¤ MOSTRAR PERFIL
 // ============================================================
 
 async function mostrarPerfil(message) {
@@ -7843,7 +7845,7 @@ async function mostrarPerfil(message) {
     try {
 
         // ========================================================
-        // 1. DESCOBRIR DE QUEM É O PERFIL
+        // 1. DESCOBRIR DE QUEM Ã O PERFIL
         // ========================================================
 
         let pessoa = null;
@@ -7891,14 +7893,14 @@ async function mostrarPerfil(message) {
             } catch (erro) {
 
                 console.log(
-                    '⚠️ Erro ao obter pessoa respondida:',
+                    'â ï¸ Erro ao obter pessoa respondida:',
                     erro.message
                 );
             }
         }
 
         // ========================================================
-        // 3. SE NÃO INFORMOU NINGUÉM, MOSTRAR O PRÓPRIO PERFIL
+        // 3. SE NÃO INFORMOU NINGUÃM, MOSTRAR O PRÃPRIO PERFIL
         // ========================================================
 
         if (!idPessoa) {
@@ -7913,7 +7915,7 @@ async function mostrarPerfil(message) {
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             return;
@@ -7930,7 +7932,7 @@ async function mostrarPerfil(message) {
             );
 
         // ========================================================
-        // 5. CALCULAR PROGRESSO PARA O PRÓXIMO NÍVEL
+        // 5. CALCULAR PROGRESSO PARA O PRÃXIMO NÃVEL
         // ========================================================
 
         const nivelAtual =
@@ -7991,16 +7993,16 @@ async function mostrarPerfil(message) {
             );
 
         const barraXP =
-            '▰'.repeat(
+            'â°'.repeat(
                 blocosCheios
             ) +
-            '▱'.repeat(
+            'â±'.repeat(
                 totalBlocos -
                 blocosCheios
             );
 
         // ========================================================
-        // 7. CRIAR MENÇÃO
+        // 7. CRIAR MENÃÃO
         // ========================================================
 
         const mencao =
@@ -8029,13 +8031,13 @@ try {
                 );
 
             console.log(
-                '✅ Foto de perfil carregada!'
+                'â Foto de perfil carregada!'
             );
 
         } catch (erroDownload) {
 
             console.log(
-                '⚠️ Não foi possível baixar a foto:',
+                'â ï¸ NÃ£o foi possÃ­vel baixar a foto:',
                 erroDownload.message
             );
         }
@@ -8043,14 +8045,14 @@ try {
     } else {
 
         console.log(
-            'ℹ️ Nenhuma foto de perfil disponível.'
+            'â¹ï¸ Nenhuma foto de perfil disponÃ­vel.'
         );
     }
 
 } catch (erroFoto) {
 
     console.log(
-        '⚠️ Erro ao obter foto de perfil:',
+        'â ï¸ Erro ao obter foto de perfil:',
         erroFoto.message
     );
 }
@@ -8060,35 +8062,35 @@ try {
         // ========================================================
 
         const textoPerfil =
-`┏═•❃༺👤༻❃•═┓
-│   *👤 𝐏𝐄𝐑𝐅𝐈𝐋*
-├✯
-├➤ ${mencao}
-│
-├➤ ⭐ *𝐍𝐈́𝐕𝐄𝐋*
-│   ➜ *Nível ${dados.nivel}*
-│
-├➤ ✨ *𝐗𝐏 𝐀𝐓𝐔𝐀𝐋*
-│   ➜ *${dados.xp} XP*
-│
-├➤ 💬 *𝐌𝐄𝐍𝐒𝐀𝐆𝐄𝐍𝐒*
-│   ➜ *${dados.mensagens}*
-│
-├➤ 📈 *𝐏𝐑𝐎𝐆𝐑𝐄𝐒𝐒𝐎*
-│   ➜ ${barraXP}
-│
-├➤ 🎯 *𝐏𝐑Ó𝐗𝐈𝐌𝐎 𝐍𝐈́𝐕𝐄𝐋*
-│   ➜ *${xpRestante} XP restantes*
-│
-┗═•❃༺👤༻❃•═┛`;
+`âââ¢âà¼ºð¤à¼»ââ¢ââ
+â   *ð¤ ðððððð*
+ââ¯
+ââ¤ ${mencao}
+â
+ââ¤ â­ *ððÌððð*
+â   â *NÃ­vel ${dados.nivel}*
+â
+ââ¤ â¨ *ðð ððððð*
+â   â *${dados.xp} XP*
+â
+ââ¤ ð¬ *ððððððððð*
+â   â *${dados.mensagens}*
+â
+ââ¤ ð *ððððððððð*
+â   â ${barraXP}
+â
+ââ¤ ð¯ *ððÃðððð ððÌððð*
+â   â *${xpRestante} XP restantes*
+â
+âââ¢âà¼ºð¤à¼»ââ¢ââ`;
 
         // ========================================================
-        // 10. ENVIAR RESPONDENDO À MENSAGEM
+        // 10. ENVIAR RESPONDENDO Ã MENSAGEM
         // ========================================================
 
         await reagir(
             message,
-            '👤'
+            'ð¤'
         );
 
         const opcoesEnvio = {
@@ -8133,19 +8135,19 @@ try {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao mostrar perfil:',
+            'â Erro ao mostrar perfil:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
     }
 }
 
 // ============================================================
-// 🏆 MOSTRAR RANKING DE XP
+// ð MOSTRAR RANKING DE XP
 // ============================================================
 
 async function mostrarRanking(message) {
@@ -8153,7 +8155,7 @@ async function mostrarRanking(message) {
     try {
 
         // ========================================================
-        // 1. VERIFICAR SE ESTÁ EM GRUPO
+        // 1. VERIFICAR SE ESTÃ EM GRUPO
         // ========================================================
 
         if (
@@ -8163,19 +8165,19 @@ async function mostrarRanking(message) {
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺🏆༻❃•═┓
-│   *🏆 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐗𝐏*
-├✯
-│
-├➤ ❌ Este comando só pode
-│   ser usado em grupos.
-│
-┗═•❃༺🏆༻❃•═┛`
+                `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ððððððð ðð ðð*
+ââ¯
+â
+ââ¤ â Este comando sÃ³ pode
+â   ser usado em grupos.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
             );
 
             return;
@@ -8197,22 +8199,22 @@ async function mostrarRanking(message) {
 
             await reagir(
                 message,
-                '📊'
+                'ð'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺🏆༻❃•═┓
-│   *🏆 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐗𝐏*
-├✯
-│
-├➤ 📊 Ainda não existem
-│   jogadores no ranking.
-│
-├➤ _Comecem a conversar
-│   para ganhar XP!_ ⭐
-│
-┗═•❃༺🏆༻❃•═┛`
+                `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ððððððð ðð ðð*
+ââ¯
+â
+ââ¤ ð Ainda nÃ£o existem
+â   jogadores no ranking.
+â
+ââ¤ _Comecem a conversar
+â   para ganhar XP!_ â­
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
             );
 
             return;
@@ -8264,7 +8266,7 @@ async function mostrarRanking(message) {
         //
         // Primeiro XP.
         // Em caso de empate, mensagens.
-        // Se ainda empatar, mantém uma ordem estável pelo ID.
+        // Se ainda empatar, mantÃ©m uma ordem estÃ¡vel pelo ID.
         // ========================================================
 
         jogadores.sort(
@@ -8303,7 +8305,7 @@ async function mostrarRanking(message) {
         );
 
         // ========================================================
-        // 5. ENCONTRAR POSIÇÃO DO USUÁRIO
+        // 5. ENCONTRAR POSIÃÃO DO USUÃRIO
         // ========================================================
 
         const idRemetente =
@@ -8331,16 +8333,16 @@ async function mostrarRanking(message) {
             );
 
         const medalhas = [
-            '🥇',
-            '🥈',
-            '🥉'
+            'ð¥',
+            'ð¥',
+            'ð¥'
         ];
 
         let textoRanking =
-            `┏═•❃༺🏆༻❃•═┓
-│   *🏆 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐗𝐏*
-├✯
-│
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ððððððð ðð ðð*
+ââ¯
+â
 `;
 
         const idsMencao = [];
@@ -8359,7 +8361,7 @@ async function mostrarRanking(message) {
 
             const emojiPosicao =
                 medalhas[i] ||
-                `${posicao}️⃣`;
+                `${posicao}ï¸â£`;
 
             const mencao =
                 `@${String(
@@ -8371,18 +8373,18 @@ async function mostrarRanking(message) {
             );
 
             textoRanking +=
-                `├➤ ${emojiPosicao} *${posicao}º* ${mencao}
-│   ⭐ Nível *${jogador.nivel}* • *${jogador.xp} XP*
-│   💬 ${jogador.mensagens} mensagem${jogador.mensagens === 1 ? '' : 'ns'}
-│
+                `ââ¤ ${emojiPosicao} *${posicao}Âº* ${mencao}
+â   â­ NÃ­vel *${jogador.nivel}* â¢ *${jogador.xp} XP*
+â   ð¬ ${jogador.mensagens} mensagem${jogador.mensagens === 1 ? '' : 'ns'}
+â
 `;
         }
 
         textoRanking +=
-            `└──────────────────`;
+            `âââââââââââââââââââ`;
 
         // ========================================================
-        // 7. MOSTRAR POSIÇÃO DO USUÁRIO
+        // 7. MOSTRAR POSIÃÃO DO USUÃRIO
         // ========================================================
 
         if (
@@ -8400,18 +8402,18 @@ async function mostrarRanking(message) {
             textoRanking +=
                 `
 
-👤 *SUA POSIÇÃO*
+ð¤ *SUA POSIÃÃO*
 
-➜ *${posicao}º lugar*
-⭐ Nível *${jogadorUsuario.nivel}*
-✨ *${jogadorUsuario.xp} XP*
-💬 *${jogadorUsuario.mensagens} mensagens*`;
+â *${posicao}Âº lugar*
+â­ NÃ­vel *${jogadorUsuario.nivel}*
+â¨ *${jogadorUsuario.xp} XP*
+ð¬ *${jogadorUsuario.mensagens} mensagens*`;
         }
 
         textoRanking +=
             `
 
-┗═•❃༺🏆༻❃•═┛`;
+âââ¢âà¼ºðà¼»ââ¢ââ`;
 
         // ========================================================
         // 8. ENVIAR
@@ -8419,7 +8421,7 @@ async function mostrarRanking(message) {
 
         await reagir(
             message,
-            '🏆'
+            'ð'
         );
 
         await responderCitando(
@@ -8434,25 +8436,25 @@ async function mostrarRanking(message) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao mostrar ranking:',
+            'â Erro ao mostrar ranking:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            '❌ _Ocorreu um erro ao carregar o ranking de XP._'
+            'â _Ocorreu um erro ao carregar o ranking de XP._'
         );
     }
 }
 
 // ============================================================
 // ============================================================
-// 👶 MOSTRAR RANKING DE FILHOS
+// ð¶ MOSTRAR RANKING DE FILHOS
 // ============================================================
 
 async function mostrarRankingFilhos(message) {
@@ -8466,19 +8468,19 @@ async function mostrarRankingFilhos(message) {
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺👶༻❃•═┓
-│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
-├✯
-│
-├➤ ❌ Este comando só pode
-│   ser usado em grupos.
-│
-┗═•❃༺👶༻❃•═┛`
+                `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *ð¶ ððððððð ðð ðððððð*
+ââ¯
+â
+ââ¤ â Este comando sÃ³ pode
+â   ser usado em grupos.
+â
+âââ¢âà¼ºð¶à¼»ââ¢ââ`
             );
 
             return;
@@ -8496,22 +8498,22 @@ async function mostrarRankingFilhos(message) {
 
             await reagir(
                 message,
-                '📊'
+                'ð'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺👶༻❃•═┓
-│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
-├✯
-│
-├➤ 📊 Ainda não existem
-│   dados de XP neste grupo.
-│
-├➤ _Conversem para começar a
-│   ganhar XP!_ ⭐
-│
-┗═•❃༺👶༻❃•═┛`
+                `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *ð¶ ððððððð ðð ðððððð*
+ââ¯
+â
+ââ¤ ð Ainda nÃ£o existem
+â   dados de XP neste grupo.
+â
+ââ¤ _Conversem para comeÃ§ar a
+â   ganhar XP!_ â­
+â
+âââ¢âà¼ºð¶à¼»ââ¢ââ`
             );
 
             return;
@@ -8590,22 +8592,22 @@ async function mostrarRankingFilhos(message) {
 
             await reagir(
                 message,
-                '👶'
+                'ð¶'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺👶༻❃•═┓
-│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
-├✯
-│
-├➤ 👶 Nenhum filho com XP
-│   foi encontrado neste grupo.
-│
-├➤ _Adote alguém e participe
-│   das conversas para aparecer!_ ⭐
-│
-┗═•❃༺👶༻❃•═┛`
+                `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *ð¶ ððððððð ðð ðððððð*
+ââ¯
+â
+ââ¤ ð¶ Nenhum filho com XP
+â   foi encontrado neste grupo.
+â
+ââ¤ _Adote alguÃ©m e participe
+â   das conversas para aparecer!_ â­
+â
+âââ¢âà¼ºð¶à¼»ââ¢ââ`
             );
 
             return;
@@ -8643,16 +8645,16 @@ async function mostrarRankingFilhos(message) {
             );
 
         const medalhas = [
-            '🥇',
-            '🥈',
-            '🥉'
+            'ð¥',
+            'ð¥',
+            'ð¥'
         ];
 
         let textoRanking =
-            `┏═•❃༺👶༻❃•═┓
-│   *👶 𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐅𝐈𝐋𝐇𝐎𝐒*
-├✯
-│
+            `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *ð¶ ððððððð ðð ðððððð*
+ââ¯
+â
 `;
 
         const idsMencao = [];
@@ -8671,7 +8673,7 @@ async function mostrarRankingFilhos(message) {
 
             const emojiPosicao =
                 medalhas[i] ||
-                `${posicao}️⃣`;
+                `${posicao}ï¸â£`;
 
             const mencao =
                 `@${String(
@@ -8683,29 +8685,29 @@ async function mostrarRankingFilhos(message) {
             );
 
             textoRanking +=
-                `├➤ ${emojiPosicao} *${posicao}º* ${mencao}
-│   ⭐ Nível *${filho.nivel}* • *${filho.xp} XP*
-│   💬 ${filho.mensagens} mensagem${filho.mensagens === 1 ? '' : 'ns'}
-│
+                `ââ¤ ${emojiPosicao} *${posicao}Âº* ${mencao}
+â   â­ NÃ­vel *${filho.nivel}* â¢ *${filho.xp} XP*
+â   ð¬ ${filho.mensagens} mensagem${filho.mensagens === 1 ? '' : 'ns'}
+â
 `;
         }
 
         textoRanking +=
-            `└──────────────────`;
+            `âââââââââââââââââââ`;
 
         textoRanking +=
             `
 
-👶 *Total de filhos no ranking:* ${filhos.length}`;
+ð¶ *Total de filhos no ranking:* ${filhos.length}`;
 
         textoRanking +=
             `
 
-┗═•❃༺👶༻❃•═┛`;
+âââ¢âà¼ºð¶à¼»ââ¢ââ`;
 
         await reagir(
             message,
-            '👶'
+            'ð¶'
         );
 
         await responderCitando(
@@ -8720,23 +8722,23 @@ async function mostrarRankingFilhos(message) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao mostrar ranking de filhos:',
+            'â Erro ao mostrar ranking de filhos:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            '❌ _Ocorreu um erro ao carregar o ranking de filhos._'
+            'â _Ocorreu um erro ao carregar o ranking de filhos._'
         );
     }
 }
 
-// 🎖️ MOSTRAR CONQUISTAS
+// ðï¸ MOSTRAR CONQUISTAS
 // ============================================================
 
 async function mostrarConquistas(
@@ -8754,7 +8756,7 @@ async function mostrarConquistas(
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             return;
@@ -8771,10 +8773,10 @@ async function mostrarConquistas(
             );
 
         let texto =
-            `┏═•❃༺🎖️༻❃•═┓
-│   *🎖️ 𝐒𝐔𝐀𝐒 𝐂𝐎𝐍𝐐𝐔𝐈𝐒𝐓𝐀𝐒*
-├✯
-│
+            `âââ¢âà¼ºðï¸à¼»ââ¢ââ
+â   *ðï¸ ðððð ðððððððððð*
+ââ¯
+â
 `;
 
         let desbloqueadas = 0;
@@ -8795,9 +8797,9 @@ async function mostrarConquistas(
                 desbloqueadas++;
 
                 texto +=
-                    `├➤ ${conquista.emoji} *${conquista.nome}* ✅
-│   _${conquista.descricao}_
-│
+                    `ââ¤ ${conquista.emoji} *${conquista.nome}* â
+â   _${conquista.descricao}_
+â
 `;
             }
         }
@@ -8807,17 +8809,17 @@ async function mostrarConquistas(
         ) {
 
             texto +=
-                `├➤ 🔒 _Você ainda não desbloqueou
-│   nenhuma conquista._
-│
+                `ââ¤ ð _VocÃª ainda nÃ£o desbloqueou
+â   nenhuma conquista._
+â
 `;
         }
 
         texto +=
-            `├──────────────────
-│
-│ *🔒 CONQUISTAS BLOQUEADAS*
-│
+            `âââââââââââââââââââ
+â
+â *ð CONQUISTAS BLOQUEADAS*
+â
 `;
 
         let bloqueadas = 0;
@@ -8838,9 +8840,9 @@ async function mostrarConquistas(
                 bloqueadas++;
 
                 texto +=
-                    `├➤ 🔒 ${conquista.emoji} *${conquista.nome}*
-│   _${conquista.descricao}_
-│
+                    `ââ¤ ð ${conquista.emoji} *${conquista.nome}*
+â   _${conquista.descricao}_
+â
 `;
             }
         }
@@ -8850,22 +8852,22 @@ async function mostrarConquistas(
         ) {
 
             texto +=
-                `├➤ 🏆 _Todas as conquistas foram desbloqueadas!_
-│
+                `ââ¤ ð _Todas as conquistas foram desbloqueadas!_
+â
 `;
         }
 
         texto +=
-            `├──────────────────
-│
-│ 🎖️ *${desbloqueadas}/${listaConquistas.length}*
-│   conquistas desbloqueadas.
-│
-┗═•❃༺🎖️༻❃•═┛`;
+            `âââââââââââââââââââ
+â
+â ðï¸ *${desbloqueadas}/${listaConquistas.length}*
+â   conquistas desbloqueadas.
+â
+âââ¢âà¼ºðï¸à¼»ââ¢ââ`;
 
         await reagir(
             message,
-            '🎖️'
+            'ðï¸'
         );
 
         await responderCitando(
@@ -8876,18 +8878,18 @@ async function mostrarConquistas(
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao mostrar conquistas:',
+            'â Erro ao mostrar conquistas:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            '❌ _Ocorreu um erro ao carregar suas conquistas._'
+            'â _Ocorreu um erro ao carregar suas conquistas._'
         );
     }
 }
@@ -8908,17 +8910,17 @@ async function criarFigurinha(message) {
 
         } catch (erro) {
             console.log(
-                '⚠️ Não foi possível obter a mensagem citada.'
+                'â ï¸ NÃ£o foi possÃ­vel obter a mensagem citada.'
             );
         }
     }
 
     if (!mensagemAlvo.hasMedia) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `❌ *𝐈𝐌𝐀𝐆𝐄𝐌 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐀.*
+            `â *ðððððð ððÌð ðððððððððð.*
 
 _Envie uma imagem ou responda a uma imagem com:_
 
@@ -8934,7 +8936,7 @@ _Envie uma imagem ou responda a uma imagem com:_
 
         if (!midia) {
             throw new Error(
-                'Mídia não disponível.'
+                'MÃ­dia nÃ£o disponÃ­vel.'
             );
         }
 
@@ -8956,26 +8958,26 @@ _Envie uma imagem ou responda a uma imagem com:_
 
         await reagir(
             message,
-            '✅'
+            'â'
         );
 
     } catch (erro) {
         console.error(
-            '❌ Erro ao criar figurinha:',
+            'â Erro ao criar figurinha:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐏𝐎𝐒𝐒𝐈́𝐕𝐄𝐋 𝐂𝐑𝐈𝐀𝐑 𝐀 𝐅𝐈𝐆𝐔𝐑𝐈𝐍𝐇𝐀.*
+            `â *ððÌð ððð ðððððÌððð ððððð ð ððððððððð.*
 
-_Se for uma imagem de visualização única,_
-_o WhatsApp pode não disponibilizar a mídia_
+_Se for uma imagem de visualizaÃ§Ã£o Ãºnica,_
+_o WhatsApp pode nÃ£o disponibilizar a mÃ­dia_
 _para o bot.`
         );
     }
@@ -8998,15 +9000,15 @@ async function combinarEmojis(
             );
 
     if (emojis.length < 2) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `❌ *𝐄𝐌𝐎𝐉𝐈𝐒 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎𝐒.*
+            `â *ðððððð ððÌð ðððððððððð.*
 
-_Envie dois emojis separados por espaço:_
+_Envie dois emojis separados por espaÃ§o:_
 
-*${PREFIXO}emojimix 😀 😂*`
+*${PREFIXO}emojimix ð ð*`
         );
 
         return;
@@ -9023,7 +9025,7 @@ _Envie dois emojis separados por espaço:_
 
         if (!resposta.ok) {
             throw new Error(
-                'Combinação não encontrada.'
+                'CombinaÃ§Ã£o nÃ£o encontrada.'
             );
         }
 
@@ -9050,21 +9052,21 @@ _Envie dois emojis separados por espaço:_
             }
         );
 
-        await reagir(message, '✅');
+        await reagir(message, 'â');
 
     } catch (erro) {
         console.error(
-            '❌ Erro ao combinar emojis:',
+            'â Erro ao combinar emojis:',
             erro
         );
 
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `❌ *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐏𝐎𝐒𝐒𝐈́𝐕𝐄𝐋 𝐂𝐎𝐌𝐁𝐈𝐍𝐀𝐑.*
+            `â *ððÌð ððð ðððððÌððð ðððððððð.*
 
-_Essa combinação pode não existir no_
+_Essa combinaÃ§Ã£o pode nÃ£o existir no_
 _Emoji Kitchen. Tente outra dupla._`
         );
     }
@@ -9074,14 +9076,14 @@ _Emoji Kitchen. Tente outra dupla._`
 // BRAT
 // ============================================================
 
-// Renderizador BRAT baseado no mesmo princípio do gerador web:
+// Renderizador BRAT baseado no mesmo princÃ­pio do gerador web:
 // texto real medido pelo Chromium, alinhamento no canto superior esquerdo,
 // Arial comum comprimida horizontalmente e blur aplicado no canvas.
 async function renderizarBratNoNavegador(texto, opcoes = {}) {
     const pagina = client.pupPage;
 
     if (!pagina) {
-        throw new Error('Página do navegador do WhatsApp ainda não está disponível.');
+        throw new Error('PÃ¡gina do navegador do WhatsApp ainda nÃ£o estÃ¡ disponÃ­vel.');
     }
 
     const resultado = await pagina.evaluate(async ({ texto, opcoes }) => {
@@ -9093,7 +9095,7 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         const escalaX = 0.69;
         // O gerador original usa textFit para encontrar o maior tamanho
         // que cabe dentro da caixa. Aqui reproduzimos essa ideia no canvas:
-        // testamos os tamanhos por busca binária, usando largura + altura.
+        // testamos os tamanhos por busca binÃ¡ria, usando largura + altura.
         const fonteMinima = 20;
         const fonteMaxima = opcoes.fonteMaxima || 475;
         const pesoFonte = opcoes.pesoFonte || 500;
@@ -9112,13 +9114,13 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
             `${pesoFonte} ${tamanhoFonte}px \"Arial Narrow\", \"Liberation Sans Narrow\", Arial, Liberation Sans, sans-serif`;
 
         // O BRAT original usa uma tipografia condensada. Carregamos a fonte
-        // antes das medições para que a quebra de linha use a mesma métrica
-        // que será usada no desenho. Isso evita casos como "TESTE BEM LEGAL"
+        // antes das mediÃ§Ãµes para que a quebra de linha use a mesma mÃ©trica
+        // que serÃ¡ usada no desenho. Isso evita casos como "TESTE BEM LEGAL"
         // virando uma palavra por linha quando ainda caberiam duas.
         try {
             await document.fonts.load(normalizarFonte(100));
         } catch (_) {
-            // Se a fonte condensada não estiver disponível, o fallback acima
+            // Se a fonte condensada nÃ£o estiver disponÃ­vel, o fallback acima
             // continua funcionando normalmente.
         }
 
@@ -9255,7 +9257,7 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         } else {
             // Equivalente ao comportamento do textFit do gerador HTML:
             // poucas palavras conseguem uma fonte maior; conforme o texto
-            // ocupa mais linhas/largura, o maior tamanho possível diminui.
+            // ocupa mais linhas/largura, o maior tamanho possÃ­vel diminui.
             let baixo = fonteMinima;
             let alto = fonteMaxima;
             let melhorFonte = fonteMinima;
@@ -9276,8 +9278,8 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
                 }
             }
 
-            // Mantém o mesmo ajuste de encaixe, mas deixa o resultado
-            // ligeiramente menor para não ocupar tanto espaço na figurinha.
+            // MantÃ©m o mesmo ajuste de encaixe, mas deixa o resultado
+            // ligeiramente menor para nÃ£o ocupar tanto espaÃ§o na figurinha.
             fonte = Math.max(fonteMinima, melhorFonte - 10);
             linhas = await quebrar(texto, fonte);
         }
@@ -9339,10 +9341,10 @@ async function gerarBrat1(message, argumento) {
     const texto = (argumento || '').trim();
 
     if (!texto) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            `❌ *𝐓𝐄𝐗𝐓𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*\n\n_Exemplo:_\n\n*${PREFIXO}brat1 ola a todos*`
+            `â *ððððð ððÌð ððððððððð.*\n\n_Exemplo:_\n\n*${PREFIXO}brat1 ola a todos*`
         );
         return;
     }
@@ -9365,30 +9367,30 @@ async function gerarBrat1(message, argumento) {
             sendMediaAsSticker: true
         });
 
-        await reagir(message, '✅');
+        await reagir(message, 'â');
     } catch (erro) {
-        console.error('❌ Erro ao gerar brat1:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro ao gerar brat1:', erro);
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            '❌ _Não foi possível gerar a figurinha brat._'
+            'â _NÃ£o foi possÃ­vel gerar a figurinha brat._'
         );
     }
 }
 
 // ============================================================
 // BRAT 2
-// ANIMAÇÃO PALAVRA POR PALAVRA
+// ANIMAÃÃO PALAVRA POR PALAVRA
 // ============================================================
 
 async function gerarBrat2(message, argumento) {
     const texto = (argumento || '').trim();
 
     if (!texto) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            `❌ *𝐓𝐄𝐗𝐓𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*\n\n_Exemplo:_\n\n*${PREFIXO}brat2 ola a todos*`
+            `â *ððððð ððÌð ððððððððð.*\n\n_Exemplo:_\n\n*${PREFIXO}brat2 ola a todos*`
         );
         return;
     }
@@ -9396,8 +9398,8 @@ async function gerarBrat2(message, argumento) {
     try {
         const palavras = texto.split(/\s+/).filter(Boolean);
 
-        // Calcula o tamanho uma única vez usando o texto completo. Assim,
-        // os frames não ficam mudando de escala conforme as palavras entram.
+        // Calcula o tamanho uma Ãºnica vez usando o texto completo. Assim,
+        // os frames nÃ£o ficam mudando de escala conforme as palavras entram.
         const layoutCompleto = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
@@ -9475,13 +9477,13 @@ async function gerarBrat2(message, argumento) {
             sendMediaAsSticker: true
         });
 
-        await reagir(message, '✅');
+        await reagir(message, 'â');
     } catch (erro) {
-        console.error('❌ Erro ao gerar brat2:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro ao gerar brat2:', erro);
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            '❌ _Não foi possível gerar a figurinha animada brat._'
+            'â _NÃ£o foi possÃ­vel gerar a figurinha animada brat._'
         );
     }
 }
@@ -9550,7 +9552,7 @@ async function cortarAudio(
                 'data',
                 chunk => {
                     console.log(
-                        '⚠️ FFmpeg:',
+                        'â ï¸ FFmpeg:',
                         chunk.toString()
                     );
                 }
@@ -9571,7 +9573,7 @@ async function cortarAudio(
 
                         reject(
                             new Error(
-                                `FFmpeg encerrou com código ${codigo}`
+                                `FFmpeg encerrou com cÃ³digo ${codigo}`
                             )
                         );
 
@@ -9641,7 +9643,7 @@ async function processarAudioComLimite(
                 } else {
                     reject(
                         new Error(
-                            `FFmpeg terminou com código ${codigo}\n${erro}`
+                            `FFmpeg terminou com cÃ³digo ${codigo}\n${erro}`
                         )
                     );
                 }
@@ -9656,7 +9658,7 @@ async function processarAudioComLimite(
 }
 
 // ============================================================
-// TOCAR MÚSICA
+// TOCAR MÃSICA
 // ============================================================
 
 async function tocarMusica(
@@ -9671,16 +9673,16 @@ async function tocarMusica(
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐌𝐔́𝐒𝐈𝐂𝐀 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐀.*
+            `â *ððÌðððð ððÌð ððððððððð.*
 
 _Exemplo:_
 
-*${PREFIXO}playm nome da música*`
+*${PREFIXO}playm nome da mÃºsica*`
         );
 
         return;
@@ -9690,12 +9692,12 @@ _Exemplo:_
 
         await reagir(
             message,
-            '🔎'
+            'ð'
         );
 
         // ----------------------------------------------------
         // YOUTUBE / YT-DLP
-        // PESQUISAR A MÚSICA
+        // PESQUISAR A MÃSICA
         // ----------------------------------------------------
 
         const resultadoBusca =
@@ -9716,26 +9718,26 @@ _Exemplo:_
         if (!video) {
 
             throw new Error(
-                'Música não encontrada no YouTube.'
+                'MÃºsica nÃ£o encontrada no YouTube.'
             );
         }
 
         // ----------------------------------------------------
-        // INFORMAÇÕES
+        // INFORMAÃÃES
         // ----------------------------------------------------
 
         const titulo =
             video.title ||
-            'Não informado';
+            'NÃ£o informado';
 
         const artista =
             video.artist ||
             video.uploader ||
             video.channel ||
-            'Não informado';
+            'NÃ£o informado';
 
         let duracao =
-            'Não informada';
+            'NÃ£o informada';
 
         if (
             typeof video.duration === 'number'
@@ -9769,7 +9771,7 @@ _Exemplo:_
             `https://www.youtube.com/watch?v=${video.id}`;
 
         // ----------------------------------------------------
-        // CAPA DO VÍDEO
+        // CAPA DO VÃDEO
         // ----------------------------------------------------
 
         let capa = null;
@@ -9807,38 +9809,38 @@ _Exemplo:_
             } catch (erro) {
 
                 console.log(
-                    '⚠️ Erro ao baixar thumbnail:',
+                    'â ï¸ Erro ao baixar thumbnail:',
                     erro.message
                 );
             }
         }
 
         // ----------------------------------------------------
-        // INFORMAÇÕES
+        // INFORMAÃÃES
         // ----------------------------------------------------
 
         const informacoes =
-            `┏═•❃༺✿༻❃•═┓
-│   *🎵 𝐌𝐔́𝐒𝐈𝐂𝐀*
-├✯
-├➤ *𝐓𝐈́𝐓𝐔𝐋𝐎:*
-│   _${titulo}_
-│
-├➤ *𝐀𝐑𝐓𝐈𝐒𝐓𝐀:*
-│   _${artista}_
-│
-├➤ *⏱️ 𝐃𝐔𝐑𝐀𝐂̧𝐀̃𝐎:*
-│   _${duracao}_
-│
-├➤ *👀 𝐕𝐈𝐄𝐖𝐒:*
-│   _${views}_
-│
-├➤ 🔗 *${urlVideo}*
-│
-┗═•❃༺✿༻❃•═┓`;
+            `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ðµ ððÌðððð*
+ââ¯
+ââ¤ *ððÌðððð:*
+â   _${titulo}_
+â
+ââ¤ *ððððððð:*
+â   _${artista}_
+â
+ââ¤ *â±ï¸ ðððððÌ§ðÌð:*
+â   _${duracao}_
+â
+ââ¤ *ð ððððð:*
+â   _${views}_
+â
+ââ¤ ð *${urlVideo}*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`;
 
         // ----------------------------------------------------
-        // ENVIAR CAPA + INFORMAÇÕES
+        // ENVIAR CAPA + INFORMAÃÃES
         // ----------------------------------------------------
 
         if (capa) {
@@ -9861,12 +9863,12 @@ _Exemplo:_
         }
 
         // ----------------------------------------------------
-        // ÁUDIO
+        // ÃUDIO
         // ----------------------------------------------------
 
         await reagir(
             message,
-            '⬇️'
+            'â¬ï¸'
         );
 
         const pastaTemporaria =
@@ -9915,10 +9917,10 @@ _Exemplo:_
         try {
 
             // ------------------------------------------------
-            // BAIXAR ÁUDIO ORIGINAL
+            // BAIXAR ÃUDIO ORIGINAL
             // ------------------------------------------------
-            // O yt-dlp apenas baixa o áudio.
-            // A conversão para MP3 será feita pelo
+            // O yt-dlp apenas baixa o Ã¡udio.
+            // A conversÃ£o para MP3 serÃ¡ feita pelo
             // nosso FFmpeg depois.
             // ------------------------------------------------
 
@@ -9952,7 +9954,7 @@ _Exemplo:_
             if (!arquivoBaixado) {
 
                 throw new Error(
-                    'Arquivo de áudio não foi encontrado após o download.'
+                    'Arquivo de Ã¡udio nÃ£o foi encontrado apÃ³s o download.'
                 );
             }
 
@@ -9983,12 +9985,12 @@ _Exemplo:_
             ) {
 
                 throw new Error(
-                    'FFmpeg não criou o arquivo MP3.'
+                    'FFmpeg nÃ£o criou o arquivo MP3.'
                 );
             }
 
             // ------------------------------------------------
-            // ENVIAR ÁUDIO
+            // ENVIAR ÃUDIO
             // ------------------------------------------------
 
             const audio =
@@ -10006,32 +10008,32 @@ _Exemplo:_
 
             await reagir(
                 message,
-                '🎵'
+                'ðµ'
             );
 
         } catch (erroAudio) {
 
             console.error(
-                '❌ Erro ao processar áudio:',
+                'â Erro ao processar Ã¡udio:',
                 erroAudio
             );
 
             await responderCitando(
                 message,
-                `❌ *NÃO FOI POSSÍVEL PROCESSAR O ÁUDIO.*
+                `â *NÃO FOI POSSÃVEL PROCESSAR O ÃUDIO.*
 
-_O conteúdo pode não permitir download ou ocorreu um erro durante o processamento._`
+_O conteÃºdo pode nÃ£o permitir download ou ocorreu um erro durante o processamento._`
             );
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
         } finally {
 
             // ------------------------------------------------
-            // LIMPAR ARQUIVOS TEMPORÁRIOS
+            // LIMPAR ARQUIVOS TEMPORÃRIOS
             // ------------------------------------------------
 
             try {
@@ -10062,7 +10064,7 @@ _O conteúdo pode não permitir download ou ocorreu um erro durante o processame
             } catch (erroLimpeza) {
 
                 console.log(
-                    '⚠️ Erro ao limpar arquivos temporários:',
+                    'â ï¸ Erro ao limpar arquivos temporÃ¡rios:',
                     erroLimpeza.message
                 );
             }
@@ -10071,32 +10073,32 @@ _O conteúdo pode não permitir download ou ocorreu um erro durante o processame
     } catch (erro) {
 
         console.error(
-            '❌ Erro no playm:',
+            'â Erro no playm:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐏𝐎𝐒𝐒𝐈́𝐕𝐄𝐋 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐑 𝐀 𝐌𝐔́𝐒𝐈𝐂𝐀.*
+            `â *ððÌð ððð ðððððÌððð ððððððððð ð ððÌðððð.*
 
-_Tente pesquisar pelo nome completo da música e artista._`
+_Tente pesquisar pelo nome completo da mÃºsica e artista._`
         );
     }
 }
 
 // ============================================================
-// CONFIGURAÇÕES DO PLAYM
+// CONFIGURAÃÃES DO PLAYM
 // ============================================================
 
 const LIMITE_PREVIA_MINUTOS = 10;
 
 // ============================================================
-// TOCAR VÍDEO
+// TOCAR VÃDEO
 // ============================================================
 
 async function tocarVideo(
@@ -10111,16 +10113,16 @@ async function tocarVideo(
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐕𝐈́𝐃𝐄𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*
+            `â *ððÌððð ððÌð ððððððððð.*
 
 _Exemplo:_
 
-*${PREFIXO}playv nome do vídeo*`
+*${PREFIXO}playv nome do vÃ­deo*`
         );
 
         return;
@@ -10130,11 +10132,11 @@ _Exemplo:_
 
         await reagir(
             message,
-            '🔎'
+            'ð'
         );
 
         // ----------------------------------------------------
-        // PESQUISAR VÍDEO
+        // PESQUISAR VÃDEO
         // ----------------------------------------------------
 
         const resultadoBusca =
@@ -10155,25 +10157,25 @@ _Exemplo:_
         if (!video) {
 
             throw new Error(
-                'Vídeo não encontrado no YouTube.'
+                'VÃ­deo nÃ£o encontrado no YouTube.'
             );
         }
 
         // ----------------------------------------------------
-        // INFORMAÇÕES
+        // INFORMAÃÃES
         // ----------------------------------------------------
 
         const titulo =
             video.title ||
-            'Não informado';
+            'NÃ£o informado';
 
         const canal =
             video.uploader ||
             video.channel ||
-            'Não informado';
+            'NÃ£o informado';
 
         let duracao =
-            'Não informada';
+            'NÃ£o informada';
 
         if (
             typeof video.duration === 'number'
@@ -10207,7 +10209,7 @@ _Exemplo:_
             `https://www.youtube.com/watch?v=${video.id}`;
 
         // ----------------------------------------------------
-        // CAPA DO VÍDEO
+        // CAPA DO VÃDEO
         // ----------------------------------------------------
 
         let capa = null;
@@ -10245,38 +10247,38 @@ _Exemplo:_
             } catch (erro) {
 
                 console.log(
-                    '⚠️ Erro ao baixar thumbnail:',
+                    'â ï¸ Erro ao baixar thumbnail:',
                     erro.message
                 );
             }
         }
 
         // ----------------------------------------------------
-        // INFORMAÇÕES
+        // INFORMAÃÃES
         // ----------------------------------------------------
 
         const informacoes =
-            `┏═•❃༺✿༻❃•═┓
-│   *🎬 𝐕𝐈́𝐃𝐄𝐎*
-├✯
-├➤ *𝐓𝐈́𝐓𝐔𝐋𝐎:*
-│   _${titulo}_
-│
-├➤ *𝐂𝐀𝐍𝐀𝐋:*
-│   _${canal}_
-│
-├➤ *⏱️ 𝐃𝐔𝐑𝐀𝐂̧𝐀̃𝐎:*
-│   _${duracao}_
-│
-├➤ *👀 𝐕𝐈𝐄𝐖𝐒:*
-│   _${views}_
-│
-├➤ 🔗 *${urlVideo}*
-│
-┗═•❃༺✿༻❃•═┓`;
+            `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð¬ ððÌððð*
+ââ¯
+ââ¤ *ððÌðððð:*
+â   _${titulo}_
+â
+ââ¤ *ððððð:*
+â   _${canal}_
+â
+ââ¤ *â±ï¸ ðððððÌ§ðÌð:*
+â   _${duracao}_
+â
+ââ¤ *ð ððððð:*
+â   _${views}_
+â
+ââ¤ ð *${urlVideo}*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`;
 
         // ----------------------------------------------------
-        // ENVIAR CAPA + INFORMAÇÕES
+        // ENVIAR CAPA + INFORMAÃÃES
         // ----------------------------------------------------
 
         if (capa) {
@@ -10299,16 +10301,16 @@ _Exemplo:_
         }
 
         // ----------------------------------------------------
-        // ÁUDIO/VÍDEO
+        // ÃUDIO/VÃDEO
         // ----------------------------------------------------
 
         await reagir(
             message,
-            '⬇️'
+            'â¬ï¸'
         );
 
         // ----------------------------------------------------
-        // PASTA TEMPORÁRIA
+        // PASTA TEMPORÃRIA
         // ----------------------------------------------------
 
         const pastaTemporaria =
@@ -10357,11 +10359,11 @@ _Exemplo:_
         try {
 
             // ------------------------------------------------
-            // BAIXAR VÍDEO
+            // BAIXAR VÃDEO
             // ------------------------------------------------
-            // Preferimos MP4 até 720p quando disponível.
-            // Não usamos extractVideo nem pós-processamento
-            // do yt-dlp. O FFmpeg fará isso depois.
+            // Preferimos MP4 atÃ© 720p quando disponÃ­vel.
+            // NÃ£o usamos extractVideo nem pÃ³s-processamento
+            // do yt-dlp. O FFmpeg farÃ¡ isso depois.
             // ------------------------------------------------
 
 await ytdlp(
@@ -10396,7 +10398,7 @@ await ytdlp(
             if (!arquivoBaixado) {
 
                 throw new Error(
-                    'Arquivo de vídeo não foi encontrado após o download.'
+                    'Arquivo de vÃ­deo nÃ£o foi encontrado apÃ³s o download.'
                 );
             }
 
@@ -10409,9 +10411,9 @@ await ytdlp(
             // ------------------------------------------------
             // PROCESSAR COM FFMPEG
             // ------------------------------------------------
-            // Máximo de 5 minutos.
+            // MÃ¡ximo de 5 minutos.
             // Converte para MP4.
-            // Redimensiona para no máximo 720p.
+            // Redimensiona para no mÃ¡ximo 720p.
             // H.264 + AAC para melhor compatibilidade.
             // ------------------------------------------------
 
@@ -10433,13 +10435,13 @@ await ytdlp(
                                 '-i',
                                 caminhoArquivoBaixado,
 
-                                // Limite de duração
+                                // Limite de duraÃ§Ã£o
                                 '-t',
                                 String(
                                     limiteSegundos
                                 ),
 
-                                // Vídeo
+                                // VÃ­deo
                                 '-vf',
                                 'scale=-2:min(720\\,ih)',
 
@@ -10455,7 +10457,7 @@ await ytdlp(
                                 '-pix_fmt',
                                 'yuv420p',
 
-                                // Áudio
+                                // Ãudio
                                 '-c:a',
                                 'aac',
 
@@ -10495,7 +10497,7 @@ await ytdlp(
 
                                 reject(
                                     new Error(
-                                        `FFmpeg terminou com código ${codigo}\n${erro}`
+                                        `FFmpeg terminou com cÃ³digo ${codigo}\n${erro}`
                                     )
                                 );
                             }
@@ -10520,7 +10522,7 @@ await ytdlp(
             ) {
 
                 throw new Error(
-                    'FFmpeg não criou o arquivo MP4.'
+                    'FFmpeg nÃ£o criou o arquivo MP4.'
                 );
             }
 
@@ -10538,11 +10540,11 @@ await ytdlp(
                 (1024 * 1024);
 
             console.log(
-                `🎬 Vídeo processado: ${tamanhoMB.toFixed(2)} MB`
+                `ð¬ VÃ­deo processado: ${tamanhoMB.toFixed(2)} MB`
             );
 
             // ------------------------------------------------
-            // LIMITE DE SEGURANÇA
+            // LIMITE DE SEGURANÃA
             // ------------------------------------------------
 
             const LIMITE_VIDEO_MB = 1000;
@@ -10553,12 +10555,12 @@ await ytdlp(
             ) {
 
                 throw new Error(
-                    `O vídeo processado ficou muito grande (${tamanhoMB.toFixed(2)} MB).`
+                    `O vÃ­deo processado ficou muito grande (${tamanhoMB.toFixed(2)} MB).`
                 );
             }
 
             // ------------------------------------------------
-            // ENVIAR VÍDEO
+            // ENVIAR VÃDEO
             // ------------------------------------------------
 
             const videoMedia =
@@ -10572,38 +10574,38 @@ await ytdlp(
                 {
                     sendVideoAsGif: false,
                     caption:
-                        `🎬 *${titulo}*`
+                        `ð¬ *${titulo}*`
                 }
             );
 
             await reagir(
                 message,
-                '🎬'
+                'ð¬'
             );
 
         } catch (erroVideo) {
 
             console.error(
-                '❌ Erro ao processar vídeo:',
+                'â Erro ao processar vÃ­deo:',
                 erroVideo
             );
 
             await responderCitando(
                 message,
-                `❌ *NÃO FOI POSSÍVEL PROCESSAR O VÍDEO.*
+                `â *NÃO FOI POSSÃVEL PROCESSAR O VÃDEO.*
 
-_O vídeo pode não estar disponível para download, ser incompatível ou ter ultrapassado o limite permitido._`
+_O vÃ­deo pode nÃ£o estar disponÃ­vel para download, ser incompatÃ­vel ou ter ultrapassado o limite permitido._`
             );
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
         } finally {
 
             // ------------------------------------------------
-            // LIMPAR ARQUIVOS TEMPORÁRIOS
+            // LIMPAR ARQUIVOS TEMPORÃRIOS
             // ------------------------------------------------
 
             try {
@@ -10634,7 +10636,7 @@ _O vídeo pode não estar disponível para download, ser incompatível ou ter ul
             } catch (erroLimpeza) {
 
                 console.log(
-                    '⚠️ Erro ao limpar arquivos temporários:',
+                    'â ï¸ Erro ao limpar arquivos temporÃ¡rios:',
                     erroLimpeza.message
                 );
             }
@@ -10643,26 +10645,26 @@ _O vídeo pode não estar disponível para download, ser incompatível ou ter ul
     } catch (erro) {
 
         console.error(
-            '❌ Erro no playv:',
+            'â Erro no playv:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐏𝐎𝐒𝐒𝐈́𝐕𝐄𝐋 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐑 𝐎 𝐕𝐈́𝐃𝐄𝐎.*
+            `â *ððÌð ððð ðððððÌððð ððððððððð ð ððÌððð.*
 
-_Tente pesquisar pelo nome completo do vídeo._`
+_Tente pesquisar pelo nome completo do vÃ­deo._`
         );
     }
 }
 
 // ============================================================
-// MODERAÇÃO
+// MODERAÃÃO
 // ============================================================
 
 async function banirPessoa(message) {
@@ -10674,8 +10676,8 @@ async function banirPessoa(message) {
 
         const idPessoa = idDaPessoa(pessoa);
         if (!idPessoa) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ _Não consegui identificar essa pessoa._');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â _NÃ£o consegui identificar essa pessoa._');
             return;
         }
 
@@ -10683,19 +10685,19 @@ async function banirPessoa(message) {
         const idRemetente = obterIdRemetente(message);
 
         if (botId && idsIguais(idPessoa, botId)) {
-            await reagir(message, '🤨');
-            await responderCitando(message, '🤨 _Bonito. Tentando banir o próprio segurança da festa._');
+            await reagir(message, 'ð¤¨');
+            await responderCitando(message, 'ð¤¨ _Bonito. Tentando banir o prÃ³prio seguranÃ§a da festa._');
             return;
         }
 
         if (idRemetente && idsIguais(idPessoa, idRemetente)) {
-            await reagir(message, '🤨');
-            await responderCitando(message, '🤨 _Você realmente tentou se expulsar do próprio grupo._');
+            await reagir(message, 'ð¤¨');
+            await responderCitando(message, 'ð¤¨ _VocÃª realmente tentou se expulsar do prÃ³prio grupo._');
             return;
         }
 
-        // O message.getChat() usa Client.getChatById(), que está apresentando
-        // o erro interno `r: r` em versões recentes do WhatsApp Web.
+        // O message.getChat() usa Client.getChatById(), que estÃ¡ apresentando
+        // o erro interno `r: r` em versÃµes recentes do WhatsApp Web.
         // Para o ban, acessamos o chat diretamente no contexto do WhatsApp Web.
         let dadosGrupo = null;
         let ultimoErroChat = null;
@@ -10728,7 +10730,7 @@ async function banirPessoa(message) {
             } catch (erroChat) {
                 ultimoErroChat = erroChat;
                 console.log(
-                    `⚠️ Não foi possível acessar o grupo diretamente para o ban (tentativa ${tentativa}/3):`,
+                    `â ï¸ NÃ£o foi possÃ­vel acessar o grupo diretamente para o ban (tentativa ${tentativa}/3):`,
                     erroChat.message
                 );
 
@@ -10739,12 +10741,12 @@ async function banirPessoa(message) {
         }
 
         if (!dadosGrupo) {
-            throw ultimoErroChat || new Error('Não foi possível acessar o grupo.');
+            throw ultimoErroChat || new Error('NÃ£o foi possÃ­vel acessar o grupo.');
         }
 
         if (!dadosGrupo.isGroup) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â _Esse comando sÃ³ funciona em grupos._');
             return;
         }
 
@@ -10753,8 +10755,8 @@ async function banirPessoa(message) {
         });
 
         if (participante?.isAdmin || participante?.isSuperAdmin) {
-            await reagir(message, '👑');
-            await responderCitando(message, '👑 _Nem pensar. Administrador não entra na fila da expulsão._');
+            await reagir(message, 'ð');
+            await responderCitando(message, 'ð _Nem pensar. Administrador nÃ£o entra na fila da expulsÃ£o._');
             return;
         }
 
@@ -10771,7 +10773,7 @@ async function banirPessoa(message) {
                     });
 
                     if (!chat || chat.id?.server !== 'g.us') {
-                        throw new Error('O chat informado não é um grupo.');
+                        throw new Error('O chat informado nÃ£o Ã© um grupo.');
                     }
 
                     const participantes = (
@@ -10789,7 +10791,7 @@ async function banirPessoa(message) {
                     ).filter(Boolean);
 
                     if (!participantes.length) {
-                        throw new Error('A pessoa não foi encontrada entre os participantes do grupo.');
+                        throw new Error('A pessoa nÃ£o foi encontrada entre os participantes do grupo.');
                     }
 
                     await window
@@ -10806,28 +10808,28 @@ async function banirPessoa(message) {
             }
         }
 
-        if (!removido) throw ultimoErro || new Error('O WhatsApp recusou a remoção.');
+        if (!removido) throw ultimoErro || new Error('O WhatsApp recusou a remoÃ§Ã£o.');
 
-        await reagir(message, '🔨');
+        await reagir(message, 'ð¨');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺🔨༻❃•═┓
-│      *𝐁𝐀𝐍 𝐄𝐅𝐄𝐓𝐈𝐕𝐀𝐃𝐎*
-├✯
-│
-├➤ 👤 ${mencao} foi expulso(a) do grupo.
-│
-├➤ 🔨 _A democracia fez uma pausa._
-├➤ 🚪 _A porta de saída estava logo ali._
-├➤ 😭 _Volte quando o universo perdoar você._
-│
-┗═•❃༺🔨༻❃•═┛`,
+            `âââ¢âà¼ºð¨à¼»ââ¢ââ
+â      *ððð ððððððððð*
+ââ¯
+â
+ââ¤ ð¤ ${mencao} foi expulso(a) do grupo.
+â
+ââ¤ ð¨ _A democracia fez uma pausa._
+ââ¤ ðª _A porta de saÃ­da estava logo ali._
+ââ¤ ð­ _Volte quando o universo perdoar vocÃª._
+â
+âââ¢âà¼ºð¨à¼»ââ¢ââ`,
             { mentions: [idPessoa] }
         );
     } catch (erro) {
-        console.error('❌ Erro ao banir pessoa:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui expulsar essa pessoa._\n\n_Confira se eu sou administrador do grupo e se a pessoa não é administradora._');
+        console.error('â Erro ao banir pessoa:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui expulsar essa pessoa._\n\n_Confira se eu sou administrador do grupo e se a pessoa nÃ£o Ã© administradora._');
     }
 }
 
@@ -10845,7 +10847,7 @@ async function mutarPessoa(message) {
     let mensagemAlvo = null;
 
     // ============================================================
-    // 1. TENTAR OBTER PESSOA POR MENÇÃO
+    // 1. TENTAR OBTER PESSOA POR MENÃÃO
     // ============================================================
 
     const mencoes =
@@ -10863,7 +10865,7 @@ async function mutarPessoa(message) {
     }
 
     // ============================================================
-    // 2. SE NÃO HOUVE MENÇÃO, VERIFICAR SE É UMA RESPOSTA
+    // 2. SE NÃO HOUVE MENÃÃO, VERIFICAR SE Ã UMA RESPOSTA
     // ============================================================
 
     if (
@@ -10886,7 +10888,7 @@ async function mutarPessoa(message) {
                     null;
 
                 console.log(
-                    '🔇 ID DA PESSOA RESPONDIDA:',
+                    'ð ID DA PESSOA RESPONDIDA:',
                     idPessoa
                 );
             }
@@ -10894,44 +10896,44 @@ async function mutarPessoa(message) {
         } catch (erro) {
 
             console.log(
-                '⚠️ Erro ao obter mensagem respondida:',
+                'â ï¸ Erro ao obter mensagem respondida:',
                 erro.message
             );
         }
     }
 
     // ============================================================
-    // 3. NINGUÉM FOI ENCONTRADO
+    // 3. NINGUÃM FOI ENCONTRADO
     // ============================================================
 
     if (!idPessoa) {
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺✿༻❃•═┓
-├✯ *𝐌𝐄𝐍𝐂̧𝐀̃𝐎 𝐎𝐔 𝐑𝐄𝐏𝐋𝐘 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐎*
-│
-├➤ _Mencione alguém ou responda_
-│   _à mensagem da pessoa._
-│
-├➤ *𝐄𝐗𝐄𝐌𝐏𝐋𝐎𝐒:*
-│
-├➤ ${PREFIXO}mute @pessoa
-├➤ Responda à mensagem com ${PREFIXO}mute
-│
-┗═•❃༺✿༻❃•═┛`
+            `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ððððÌ§ðÌð ðð ððððð ððÌð ðððððððððð*
+â
+ââ¤ _Mencione alguÃ©m ou responda_
+â   _Ã  mensagem da pessoa._
+â
+ââ¤ *ðððððððð:*
+â
+ââ¤ ${PREFIXO}mute @pessoa
+ââ¤ Responda Ã  mensagem com ${PREFIXO}mute
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
         );
 
         return;
     }
 
     // ============================================================
-    // 4. NÃO PERMITE MUTAR O PRÓPRIO BOT
+    // 4. NÃO PERMITE MUTAR O PRÃPRIO BOT
     // ============================================================
 
     const botId =
@@ -10949,12 +10951,12 @@ async function mutarPessoa(message) {
 
         await reagir(
             message,
-            '🤨'
+            'ð¤¨'
         );
 
         await responderCitando(
             message,
-            '🤨 _Eu não posso me mutar, né._'
+            'ð¤¨ _Eu nÃ£o posso me mutar, nÃ©._'
         );
 
         return;
@@ -10993,7 +10995,7 @@ for (const id of idsPessoa) {
 salvarMutados();
 
     // ============================================================
-    // 6. NOME / MENÇÃO
+    // 6. NOME / MENÃÃO
     // ============================================================
 
     let mencao = `@${String(idPessoa).split('@')[0]}`;
@@ -11033,25 +11035,25 @@ salvarMutados();
             await mensagemAlvo.delete(true);
 
             console.log(
-                '🗑️ Mensagem do usuário mutado apagada.'
+                'ðï¸ Mensagem do usuÃ¡rio mutado apagada.'
             );
 
         } catch (erro) {
 
             console.log(
-                '⚠️ Não foi possível apagar a mensagem:',
+                'â ï¸ NÃ£o foi possÃ­vel apagar a mensagem:',
                 erro.message
             );
         }
     }
 
     // ============================================================
-    // 8. REAÇÃO
+    // 8. REAÃÃO
     // ============================================================
 
     await reagir(
         message,
-        '🔇'
+        'ð'
     );
 
     // ============================================================
@@ -11060,15 +11062,15 @@ salvarMutados();
 
     await enviarComMencoes(
         message.from,
-        `┏═•❃༺✿༻❃•═┓
-│   *🔇 𝐌𝐔𝐓𝐄*
-├✯
-├➤ _${mencao} foi silenciado._
-│
-├➤ _As mensagens dessa pessoa_
-│   _serão apagadas automaticamente._
-│
-┗═•❃༺✿༻❃•═┛`,
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð ðððð*
+ââ¯
+ââ¤ _${mencao} foi silenciado._
+â
+ââ¤ _As mensagens dessa pessoa_
+â   _serÃ£o apagadas automaticamente._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
         {
             mentions: [
                 idPessoa
@@ -11091,7 +11093,7 @@ async function desmutarPessoa(message) {
     let idsPessoa = new Set();
 
     // ============================================================
-    // 1. TENTAR ENCONTRAR POR MENÇÃO
+    // 1. TENTAR ENCONTRAR POR MENÃÃO
     // ============================================================
 
     const mencoes =
@@ -11108,7 +11110,7 @@ async function desmutarPessoa(message) {
             idDaPessoa(pessoa);
 
         console.log(
-            '🔓 PESSOA MENCIONADA:',
+            'ð PESSOA MENCIONADA:',
             idPessoa
         );
 
@@ -11138,7 +11140,7 @@ async function desmutarPessoa(message) {
                     null;
 
                 console.log(
-                    '🔓 PESSOA RESPONDIDA:',
+                    'ð PESSOA RESPONDIDA:',
                     idPessoa
                 );
 
@@ -11154,28 +11156,28 @@ async function desmutarPessoa(message) {
         } catch (erro) {
 
             console.log(
-                '⚠️ Erro ao obter mensagem respondida:',
+                'â ï¸ Erro ao obter mensagem respondida:',
                 erro.message
             );
         }
     }
 
     // ============================================================
-    // 3. SE NÃO ENCONTROU NINGUÉM
+    // 3. SE NÃO ENCONTROU NINGUÃM
     // ============================================================
 
     if (!idPessoa) {
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *PESSOA NÃO INFORMADA.*
+            `â *PESSOA NÃO INFORMADA.*
 
-Use uma menção ou responda à mensagem da pessoa.
+Use uma menÃ§Ã£o ou responda Ã  mensagem da pessoa.
 
 *Exemplo:*
 
@@ -11208,12 +11210,12 @@ Use uma menção ou responda à mensagem da pessoa.
 
         await reagir(
             message,
-            '⚠️'
+            'â ï¸'
         );
 
         await responderCitando(
             message,
-            '⚠️ _Não há ninguém mutado neste grupo._'
+            'â ï¸ _NÃ£o hÃ¡ ninguÃ©m mutado neste grupo._'
         );
 
         return;
@@ -11236,14 +11238,14 @@ Use uma menção ou responda à mensagem da pessoa.
             removido = true;
 
             console.log(
-                '🔓 ID removido dos mutados:',
+                'ð ID removido dos mutados:',
                 id
             );
         }
     }
 
     // ============================================================
-    // 7. VERIFICAR TAMBÉM PELO NÚMERO
+    // 7. VERIFICAR TAMBÃM PELO NÃMERO
     // ============================================================
 
     if (!removido) {
@@ -11281,7 +11283,7 @@ Use uma menção ou responda à mensagem da pessoa.
                     removido = true;
 
                     console.log(
-                        '🔓 ID removido por número:',
+                        'ð ID removido por nÃºmero:',
                         idMutado
                     );
 
@@ -11296,26 +11298,26 @@ Use uma menção ou responda à mensagem da pessoa.
     }
 
     // ============================================================
-    // 8. PESSOA NÃO ESTAVA MUTADA
+    // 8. PESSOA NÃO ESTAVA MUTADA
     // ============================================================
 
     if (!removido) {
 
         await reagir(
             message,
-            '⚠️'
+            'â ï¸'
         );
 
         await responderCitando(
             message,
-            '⚠️ _Essa pessoa não está mutada neste grupo._'
+            'â ï¸ _Essa pessoa nÃ£o estÃ¡ mutada neste grupo._'
         );
 
         return;
     }
 
     // ============================================================
-    // 9. SALVAR ALTERAÇÃO
+    // 9. SALVAR ALTERAÃÃO
     // ============================================================
 
     salvarMutados();
@@ -11337,25 +11339,25 @@ Use uma menção ou responda à mensagem da pessoa.
 
     await reagir(
         message,
-        '🔓'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│   *🔓 𝐔𝐍𝐌𝐔𝐓𝐄*
-├✯
-├➤ _${mencao} foi desmutado._
-│
-├➤ _As mensagens dessa pessoa_
-│   _não serão mais apagadas._
-│
-┗═•❃༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð ðððððð*
+ââ¯
+ââ¤ _${mencao} foi desmutado._
+â
+ââ¤ _As mensagens dessa pessoa_
+â   _nÃ£o serÃ£o mais apagadas._
+â
+âââ¢âà¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 📢 TTG
+// ð¢ TTG
 // ============================================================
 
 async function ttg(message, argumentos = '') {
@@ -11363,13 +11365,13 @@ async function ttg(message, argumentos = '') {
 
     const texto = String(argumentos || '').trim();
     if (!texto) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺📢༻❃•═┓\n│      *𝐓𝐓𝐆 • 𝐌𝐀𝐑𝐂𝐀𝐑 𝐓𝐎𝐃𝐎𝐒*\n├✯\n├➤ ❌ Informe a mensagem que será enviada.\n│\n├➤ 💡 Exemplo:\n│   *${obterPrefixoGrupo(message.from)}ttg atenção, pessoal!*\n┗═•❃༺📢༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºð¢à¼»ââ¢ââ\nâ      *ððð â¢ ðððððð ððððð*\nââ¯\nââ¤ â Informe a mensagem que serÃ¡ enviada.\nâ\nââ¤ ð¡ Exemplo:\nâ   *${obterPrefixoGrupo(message.from)}ttg atenÃ§Ã£o, pessoal!*\nâââ¢âà¼ºð¢à¼»ââ¢ââ`);
         return;
     }
 
     if (!message.from?.endsWith('@g.us')) {
-        await responderCitando(message, '❌ _O TTG só funciona em grupos._');
+        await responderCitando(message, 'â _O TTG sÃ³ funciona em grupos._');
         return;
     }
 
@@ -11379,7 +11381,7 @@ async function ttg(message, argumentos = '') {
                 const Store = window.require('WAWebCollections');
                 const chat = Store?.Chat?.get(chatId);
                 const participantes = chat?.groupMetadata?.participants;
-                if (!participantes) return { erro: 'Participantes do grupo não encontrados.' };
+                if (!participantes) return { erro: 'Participantes do grupo nÃ£o encontrados.' };
 
                 const modelos = typeof participantes.getModelsArray === 'function'
                     ? participantes.getModelsArray()
@@ -11400,7 +11402,7 @@ async function ttg(message, argumentos = '') {
         const participantes = [...new Set((ids?.ids || []).filter(id => id && id !== botId))];
 
         if (!participantes.length) {
-            await responderCitando(message, '⚠️ _Não encontrei participantes para mencionar._');
+            await responderCitando(message, 'â ï¸ _NÃ£o encontrei participantes para mencionar._');
             return;
         }
 
@@ -11410,14 +11412,14 @@ async function ttg(message, argumentos = '') {
             quotedMessageId: obterIdMensagem(message)
         });
     } catch (erro) {
-        console.error('❌ Erro no TTG:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐓𝐓𝐆*\n├✯\n├➤ _Não consegui obter os participantes deste grupo._\n├➤ _${erro?.message || erro}_\n┗═•❃༺❌༻❃•═┓`);
+        console.error('â Erro no TTG:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ *ðððð ðð ððð*\nââ¯\nââ¤ _NÃ£o consegui obter os participantes deste grupo._\nââ¤ _${erro?.message || erro}_\nâââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
 // ============================================================
-// 💍 COMANDO DE CASAMENTO
+// ð COMANDO DE CASAMENTO
 // ============================================================
 
 async function casarPessoa(
@@ -11428,7 +11430,7 @@ async function casarPessoa(
     let idPessoa = null;
 
     // ============================================================
-    // 1. TENTAR ENCONTRAR POR MENÇÃO
+    // 1. TENTAR ENCONTRAR POR MENÃÃO
     // ============================================================
 
     const mencoes =
@@ -11445,7 +11447,7 @@ async function casarPessoa(
             idDaPessoa(pessoa);
 
         console.log(
-            '💍 PESSOA MARCADA:',
+            'ð PESSOA MARCADA:',
             idPessoa
         );
     }
@@ -11472,7 +11474,7 @@ async function casarPessoa(
                     null;
 
                 console.log(
-                    '💍 PESSOA RESPONDIDA:',
+                    'ð PESSOA RESPONDIDA:',
                     idPessoa
                 );
             }
@@ -11480,7 +11482,7 @@ async function casarPessoa(
         } catch (erro) {
 
             console.log(
-                '⚠️ Erro ao obter mensagem respondida:',
+                'â ï¸ Erro ao obter mensagem respondida:',
                 erro.message
             );
         }
@@ -11494,14 +11496,14 @@ async function casarPessoa(
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `❌ *𝐏𝐄𝐒𝐒𝐎𝐀 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐀.*
+            `â *ðððððð ððÌð ððððððððð.*
 
-_Mencione alguém ou responda à mensagem da pessoa._
+_Mencione alguÃ©m ou responda Ã  mensagem da pessoa._
 
 _Exemplo:_
 
@@ -11512,7 +11514,7 @@ _Exemplo:_
     }
 
     // ============================================================
-    // 4. DESCOBRIR QUEM ESTÁ FAZENDO O PEDIDO
+    // 4. DESCOBRIR QUEM ESTÃ FAZENDO O PEDIDO
     // ============================================================
 
     const idRemetente =
@@ -11522,14 +11524,14 @@ _Exemplo:_
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         return;
     }
 
     // ============================================================
-    // 5. NÃO PODE CASAR CONSIGO MESMO
+    // 5. NÃO PODE CASAR CONSIGO MESMO
     // ============================================================
 
     if (
@@ -11541,19 +11543,19 @@ _Exemplo:_
 
         await reagir(
             message,
-            '🤨'
+            'ð¤¨'
         );
 
         await responderCitando(
             message,
-            '🤨 _Você não pode pedir a si mesmo em casamento._'
+            'ð¤¨ _VocÃª nÃ£o pode pedir a si mesmo em casamento._'
         );
 
         return;
     }
 
     // ============================================================
-    // 6. VERIFICAR SE O REMETENTE JÁ ESTÁ CASADO
+    // 6. VERIFICAR SE O REMETENTE JÃ ESTÃ CASADO
     // ============================================================
 
     if (
@@ -11569,19 +11571,19 @@ _Exemplo:_
 
         await reagir(
             message,
-            '💍'
+            'ð'
         );
 
         await responderCitando(
             message,
-            '💍 _Você já está casado. Primeiro precisa resolver seu casamento atual._'
+            'ð _VocÃª jÃ¡ estÃ¡ casado. Primeiro precisa resolver seu casamento atual._'
         );
 
         return;
     }
 
     // ============================================================
-    // 7. VERIFICAR SE A OUTRA PESSOA JÁ ESTÁ CASADA
+    // 7. VERIFICAR SE A OUTRA PESSOA JÃ ESTÃ CASADA
     // ============================================================
 
     if (
@@ -11592,12 +11594,12 @@ _Exemplo:_
 
         await reagir(
             message,
-            '💍'
+            'ð'
         );
 
         await responderCitando(
             message,
-            '💍 _Essa pessoa já está casada._'
+            'ð _Essa pessoa jÃ¡ estÃ¡ casada._'
         );
 
         return;
@@ -11615,12 +11617,12 @@ _Exemplo:_
 
         await reagir(
             message,
-            '💌'
+            'ð'
         );
 
         await responderCitando(
             message,
-            '💌 _Essa pessoa já possui uma proposta de casamento pendente._'
+            'ð _Essa pessoa jÃ¡ possui uma proposta de casamento pendente._'
         );
 
         return;
@@ -11673,7 +11675,7 @@ _Exemplo:_
 
     await reagir(
         message,
-        '💍'
+        'ð'
     );
 
     const imagemCasamento =
@@ -11686,18 +11688,18 @@ await enviarComMencoes(
     imagemCasamento,
     {
         caption:
-            `┏═•❃༺💍༻❃•═┓
-│   *💍 𝐏𝐑𝐎𝐏𝐎𝐒𝐓𝐀 𝐃𝐄 𝐂𝐀𝐒𝐀𝐌𝐄𝐍𝐓𝐎*
-├✯
-├➤ ${mencaoRemetente}
-│   _pediu ${mencaoPessoa} em casamento!_
-│
-├➤ 💕 ${mencaoPessoa}, você aceita?
-│
-├➤ *${PREFIXO}aceitar* 💍
-├➤ *${PREFIXO}recusar* 💔
-│
-┗═•❃༺💍༻❃•═┛`,
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ðððððððð ðð ððððððððð*
+ââ¯
+ââ¤ ${mencaoRemetente}
+â   _pediu ${mencaoPessoa} em casamento!_
+â
+ââ¤ ð ${mencaoPessoa}, vocÃª aceita?
+â
+ââ¤ *${PREFIXO}aceitar* ð
+ââ¤ *${PREFIXO}recusar* ð
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
         mentions: [
             idRemetente,
             idPessoa
@@ -11710,7 +11712,7 @@ await enviarComMencoes(
 async function divorcioPessoa(message) {
     const idRemetente = obterIdRemetente(message);
 
-    // Procura o casamento do usuário
+    // Procura o casamento do usuÃ¡rio
     let chaveCasamento = null;
     let casamento = null;
 
@@ -11727,10 +11729,10 @@ async function divorcioPessoa(message) {
         }
     }
 
-    // Não está casado
+    // NÃ£o estÃ¡ casado
     if (!casamento) {
-        await message.react('❌');
-        await message.reply(aplicarEstiloMensagem('💔 Você não está casado com ninguém.'));
+        await message.react('â');
+        await message.reply(aplicarEstiloMensagem('ð VocÃª nÃ£o estÃ¡ casado com ninguÃ©m.'));
         return;
     }
 
@@ -11739,17 +11741,17 @@ async function divorcioPessoa(message) {
     const mencaoRemetente = `@${idRemetente.split('@')[0]}`;
     const mencaoParceiro = `@${idParceiro.split('@')[0]}`;    
     
-    // Já existe uma confirmação pendente
+    // JÃ¡ existe uma confirmaÃ§Ã£o pendente
     if (confirmacoesDivorcio.has(chaveCasamento)) {
-        await message.react('⚠️');
+        await message.react('â ï¸');
         await message.reply(aplicarEstiloMensagem(
-            '💔 Você já tem um divórcio aguardando confirmação.\n\n' +
+            'ð VocÃª jÃ¡ tem um divÃ³rcio aguardando confirmaÃ§Ã£o.\n\n' +
             'Use `;aceitar` para confirmar ou `;recusar` para cancelar.'
         ));
         return;
     }
 
-    // Guarda a confirmação
+    // Guarda a confirmaÃ§Ã£o
     confirmacoesDivorcio.set(chaveCasamento, {
         parceiro: idParceiro,
         grupo: message.from,
@@ -11758,18 +11760,18 @@ async function divorcioPessoa(message) {
 
     await responderComMencoes(
     message,
-    `┏═•❃༺💔༻❃•═┓
-│   *💔 𝐃𝐈𝐕Ó𝐑𝐂𝐈𝐎*
-├✯
-├➤ ${mencaoRemetente}
-│   _solicitou o divórcio de ${mencaoParceiro}._
-│
-├➤ ⚠️ *Você tem certeza?*
-│
-├➤ 💔 *${PREFIXO}aceitar* — Confirmar
-├➤ ❤️ *${PREFIXO}recusar* — Cancelar
-│
-┗═•❃༺💔༻❃•═┛`,
+    `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ðððÃðððð*
+ââ¯
+ââ¤ ${mencaoRemetente}
+â   _solicitou o divÃ³rcio de ${mencaoParceiro}._
+â
+ââ¤ â ï¸ *VocÃª tem certeza?*
+â
+ââ¤ ð *${PREFIXO}aceitar* â Confirmar
+ââ¤ â¤ï¸ *${PREFIXO}recusar* â Cancelar
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
     undefined,
     {
         mentions: [
@@ -11787,7 +11789,7 @@ async function aceitarDivorcio(message) {
         return;
     }
 
-    // Procura uma confirmação de divórcio do usuário
+    // Procura uma confirmaÃ§Ã£o de divÃ³rcio do usuÃ¡rio
     let confirmacao = null;
     let chaveConfirmacao = null;
 
@@ -11804,19 +11806,19 @@ async function aceitarDivorcio(message) {
         }
     }
 
-    // Não existe divórcio aguardando confirmação
+    // NÃ£o existe divÃ³rcio aguardando confirmaÃ§Ã£o
     if (!confirmacao) {
         return false;
     }
 
-    // Só pode confirmar no mesmo grupo onde iniciou
+    // SÃ³ pode confirmar no mesmo grupo onde iniciou
     if (confirmacao.grupo !== message.from) {
         return false;
     }
 
     const idParceiro = confirmacao.parceiro;
 
-    // Procura a chave real do casamento do usuário
+    // Procura a chave real do casamento do usuÃ¡rio
     let chaveUsuario = null;
     let chaveParceiro = null;
 
@@ -11839,7 +11841,7 @@ async function aceitarDivorcio(message) {
         casamentos.delete(chaveParceiro);
     }
 
-    // Remove a confirmação
+    // Remove a confirmaÃ§Ã£o
     confirmacoesDivorcio.delete(chaveConfirmacao);
 
     salvarCasamentos();
@@ -11852,15 +11854,15 @@ async function aceitarDivorcio(message) {
 
     await responderComMencoes(
         message,
-        `┏═•❃༺💔༻❃•═┓
-│   *💔 𝐃𝐈𝐕Ó𝐑𝐂𝐈𝐎 𝐂𝐎𝐍𝐂𝐋𝐔Í𝐃𝐎*
-├✯
-├➤ ${mencaoRemetente}
-│   _encerrou seu casamento com ${mencaoParceiro}._
-│
-├➤ 🥀 O casamento foi oficialmente encerrado.
-│
-┗═•❃༺💔༻❃•═┛`,
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ðððÃðððð ððððððÃðð*
+ââ¯
+ââ¤ ${mencaoRemetente}
+â   _encerrou seu casamento com ${mencaoParceiro}._
+â
+ââ¤ ð¥ O casamento foi oficialmente encerrado.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
         undefined,
         {
             mentions: [
@@ -11916,15 +11918,15 @@ async function recusarDivorcio(message) {
 
     await responderComMencoes(
         message,
-        `┏═•❃༺❤️༻❃•═┓
-│   *❤️ 𝐃𝐈𝐕Ó𝐑𝐂𝐈𝐎 𝐂𝐀𝐍𝐂𝐄𝐋𝐀𝐃𝐎*
-├✯
-├➤ ${mencaoRemetente}
-│   _decidiu permanecer casado com ${mencaoParceiro}._
-│
-├➤ 💍 O casamento continua intacto!
-│
-┗═•❃༺❤️༻❃•═┛`,
+        `âââ¢âà¼ºâ¤ï¸à¼»ââ¢ââ
+â   *â¤ï¸ ðððÃðððð ððððððððð*
+ââ¯
+ââ¤ ${mencaoRemetente}
+â   _decidiu permanecer casado com ${mencaoParceiro}._
+â
+ââ¤ ð O casamento continua intacto!
+â
+âââ¢âà¼ºâ¤ï¸à¼»ââ¢ââ`,
         undefined,
         {
             mentions: [
@@ -11938,7 +11940,7 @@ async function recusarDivorcio(message) {
 }
 
 // ============================================================
-// 👶 ADOTAR PESSOA
+// ð¶ ADOTAR PESSOA
 // ============================================================
 
 async function adotarPessoa(message) {
@@ -11951,7 +11953,7 @@ async function adotarPessoa(message) {
     }
 
     // ============================================================
-    // 👤 ENCONTRAR PESSOA
+    // ð¤ ENCONTRAR PESSOA
     // ============================================================
 
     let idPessoa = null;
@@ -11976,15 +11978,15 @@ async function adotarPessoa(message) {
     }
 
     // ============================================================
-    // ❌ NENHUMA PESSOA ENCONTRADA
+    // â NENHUMA PESSOA ENCONTRADA
     // ============================================================
 
     if (!idPessoa) {
 
-        await message.react('❌');
+        await message.react('â');
 
         await message.reply(aplicarEstiloMensagem(
-            `👶 Para adotar alguém, mencione a pessoa ou responda a uma mensagem dela.\n\n` +
+            `ð¶ Para adotar alguÃ©m, mencione a pessoa ou responda a uma mensagem dela.\n\n` +
             `Exemplo: *${PREFIXO}adotar @pessoa*`
         ));
 
@@ -11992,7 +11994,7 @@ async function adotarPessoa(message) {
     }
 
     // ============================================================
-    // 🚫 NÃO PODE ADOTAR A SI MESMO
+    // ð« NÃO PODE ADOTAR A SI MESMO
     // ============================================================
 
     if (
@@ -12002,17 +12004,17 @@ async function adotarPessoa(message) {
         )
     ) {
 
-        await message.react('❌');
+        await message.react('â');
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Você não pode adotar a si mesmo!'
+            'â VocÃª nÃ£o pode adotar a si mesmo!'
         ));
 
         return;
     }
 
     // ============================================================
-// 💍 NÃO PODE ADOTAR O PRÓPRIO CÔNJUGE
+// ð NÃO PODE ADOTAR O PRÃPRIO CÃNJUGE
 // ============================================================
 
 let casamentoRemetente =
@@ -12049,17 +12051,17 @@ if (
     )
 ) {
 
-    await message.react('❌');
+    await message.react('â');
 
     await message.reply(aplicarEstiloMensagem(
-        '❌ Você não pode adotar seu par! (felizmente)'
+        'â VocÃª nÃ£o pode adotar seu par! (felizmente)'
     ));
 
     return;
 }
     
     // ============================================================
-    // 🔎 VERIFICAR SE JÁ É FILHO
+    // ð VERIFICAR SE JÃ Ã FILHO
     // ============================================================
 
     const familiaRemetente =
@@ -12077,17 +12079,17 @@ if (
         )
     ) {
 
-        await message.react('⚠️');
+        await message.react('â ï¸');
 
         await message.reply(aplicarEstiloMensagem(
-            '⚠️ Essa pessoa já está registrada como seu filho!'
+            'â ï¸ Essa pessoa jÃ¡ estÃ¡ registrada como seu filho!'
         ));
 
         return;
     }
 
     // ============================================================
-    // 🔎 VERIFICAR SE JÁ EXISTE PROPOSTA
+    // ð VERIFICAR SE JÃ EXISTE PROPOSTA
     // ============================================================
 
     for (const proposta of propostasAdocao.values()) {
@@ -12099,10 +12101,10 @@ if (
             )
         ) {
 
-            await message.react('⚠️');
+            await message.react('â ï¸');
 
             await message.reply(aplicarEstiloMensagem(
-                '⚠️ Essa pessoa já recebeu uma proposta de adoção!'
+                'â ï¸ Essa pessoa jÃ¡ recebeu uma proposta de adoÃ§Ã£o!'
             ));
 
             return;
@@ -12110,7 +12112,7 @@ if (
     }
 
     // ============================================================
-    // 👶 CRIAR PROPOSTA
+    // ð¶ CRIAR PROPOSTA
     // ============================================================
 
     const proposta = {
@@ -12131,7 +12133,7 @@ if (
     );
 
     // ============================================================
-    // 📸 MENÇÕES
+    // ð¸ MENÃÃES
     // ============================================================
 
     const mencaoRemetente =
@@ -12141,23 +12143,23 @@ if (
         `@${idPessoa.split('@')[0]}`;
 
     // ============================================================
-    // 👶 MENSAGEM
+    // ð¶ MENSAGEM
     // ============================================================
 
     await responderComMencoes(
         message,
-        `┏═•❃༺👶༻❃•═┓
-│   *👶 𝐏𝐑𝐎𝐏𝐎𝐒𝐓𝐀 𝐃𝐄 𝐀𝐃𝐎ÇÃ𝐎*
-├✯
-├➤ ${mencaoRemetente}
-│   _quer adotar_ ${mencaoPessoa}!
-│
-├➤ 💭 ${mencaoPessoa}, você aceita?
-│
-├➤ ✅ Responda *sim*
-├➤ ❌ Responda *nao*
-│
-┗═•❃༺👶༻❃•═┛`,
+        `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *ð¶ ðððððððð ðð ðððÃÃð*
+ââ¯
+ââ¤ ${mencaoRemetente}
+â   _quer adotar_ ${mencaoPessoa}!
+â
+ââ¤ ð­ ${mencaoPessoa}, vocÃª aceita?
+â
+ââ¤ â Responda *sim*
+ââ¤ â Responda *nao*
+â
+âââ¢âà¼ºð¶à¼»ââ¢ââ`,
         undefined,
         {
             mentions: [
@@ -12194,13 +12196,13 @@ async function aceitarAdocao(message) {
         }
     }
 
-    // Não existe proposta
+    // NÃ£o existe proposta
     if (!proposta) {
         return false;
     }
 
     // ============================================================
-    // 🔒 VERIFICAR O GRUPO
+    // ð VERIFICAR O GRUPO
     // ============================================================
 
     if (
@@ -12217,7 +12219,7 @@ async function aceitarAdocao(message) {
         proposta.para;
 
     // ============================================================
-    // 👨‍👩‍👧 PEGAR FAMÍLIA DO PAI/MÃE
+    // ð¨âð©âð§ PEGAR FAMÃLIA DO PAI/MÃE
     // ============================================================
 
     let familiaPaiMae =
@@ -12235,7 +12237,7 @@ async function aceitarAdocao(message) {
     }
 
     // ============================================================
-    // 👶 PEGAR FAMÍLIA DO FILHO
+    // ð¶ PEGAR FAMÃLIA DO FILHO
     // ============================================================
 
     let familiaFilho =
@@ -12254,7 +12256,7 @@ async function aceitarAdocao(message) {
     }
 
     // ============================================================
-    // 🔎 EVITAR DUPLICAÇÃO
+    // ð EVITAR DUPLICAÃÃO
     // ============================================================
 
     const jaEhFilho =
@@ -12290,7 +12292,7 @@ async function aceitarAdocao(message) {
     }
 
     // ============================================================
-    // 💾 SALVAR
+    // ð¾ SALVAR
     // ============================================================
 
     familias.set(
@@ -12310,7 +12312,7 @@ async function aceitarAdocao(message) {
     salvarFamilias();
 
     // ============================================================
-    // 📸 MENÇÕES
+    // ð¸ MENÃÃES
     // ============================================================
 
     const mencaoPaiMae =
@@ -12320,20 +12322,20 @@ async function aceitarAdocao(message) {
         `@${idFilho.split('@')[0]}`;
 
     // ============================================================
-    // 👶 ADOÇÃO REALIZADA
+    // ð¶ ADOÃÃO REALIZADA
     // ============================================================
 
     await responderComMencoes(
         message,
-        `┏═•❃༺👶༻❃•═┓
-│   *👶 𝐀𝐃𝐎ÇÃ𝐎 𝐑𝐄𝐀𝐋𝐈𝐙𝐀𝐃𝐀*
-├✯
-├➤ ${mencaoFilho}
-│   _aceitou ser adotado por_ ${mencaoPaiMae}!
-│
-├➤ 👨‍👩‍👧 Uma nova família foi formada!
-│
-┗═•❃༺👶༻❃•═┛`,
+        `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *ð¶ ðððÃÃð ððððððððð*
+ââ¯
+ââ¤ ${mencaoFilho}
+â   _aceitou ser adotado por_ ${mencaoPaiMae}!
+â
+ââ¤ ð¨âð©âð§ Uma nova famÃ­lia foi formada!
+â
+âââ¢âà¼ºð¶à¼»ââ¢ââ`,
         undefined,
         {
             mentions: [
@@ -12372,13 +12374,13 @@ async function recusarAdocao(message) {
         }
     }
 
-    // Não existe proposta
+    // NÃ£o existe proposta
     if (!proposta) {
         return false;
     }
 
     // ============================================================
-    // 🔒 VERIFICAR O GRUPO
+    // ð VERIFICAR O GRUPO
     // ============================================================
 
     if (
@@ -12400,20 +12402,20 @@ async function recusarAdocao(message) {
     );
 
     // ============================================================
-    // ❌ RECUSOU
+    // â RECUSOU
     // ============================================================
 
     await responderComMencoes(
         message,
-        `┏═•❃༺👶༻❃•═┓
-│   *❌ 𝐀𝐃𝐎ÇÃ𝐎 𝐑𝐄𝐂𝐔𝐒𝐀𝐃𝐀*
-├✯
-├➤ @${idRemetente.split('@')[0]}
-│   _recusou ser adotado por_ ${mencaoPaiMae}.
-│
-├➤ 💔 A adoção não aconteceu.
-│
-┗═•❃༺👶༻❃•═┛`,
+        `âââ¢âà¼ºð¶à¼»ââ¢ââ
+â   *â ðððÃÃð ðððððððð*
+ââ¯
+ââ¤ @${idRemetente.split('@')[0]}
+â   _recusou ser adotado por_ ${mencaoPaiMae}.
+â
+ââ¤ ð A adoÃ§Ã£o nÃ£o aconteceu.
+â
+âââ¢âà¼ºð¶à¼»ââ¢ââ`,
         undefined,
         {
             mentions: [
@@ -12436,13 +12438,13 @@ async function mostrarFamilia(message) {
     }
 
     // ============================================================
-    // 👨‍👩‍👧 PEGAR FAMÍLIA
+    // ð¨âð©âð§ PEGAR FAMÃLIA
     // ============================================================
 
     let familia =
         familias.get(idRemetente);
 
-    // Caso ainda não exista uma família
+    // Caso ainda nÃ£o exista uma famÃ­lia
     if (!familia) {
 
         familia = {
@@ -12460,7 +12462,7 @@ async function mostrarFamilia(message) {
     }
 
     // ============================================================
-    // 💍 PEGAR CASAMENTO
+    // ð PEGAR CASAMENTO
     // ============================================================
 
     let casamento =
@@ -12488,18 +12490,18 @@ async function mostrarFamilia(message) {
     }
 
     // ============================================================
-    // 📝 MONTAR MENSAGEM
+    // ð MONTAR MENSAGEM
     // ============================================================
 
     const mencaoRemetente =
         `@${idRemetente.split('@')[0]}`;
 
     let textoFamilia =
-        `┏═•❃༺👨‍👩‍👧༻❃•═┓
-│   *👨‍👩‍👧 𝐒𝐔𝐀 𝐅𝐀𝐌Í𝐋𝐈𝐀*
-├✯
-├➤ 👤 Você: ${mencaoRemetente}
-│
+        `âââ¢âà¼ºð¨âð©âð§à¼»ââ¢ââ
+â   *ð¨âð©âð§ ððð ðððÃððð*
+ââ¯
+ââ¤ ð¤ VocÃª: ${mencaoRemetente}
+â
 `;
 
     const mencoes = [
@@ -12507,7 +12509,7 @@ async function mostrarFamilia(message) {
     ];
 
     // ============================================================
-    // 💍 CASAMENTO
+    // ð CASAMENTO
     // ============================================================
 
     if (
@@ -12522,7 +12524,7 @@ async function mostrarFamilia(message) {
             `@${idParceiro.split('@')[0]}`;
 
         textoFamilia +=
-            `├➤ 💍 ${mencaoRemetente} é casado com ${mencaoParceiro}\n│\n`;
+            `ââ¤ ð ${mencaoRemetente} Ã© casado com ${mencaoParceiro}\nâ\n`;
 
         mencoes.push(
             idParceiro
@@ -12531,22 +12533,22 @@ async function mostrarFamilia(message) {
     } else {
 
         textoFamilia +=
-            `├➤ 💍 Você não está casado.\n│\n`;
+            `ââ¤ ð VocÃª nÃ£o estÃ¡ casado.\nâ\n`;
     }
 
     // ============================================================
-    // 👶 FILHOS
+    // ð¶ FILHOS
     // ============================================================
 
     textoFamilia +=
-        `├➤ 👶 *𝐅𝐈𝐋𝐇𝐎𝐒*\n`;
+        `ââ¤ ð¶ *ðððððð*\n`;
 
     if (
         familia.filhos.length === 0
     ) {
 
         textoFamilia +=
-            `│   └─ _Nenhum filho._\n`;
+            `â   ââ _Nenhum filho._\n`;
 
     } else {
 
@@ -12559,7 +12561,7 @@ async function mostrarFamilia(message) {
                 `@${idFilho.split('@')[0]}`;
 
             textoFamilia +=
-                `│   ├─ ${mencaoFilho}\n`;
+                `â   ââ ${mencaoFilho}\n`;
 
             mencoes.push(
                 idFilho
@@ -12568,21 +12570,21 @@ async function mostrarFamilia(message) {
     }
 
     textoFamilia +=
-        `│\n`;
+        `â\n`;
 
     // ============================================================
-    // 👨‍👩‍👧 PAIS
+    // ð¨âð©âð§ PAIS
     // ============================================================
 
     textoFamilia +=
-        `├➤ 👨‍👩‍👧 *𝐏𝐀𝐈𝐒 / 𝐑𝐄𝐒𝐏𝐎𝐍𝐒Á𝐕𝐄𝐈𝐒*\n`;
+        `ââ¤ ð¨âð©âð§ *ðððð / ðððððððÃðððð*\n`;
 
     if (
         familia.pais.length === 0
     ) {
 
         textoFamilia +=
-            `│   └─ _Nenhum registrado._\n`;
+            `â   ââ _Nenhum registrado._\n`;
 
     } else {
 
@@ -12595,7 +12597,7 @@ async function mostrarFamilia(message) {
                 `@${idPai.split('@')[0]}`;
 
             textoFamilia +=
-                `│   ├─ ${mencaoPai}\n`;
+                `â   ââ ${mencaoPai}\n`;
 
             mencoes.push(
                 idPai
@@ -12604,10 +12606,10 @@ async function mostrarFamilia(message) {
     }
 
     textoFamilia +=
-        `│\n┗═•❃༺👨‍👩‍👧༻❃•═┛`;
+        `â\nâââ¢âà¼ºð¨âð©âð§à¼»ââ¢ââ`;
 
     // ============================================================
-    // 📸 FOTO DE QUEM FEZ O PEDIDO
+    // ð¸ FOTO DE QUEM FEZ O PEDIDO
     // ============================================================
 
     let foto =
@@ -12628,14 +12630,14 @@ async function mostrarFamilia(message) {
         } catch (erro) {
 
             console.log(
-                '⚠️ Não foi possível obter a foto de quem fez o pedido:',
+                'â ï¸ NÃ£o foi possÃ­vel obter a foto de quem fez o pedido:',
                 erro.message
             );
         }
     }
 
     // ============================================================
-    // 📤 ENVIAR FAMÍLIA
+    // ð¤ ENVIAR FAMÃLIA
     // ============================================================
 
     if (foto) {
@@ -12662,13 +12664,13 @@ async function mostrarFamilia(message) {
         } catch (erro) {
 
             console.log(
-                '⚠️ Erro ao enviar foto da família:',
+                'â ï¸ Erro ao enviar foto da famÃ­lia:',
                 erro.message
             );
         }
     }
 
-    // Caso não tenha foto disponível
+    // Caso nÃ£o tenha foto disponÃ­vel
     await responderComMencoes(
         message,
         textoFamilia,
@@ -12680,7 +12682,7 @@ async function mostrarFamilia(message) {
 }
 
 // ============================================================
-// 💍 ACEITAR PROPOSTA DE CASAMENTO
+// ð ACEITAR PROPOSTA DE CASAMENTO
 // ============================================================
 
 async function aceitarCasamento(message) {
@@ -12715,7 +12717,7 @@ async function aceitarCasamento(message) {
             idRemetente;
     }
 
-    // Se não encontrou, procura entre todas as propostas
+    // Se nÃ£o encontrou, procura entre todas as propostas
     if (!proposta) {
 
         const idsRemetente =
@@ -12785,23 +12787,23 @@ async function aceitarCasamento(message) {
     if (!proposta) {
 
         console.log(
-            '❌ Nenhuma proposta encontrada para:',
+            'â Nenhuma proposta encontrada para:',
             idRemetente
         );
 
         console.log(
-            '💌 PROPOSTAS ATUAIS:',
+            'ð PROPOSTAS ATUAIS:',
             [...propostasCasamento]
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            '❌ _Você não possui nenhuma proposta de casamento pendente._'
+            'â _VocÃª nÃ£o possui nenhuma proposta de casamento pendente._'
         );
 
         return;
@@ -12815,7 +12817,7 @@ async function aceitarCasamento(message) {
         proposta.de;
 
     // ============================================================
-    // VERIFICAR SE ALGUM DOS DOIS JÁ ESTÁ CASADO
+    // VERIFICAR SE ALGUM DOS DOIS JÃ ESTÃ CASADO
     // ============================================================
 
     if (
@@ -12835,12 +12837,12 @@ async function aceitarCasamento(message) {
 
         await reagir(
             message,
-            '💍'
+            'ð'
         );
 
         await responderCitando(
             message,
-            '💍 _Não foi possível concluir o casamento porque uma das pessoas já está casada._'
+            'ð _NÃ£o foi possÃ­vel concluir o casamento porque uma das pessoas jÃ¡ estÃ¡ casada._'
         );
 
         return;
@@ -12886,20 +12888,20 @@ casamentos.set(
 
     await reagir(
         message,
-        '💍'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺💍༻❃•═┓
-│   *💍 𝐂𝐀𝐒𝐀𝐌𝐄𝐍𝐓𝐎 𝐑𝐄𝐀𝐋𝐈𝐙𝐀𝐃𝐎!*
-├✯
-├➤ ${mencaoPessoa} e ${mencaoParceiro}
-│   _agora estão oficialmente casados!_ 💕
-│
-├➤ 💍 Que comece a vida a dois!
-│
-┗═•❃༺💍༻❃•═┛`,
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ððððððððð ððððððððð!*
+ââ¯
+ââ¤ ${mencaoPessoa} e ${mencaoParceiro}
+â   _agora estÃ£o oficialmente casados!_ ð
+â
+ââ¤ ð Que comece a vida a dois!
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
         {
             mentions: [
                 idRemetente,
@@ -12911,7 +12913,7 @@ casamentos.set(
 
 
 // ============================================================
-// 💔 RECUSAR PROPOSTA DE CASAMENTO
+// ð RECUSAR PROPOSTA DE CASAMENTO
 // ============================================================
 
 async function recusarCasamento(message) {
@@ -12946,7 +12948,7 @@ async function recusarCasamento(message) {
             idRemetente;
     }
 
-    // Se não encontrou, procura entre todas as propostas
+    // Se nÃ£o encontrou, procura entre todas as propostas
     if (!proposta) {
 
         const idsRemetente =
@@ -13016,23 +13018,23 @@ async function recusarCasamento(message) {
     if (!proposta) {
 
         console.log(
-            '❌ Nenhuma proposta encontrada para:',
+            'â Nenhuma proposta encontrada para:',
             idRemetente
         );
 
         console.log(
-            '💌 PROPOSTAS ATUAIS:',
+            'ð PROPOSTAS ATUAIS:',
             [...propostasCasamento]
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            '❌ _Você não possui nenhuma proposta de casamento pendente._'
+            'â _VocÃª nÃ£o possui nenhuma proposta de casamento pendente._'
         );
 
         return;
@@ -13067,20 +13069,20 @@ async function recusarCasamento(message) {
 
     await reagir(
         message,
-        '💔'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺💔༻❃•═┓
-│   *💔 𝐏𝐑𝐎𝐏𝐎𝐒𝐓𝐀 𝐑𝐄𝐂𝐔𝐒𝐀𝐃𝐀*
-├✯
-├➤ ${mencaoPessoa} recusou
-│   _a proposta de ${mencaoParceiro}._
-│
-├➤ _Talvez na próxima..._ 🥲
-│
-┗═•❃༻❃•═┛`,
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ðððððððð ðððððððð*
+ââ¯
+ââ¤ ${mencaoPessoa} recusou
+â   _a proposta de ${mencaoParceiro}._
+â
+ââ¤ _Talvez na prÃ³xima..._ ð¥²
+â
+âââ¢âà¼»ââ¢ââ`,
         {
             mentions: [
                 idRemetente,
@@ -13093,24 +13095,24 @@ async function recusarCasamento(message) {
 async function formarCasalAleatorio(message) {
 
     // ============================================================
-    // 👥 VERIFICAR SE É GRUPO
+    // ð¥ VERIFICAR SE Ã GRUPO
     // ============================================================
 
     if (
         !message.from.endsWith('@g.us')
     ) {
 
-        await message.react('❌');
+        await message.react('â');
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Esse comando só pode ser usado em grupos!'
+            'â Esse comando sÃ³ pode ser usado em grupos!'
         ));
 
         return;
     }
 
     // ============================================================
-    // 👥 PEGAR PARTICIPANTES REGISTRADOS
+    // ð¥ PEGAR PARTICIPANTES REGISTRADOS
     // ============================================================
 
     const participantes =
@@ -13124,8 +13126,8 @@ async function formarCasalAleatorio(message) {
     ) {
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Ainda não conheço pessoas suficientes desse grupo para formar um casal!\n\n' +
-            '💡 Peça para pelo menos 2 pessoas enviarem uma mensagem primeiro.'
+            'â Ainda nÃ£o conheÃ§o pessoas suficientes desse grupo para formar um casal!\n\n' +
+            'ð¡ PeÃ§a para pelo menos 2 pessoas enviarem uma mensagem primeiro.'
         ));
 
         return;
@@ -13135,12 +13137,12 @@ async function formarCasalAleatorio(message) {
         [...participantes];
 
     console.log(
-        '💘 PESSOAS DISPONÍVEIS PARA SORTEIO:',
+        'ð PESSOAS DISPONÃVEIS PARA SORTEIO:',
         pessoas
     );
 
     // ============================================================
-    // 🎲 ESCOLHER DUAS PESSOAS
+    // ð² ESCOLHER DUAS PESSOAS
     // ============================================================
 
     const indice1 =
@@ -13173,7 +13175,7 @@ async function formarCasalAleatorio(message) {
         pessoas[indice2];
 
     // ============================================================
-    // 💘 PORCENTAGEM
+    // ð PORCENTAGEM
     // ============================================================
 
     const porcentagem =
@@ -13182,7 +13184,7 @@ async function formarCasalAleatorio(message) {
         );
 
     // ============================================================
-    // 💕 MENÇÕES
+    // ð MENÃÃES
     // ============================================================
 
     const mencao1 =
@@ -13192,19 +13194,19 @@ async function formarCasalAleatorio(message) {
         `@${pessoa2.split('@')[0]}`;
 
     // ============================================================
-    // 💘 RESULTADO
+    // ð RESULTADO
     // ============================================================
 
     await responderComMencoes(
         message,
-        `┏═•❃༺💘༻❃•═┓
-│   *💘 𝐂𝐀𝐒𝐀𝐋 𝐃𝐎 𝐃𝐈𝐀*
-├✯
-├➤ ${mencao1} ❤️ ${mencao2}
-│
-├➤ 💞 Compatibilidade: *${porcentagem}%*
-│
-┗═•❃༺💘༻❃•═┛`,
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ððððð ðð ððð*
+ââ¯
+ââ¤ ${mencao1} â¤ï¸ ${mencao2}
+â
+ââ¤ ð Compatibilidade: *${porcentagem}%*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
         undefined,
         {
             mentions: [
@@ -13218,17 +13220,17 @@ async function formarCasalAleatorio(message) {
 async function shiparPessoas(message) {
 
     // ============================================================
-    // 💘 VERIFICAR SE É GRUPO
+    // ð VERIFICAR SE Ã GRUPO
     // ============================================================
 
     if (
         !message.from.endsWith('@g.us')
     ) {
 
-        await message.react('❌');
+        await message.react('â');
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Esse comando só pode ser usado em grupos!'
+            'â Esse comando sÃ³ pode ser usado em grupos!'
         ));
 
         return;
@@ -13236,7 +13238,7 @@ async function shiparPessoas(message) {
 
 
     // ============================================================
-    // 👥 PEGAR AS PESSOAS MENCIONADAS
+    // ð¥ PEGAR AS PESSOAS MENCIONADAS
     // ============================================================
 
     const mencionados = [...new Set(message.mentionedIds || [])];
@@ -13250,13 +13252,13 @@ async function shiparPessoas(message) {
                 pessoas.push(idCitado);
             }
         } catch (erro) {
-            console.log('⚠️ Erro ao obter pessoa citada no ship:', erro.message);
+            console.log('â ï¸ Erro ao obter pessoa citada no ship:', erro.message);
         }
     }
 
 
     // ============================================================
-    // ❌ VERIFICAR QUANTIDADE
+    // â VERIFICAR QUANTIDADE
     // ============================================================
 
     if (
@@ -13264,8 +13266,8 @@ async function shiparPessoas(message) {
     ) {
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Você precisa mencionar exatamente 2 pessoas!\n\n' +
-            '💡 Exemplo:\n' +
+            'â VocÃª precisa mencionar exatamente 2 pessoas!\n\n' +
+            'ð¡ Exemplo:\n' +
             '`;shipar`\n' +
             '@Pessoa1\n' +
             '@Pessoa2'
@@ -13276,7 +13278,7 @@ async function shiparPessoas(message) {
 
 
     // ============================================================
-    // 🚫 IMPEDIR SHIP CONSIGO MESMO
+    // ð« IMPEDIR SHIP CONSIGO MESMO
     // ============================================================
 
     if (
@@ -13284,7 +13286,7 @@ async function shiparPessoas(message) {
     ) {
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Você não pode shipar a mesma pessoa com ela mesma! 😂'
+            'â VocÃª nÃ£o pode shipar a mesma pessoa com ela mesma! ð'
         ));
 
         return;
@@ -13292,7 +13294,7 @@ async function shiparPessoas(message) {
 
 
     // ============================================================
-    // 💘 PORCENTAGEM
+    // ð PORCENTAGEM
     // ============================================================
 
     const porcentagem =
@@ -13302,7 +13304,7 @@ async function shiparPessoas(message) {
 
 
     // ============================================================
-    // 💕 MENÇÕES
+    // ð MENÃÃES
     // ============================================================
 
     const mencao1 =
@@ -13313,19 +13315,19 @@ async function shiparPessoas(message) {
 
 
     // ============================================================
-    // 💘 RESULTADO
+    // ð RESULTADO
     // ============================================================
 
     await responderComMencoes(
         message,
-        `┏═•❃༺💘༻❃•═┓
-│   *💘 𝐒𝐇𝐈𝐏 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
-├✯
-├➤ ${mencao1} ❤️ ${mencao2}
-│
-├➤ 💞 Compatibilidade: *${porcentagem}%*
-│
-┗═•❃༺💘༻❃•═┛`,
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â   *ð ðððð ðð ððððð*
+ââ¯
+ââ¤ ${mencao1} â¤ï¸ ${mencao2}
+â
+ââ¤ ð Compatibilidade: *${porcentagem}%*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`,
         undefined,
         {
             mentions: pessoas
@@ -13334,7 +13336,7 @@ async function shiparPessoas(message) {
 }
 
 // ============================================================
-// 💤 SISTEMA AFK
+// ð¤ SISTEMA AFK
 // ============================================================
 
 function obterChaveAFK(message, idUsuario) {
@@ -13345,7 +13347,7 @@ function obterChaveAFK(message, idUsuario) {
 
 
 // ============================================================
-// ⏱️ FORMATAR TEMPO DE AFK
+// â±ï¸ FORMATAR TEMPO DE AFK
 // ============================================================
 
 function formatarTempoAFK(inicio) {
@@ -13443,7 +13445,7 @@ function formatarTempoAFK(inicio) {
 
 
 // ============================================================
-// ⏱️ FORMATAR TEMPO CURTO
+// â±ï¸ FORMATAR TEMPO CURTO
 // ============================================================
 
 function formatarTempoAFKCurto(inicio) {
@@ -13530,7 +13532,7 @@ function formatarTempoAFKCurto(inicio) {
 
 
 // ============================================================
-// 🌎 SAUDAÇÃO
+// ð SAUDAÃÃO
 // ============================================================
 
 function obterSaudacao() {
@@ -13565,7 +13567,7 @@ function obterSaudacao() {
 
 
 // ============================================================
-// 👤 OBTER ID DO USUÁRIO
+// ð¤ OBTER ID DO USUÃRIO
 // ============================================================
 
 function obterIdAFK(message) {
@@ -13579,7 +13581,7 @@ function obterIdAFK(message) {
 
 
 // ============================================================
-// 💤 ATIVAR AFK
+// ð¤ ATIVAR AFK
 // ============================================================
 
 async function ativarAFK(
@@ -13587,21 +13589,21 @@ async function ativarAFK(
     motivo
 ) {
 
-    // AFK só funciona em grupos
+    // AFK sÃ³ funciona em grupos
     if (
         !message.from.endsWith('@g.us')
     ) {
 
         await responderCitando(
             message,
-            `╭━━━〔 💤 𝐌𝐎𝐃𝐎 𝐀𝐅𝐊 〕━━━╮
-│
-│ ❌ *Disponível apenas em grupos*
-│
-│ O modo AFK não pode ser utilizado
-│ em conversas privadas.
-│
-╰━━━━━━━━━━━━━━━━━━━━╯`
+            `â­âââã ð¤ ðððð ððð ãââââ®
+â
+â â *DisponÃ­vel apenas em grupos*
+â
+â O modo AFK nÃ£o pode ser utilizado
+â em conversas privadas.
+â
+â°âââââââââââââââââââââ¯`
         );
 
         return;
@@ -13628,7 +13630,7 @@ async function ativarAFK(
 
 
     // ========================================================
-    // 🔄 JÁ ESTÁ AFK
+    // ð JÃ ESTÃ AFK
     // ========================================================
 
     if (
@@ -13646,15 +13648,15 @@ async function ativarAFK(
 
         await responderCitando(
             message,
-            `╭━━━〔 💤 𝐀𝐅𝐊 𝐀𝐓𝐈𝐕𝐎 〕━━━╮
-│
-│ ⚠️ Você já estava em AFK.
-│
-│ 📝 *Motivo atualizado:*
-│ ➜ _${dados.motivo}_
-│
-╰━━━━━━━━━━━━━━━━━━━━╯
-💡 _Seu motivo foi atualizado com sucesso._`
+            `â­âââã ð¤ ððð ððððð ãââââ®
+â
+â â ï¸ VocÃª jÃ¡ estava em AFK.
+â
+â ð *Motivo atualizado:*
+â â _${dados.motivo}_
+â
+â°âââââââââââââââââââââ¯
+ð¡ _Seu motivo foi atualizado com sucesso._`
         );
 
         return;
@@ -13663,7 +13665,7 @@ async function ativarAFK(
 
 
     // ========================================================
-    // 💤 SALVAR AFK
+    // ð¤ SALVAR AFK
     // ========================================================
 
     usuariosAFK.set(
@@ -13686,27 +13688,27 @@ async function ativarAFK(
 
 
     // ========================================================
-    // 📢 CONFIRMAÇÃO
+    // ð¢ CONFIRMAÃÃO
     // ========================================================
 
     await responderCitando(
         message,
-        `╭━━━〔 💤 𝐀𝐅𝐊 𝐀𝐓𝐈𝐕𝐀𝐃𝐎 〕━━━╮
-│
-│ 👤 *Usuário:* Você
-│ 📝 *Motivo:* _${motivo || 'Sem motivo informado.'}_
-│ 💤 *Status:* Ausente
-│
-╰━━━━━━━━━━━━━━━━━━━━╯
+        `â­âââã ð¤ ððð ððððððð ãââââ®
+â
+â ð¤ *UsuÃ¡rio:* VocÃª
+â ð *Motivo:* _${motivo || 'Sem motivo informado.'}_
+â ð¤ *Status:* Ausente
+â
+â°âââââââââââââââââââââ¯
 
-💡 _Envie qualquer mensagem para encerrar seu AFK._`
+ð¡ _Envie qualquer mensagem para encerrar seu AFK._`
     );
 
 }
 
 
 // ============================================================
-// 👋 REMOVER AFK
+// ð REMOVER AFK
 // ============================================================
 
 async function removerAFK(
@@ -13725,7 +13727,7 @@ async function removerAFK(
 
 
     let nome =
-        'Usuário';
+        'UsuÃ¡rio';
 
 
     try {
@@ -13738,12 +13740,12 @@ async function removerAFK(
             contato.pushname ||
             contato.name ||
             contato.number ||
-            'Usuário';
+            'UsuÃ¡rio';
 
     } catch (erro) {
 
         console.log(
-            '⚠️ Não foi possível obter nome do usuário AFK:',
+            'â ï¸ NÃ£o foi possÃ­vel obter nome do usuÃ¡rio AFK:',
             erro.message
         );
 
@@ -13752,20 +13754,20 @@ async function removerAFK(
 
     await responderCitando(
         message,
-        `╭━━━〔 👋 𝐀𝐅𝐊 𝐄𝐍𝐂𝐄𝐑𝐑𝐀𝐃𝐎 〕━━━╮
-│
-│ 🌙 *${saudacao}, ${nome}!*
-│
-│ ⏱️ *Tempo ausente:*
-│ ➜ ${tempo}
-│
-│ 📝 *Motivo:*
-│ ➜ _${dados.motivo}_
-│
-│ ✅ *Status:* Online
-│
-╰━━━━━━━━━━━━━━━━━━━━╯
-_Que bom que você voltou! 👋_`
+        `â­âââã ð ððð ððððððððð ãââââ®
+â
+â ð *${saudacao}, ${nome}!*
+â
+â â±ï¸ *Tempo ausente:*
+â â ${tempo}
+â
+â ð *Motivo:*
+â â _${dados.motivo}_
+â
+â â *Status:* Online
+â
+â°âââââââââââââââââââââ¯
+_Que bom que vocÃª voltou! ð_`
     );
 
 }
@@ -13788,7 +13790,7 @@ async function adicionarBlacklist(
     let idsPessoa = new Set();
 
     // ============================================================
-    // 1. TENTAR ENCONTRAR POR MENÇÃO
+    // 1. TENTAR ENCONTRAR POR MENÃÃO
     // ============================================================
 
     const mencoes =
@@ -13805,11 +13807,11 @@ async function adicionarBlacklist(
             idDaPessoa(pessoa);
 
         console.log(
-            '🚫 PESSOA MENCIONADA:',
+            'ð« PESSOA MENCIONADA:',
             idPessoa
         );
 
-        // Pega TODOS os IDs possíveis da pessoa
+        // Pega TODOS os IDs possÃ­veis da pessoa
         idsPessoa =
             await obterIdsPessoa(pessoa);
     }
@@ -13836,7 +13838,7 @@ async function adicionarBlacklist(
                     null;
 
                 console.log(
-                    '🚫 PESSOA RESPONDIDA:',
+                    'ð« PESSOA RESPONDIDA:',
                     idPessoa
                 );
 
@@ -13852,14 +13854,14 @@ async function adicionarBlacklist(
         } catch (erro) {
 
             console.log(
-                '⚠️ Erro ao obter mensagem respondida:',
+                'â ï¸ Erro ao obter mensagem respondida:',
                 erro.message
             );
         }
     }
 
     // ============================================================
-    // 3. USAR NÚMERO INFORMADO MANUALMENTE
+    // 3. USAR NÃMERO INFORMADO MANUALMENTE
     // ============================================================
 
     if (!idPessoa) {
@@ -13874,20 +13876,20 @@ async function adicionarBlacklist(
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             await responderCitando(
                 message,
-                `❌ *𝐏𝐄𝐒𝐒𝐎𝐀 𝐍𝐀̃𝐎 𝐈𝐃𝐄𝐍𝐓𝐈𝐅𝐈𝐂𝐀𝐃𝐀.*
+                `â *ðððððð ððÌð ðððððððððððð.*
 
-_Use uma menção, responda à mensagem da pessoa ou informe o número._
+_Use uma menÃ§Ã£o, responda Ã  mensagem da pessoa ou informe o nÃºmero._
 
 _Exemplos:_
 
 *${PREFIXO}muteblacklist @pessoa*
 
-ou responda à mensagem com:
+ou responda Ã  mensagem com:
 
 *${PREFIXO}muteblacklist*
 
@@ -13909,7 +13911,7 @@ ou:
     }
 
     // ============================================================
-    // 4. GARANTIR QUE O ID PRINCIPAL TAMBÉM SEJA ADICIONADO
+    // 4. GARANTIR QUE O ID PRINCIPAL TAMBÃM SEJA ADICIONADO
     // ============================================================
 
     if (idPessoa) {
@@ -13920,7 +13922,7 @@ ou:
     }
 
     // ============================================================
-    // 5. ADICIONAR TODOS OS IDs À BLACKLIST
+    // 5. ADICIONAR TODOS OS IDs Ã BLACKLIST
     // ============================================================
 
     if (
@@ -13933,7 +13935,7 @@ ou:
     }
 
     console.log(
-        '🚫 IDs DA PESSOA NA BLACKLIST:'
+        'ð« IDs DA PESSOA NA BLACKLIST:'
     );
 
     for (
@@ -13945,7 +13947,7 @@ ou:
         );
 
         console.log(
-            '   🚫',
+            '   ð«',
             id
         );
     }
@@ -13956,36 +13958,36 @@ ou:
 
     await reagir(
         message,
-        '🚫'
+        'ð«'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺✿༻❃•═┓
-│   *🚫 𝐁𝐋𝐀𝐂𝐊𝐋𝐈𝐒𝐓*
-├✯
-├➤ _A pessoa foi adicionada à_
-│   _lista negra de mute._
-│
-├➤ _Ela será silenciada em todos_
-│   _os grupos onde o bot estiver._
-│
-┗═•❃༺✿༻❃•═┛`
+        `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+â   *ð« ððððððððð*
+ââ¯
+ââ¤ _A pessoa foi adicionada Ã _
+â   _lista negra de mute._
+â
+ââ¤ _Ela serÃ¡ silenciada em todos_
+â   _os grupos onde o bot estiver._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 💀 COMANDO SUICÍDIO
+// ð COMANDO SUICÃDIO
 // ============================================================
 
 async function suicidio(message) {
 
     if (!message.from.endsWith('@g.us')) {
 
-        await message.react('❌');
+        await message.react('â');
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Esse comando só pode ser usado em grupos!'
+            'â Esse comando sÃ³ pode ser usado em grupos!'
         ));
 
         return;
@@ -13997,7 +13999,7 @@ async function suicidio(message) {
     if (!idUsuario) {
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Não consegui identificar você!'
+            'â NÃ£o consegui identificar vocÃª!'
         ));
 
         return;
@@ -14027,7 +14029,7 @@ async function suicidio(message) {
 
                             return {
                                 sucesso: false,
-                                erro: 'Store.Chat não encontrado.'
+                                erro: 'Store.Chat nÃ£o encontrado.'
                             };
                         }
 
@@ -14038,7 +14040,7 @@ async function suicidio(message) {
 
                             return {
                                 sucesso: false,
-                                erro: 'Grupo não encontrado.'
+                                erro: 'Grupo nÃ£o encontrado.'
                             };
                         }
 
@@ -14049,11 +14051,11 @@ async function suicidio(message) {
 
                             return {
                                 sucesso: false,
-                                erro: 'Participantes do grupo não encontrados.'
+                                erro: 'Participantes do grupo nÃ£o encontrados.'
                             };
                         }
 
-                        // Verificar se o usuário realmente está no grupo
+                        // Verificar se o usuÃ¡rio realmente estÃ¡ no grupo
                         let modelos = [];
 
                         if (
@@ -14085,7 +14087,7 @@ async function suicidio(message) {
 
                             return {
                                 sucesso: false,
-                                erro: 'Usuário não encontrado no grupo.'
+                                erro: 'UsuÃ¡rio nÃ£o encontrado no grupo.'
                             };
                         }
 
@@ -14134,19 +14136,19 @@ async function suicidio(message) {
         ) {
 
             console.error(
-                '❌ ERRO AO LOCALIZAR USUÁRIO:',
+                'â ERRO AO LOCALIZAR USUÃRIO:',
                 resultado?.erro
             );
 
             await message.reply(aplicarEstiloMensagem(
-                '❌ Não consegui localizar você neste grupo.'
+                'â NÃ£o consegui localizar vocÃª neste grupo.'
             ));
 
             return;
         }
 
         console.log(
-            '💀 USUÁRIO LOCALIZADO:',
+            'ð USUÃRIO LOCALIZADO:',
             resultado.usuarioId
         );
 
@@ -14171,7 +14173,7 @@ async function suicidio(message) {
                 if (!chat) {
                     return {
                         sucesso: false,
-                        erro: 'Grupo não encontrado.'
+                        erro: 'Grupo nÃ£o encontrado.'
                     };
                 }
 
@@ -14181,13 +14183,13 @@ async function suicidio(message) {
                 if (!participantes) {
                     return {
                         sucesso: false,
-                        erro: 'Participantes não encontrados.'
+                        erro: 'Participantes nÃ£o encontrados.'
                     };
                 }
 
                 let participante = null;
 
-                // 🔎 Procurar pelo ID do usuário
+                // ð Procurar pelo ID do usuÃ¡rio
                 if (
                     typeof participantes.get ===
                     'function'
@@ -14200,7 +14202,7 @@ async function suicidio(message) {
 
                 }
 
-                // 🔎 Caso não encontre pelo ID direto
+                // ð Caso nÃ£o encontre pelo ID direto
                 if (!participante) {
 
                     let modelos = [];
@@ -14235,7 +14237,7 @@ async function suicidio(message) {
                     return {
                         sucesso: false,
                         erro:
-                            'Participante não encontrado.'
+                            'Participante nÃ£o encontrado.'
                     };
                 }
 
@@ -14244,7 +14246,7 @@ async function suicidio(message) {
                         'WAWebModifyParticipantsGroupAction'
                     );
 
-                // 🚪 REMOVER O PARTICIPANTE
+                // ðª REMOVER O PARTICIPANTE
                 await ModifyParticipants.removeParticipants(
                     chat,
                     [participante]
@@ -14272,7 +14274,7 @@ async function suicidio(message) {
     );
 
 console.log(
-    '🚪 RESULTADO DA REMOÇÃO:',
+    'ðª RESULTADO DA REMOÃÃO:',
     JSON.stringify(
         remocao,
         null,
@@ -14281,7 +14283,7 @@ console.log(
 );
 
         // ========================================================
-        // RESULTADO DA REMOÇÃO
+        // RESULTADO DA REMOÃÃO
         // ========================================================
 
         if (
@@ -14290,13 +14292,13 @@ console.log(
         ) {
 
             console.error(
-                '❌ ERRO AO REMOVER:',
+                'â ERRO AO REMOVER:',
                 remocao?.erro
             );
 
             await message.reply(aplicarEstiloMensagem(
-                '❌ Não consegui te remover do grupo.\n\n' +
-                '👑 Verifique se o JUST BOT continua sendo administrador.'
+                'â NÃ£o consegui te remover do grupo.\n\n' +
+                'ð Verifique se o JUST BOT continua sendo administrador.'
             ));
 
             return;
@@ -14307,24 +14309,24 @@ console.log(
         // ========================================================
 
         await message.reply(aplicarEstiloMensagem(
-            '💀 Mais um para lista!'
+            'ð Mais um para lista!'
         ));
 
     } catch (erro) {
 
         console.error(
-            '❌ ERRO NO COMANDO SUICIDIO:',
+            'â ERRO NO COMANDO SUICIDIO:',
             erro
         );
 
         await message.reply(aplicarEstiloMensagem(
-            '❌ Ocorreu um erro ao executar o comando.'
+            'â Ocorreu um erro ao executar o comando.'
         ));
     }
 }
 
 // ============================================================
-// 😂 MANDAR PIADA
+// ð MANDAR PIADA
 // ============================================================
 
 async function mandarPiada(message) {
@@ -14335,19 +14337,19 @@ async function mandarPiada(message) {
 
         await reagir(
             message,
-            '😂'
+            'ð'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐀𝐈𝐍𝐃𝐀 𝐍𝐀̃𝐎 𝐓𝐄𝐌𝐎𝐒 𝐏𝐈𝐀𝐃𝐀𝐒!*
-│
-│  Use o futuro comando:
-│  *${PREFIXO}addpiada*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ððÌð ððððð ðððððð!*
+â
+â  Use o futuro comando:
+â  *${PREFIXO}addpiada*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -14363,23 +14365,23 @@ async function mandarPiada(message) {
 
     await reagir(
         message,
-        '😂'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐏𝐈𝐀𝐃𝐀 𝐃𝐎 𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
-│
-├➤ ${piada}
-│
-┗═•❃༺😂༻❃•═┛`
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ðð ðððð ððð*
+â
+ââ¤ ${piada}
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// ➕ ADICIONAR PIADA
+// â ADICIONAR PIADA
 // ============================================================
 
 async function adicionarPiada(message, argumento) {
@@ -14391,22 +14393,22 @@ async function adicionarPiada(message, argumento) {
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐀𝐃𝐈𝐂𝐈𝐎𝐍𝐀𝐑 𝐏𝐈𝐀𝐃𝐀*
-│
-├➤ Você precisa escrever
-│   uma piada depois do comando.
-│
-│  💡 Exemplo:
-│  *${PREFIXO}addpiada Sua piada aqui*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððððððð ððððð*
+â
+ââ¤ VocÃª precisa escrever
+â   uma piada depois do comando.
+â
+â  ð¡ Exemplo:
+â  *${PREFIXO}addpiada Sua piada aqui*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -14420,26 +14422,26 @@ async function adicionarPiada(message, argumento) {
 
     await reagir(
         message,
-        '😂'
+        'ð'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐏𝐈𝐀𝐃𝐀 𝐀𝐃𝐈𝐂𝐈𝐎𝐍𝐀𝐃𝐀!*
-│
-├➤ ${piada}
-│
-├➤ 📚 Total de piadas:
-│   *${piadas.length}*
-│
-┗═•❃༺😂༻❃•═┛`
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ðððððððððð!*
+â
+ââ¤ ${piada}
+â
+ââ¤ ð Total de piadas:
+â   *${piadas.length}*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 📋 LISTAR PIADAS
+// ð LISTAR PIADAS
 // ============================================================
 
 async function listarPiadas(message) {
@@ -14448,52 +14450,52 @@ async function listarPiadas(message) {
 
         await reagir(
             message,
-            '📋'
+            'ð'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐋𝐈𝐒𝐓𝐀 𝐃𝐄 𝐏𝐈𝐀𝐃𝐀𝐒*
-│
-│  Ainda não existem piadas
-│  cadastradas no JUST BOT.
-│
-│  💡 Use:
-│  *${PREFIXO}addpiada texto*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ðð ðððððð*
+â
+â  Ainda nÃ£o existem piadas
+â  cadastradas no JUST BOT.
+â
+â  ð¡ Use:
+â  *${PREFIXO}addpiada texto*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
     }
 
     let lista =
-        `┏═•❃༺😂༻❃•═┓
-│    *𝐋𝐈𝐒𝐓𝐀 𝐃𝐄 𝐏𝐈𝐀𝐃𝐀𝐒*
-├✯
-│
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â    *ððððð ðð ðððððð*
+ââ¯
+â
 `;
 
     piadas.forEach(
         (piada, indice) => {
 
             lista +=
-                `├➤ *${indice + 1}.* ${piada}\n│\n`;
+                `ââ¤ *${indice + 1}.* ${piada}\nâ\n`;
         }
     );
 
     lista +=
-        `├✯
-│
-│  📚 *Total:* ${piadas.length} piada${piadas.length === 1 ? '' : 's'}
-│
-┗═•❃༺😂༻❃•═┛`;
+        `ââ¯
+â
+â  ð *Total:* ${piadas.length} piada${piadas.length === 1 ? '' : 's'}
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`;
 
     await reagir(
         message,
-        '📋'
+        'ð'
     );
 
     await responderCitando(
@@ -14503,7 +14505,7 @@ async function listarPiadas(message) {
 }
 
 // ============================================================
-// 🗑️ REMOVER PIADA
+// ðï¸ REMOVER PIADA
 // ============================================================
 
 async function removerPiada(message, argumento) {
@@ -14519,22 +14521,22 @@ async function removerPiada(message, argumento) {
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐑𝐄𝐌𝐎𝐕𝐄𝐑 𝐏𝐈𝐀𝐃𝐀*
-│
-├➤ Informe o número da piada
-│   que deseja remover.
-│
-│  💡 Exemplo:
-│  *${PREFIXO}removerpiada 3*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððððð ððððð*
+â
+ââ¤ Informe o nÃºmero da piada
+â   que deseja remover.
+â
+â  ð¡ Exemplo:
+â  *${PREFIXO}removerpiada 3*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -14547,22 +14549,22 @@ async function removerPiada(message, argumento) {
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐏𝐈𝐀𝐃𝐀 𝐈𝐍𝐕𝐀́𝐋𝐈𝐃𝐀*
-│
-├➤ Não existe uma piada
-│   com o número *${numero}*.
-│
-│  📚 Total atual:
-│   *${piadas.length}*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ððððÌðððð*
+â
+ââ¤ NÃ£o existe uma piada
+â   com o nÃºmero *${numero}*.
+â
+â  ð Total atual:
+â   *${piadas.length}*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -14583,26 +14585,26 @@ async function removerPiada(message, argumento) {
 
     await reagir(
         message,
-        '🗑️'
+        'ðï¸'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐏𝐈𝐀𝐃𝐀 𝐑𝐄𝐌𝐎𝐕𝐈𝐃𝐀!*
-│
-├➤ *${piadaRemovida}*
-│
-├➤ 📚 Piadas restantes:
-│   *${piadas.length}*
-│
-┗═•❃༺😂༻❃•═┛`
+        `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ðððððððð!*
+â
+ââ¤ *${piadaRemovida}*
+â
+ââ¤ ð Piadas restantes:
+â   *${piadas.length}*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 🗑️ LIMPAR TODAS AS PIADAS
+// ðï¸ LIMPAR TODAS AS PIADAS
 // ============================================================
 
 async function limparPiadas(message) {
@@ -14611,19 +14613,19 @@ async function limparPiadas(message) {
 
         await reagir(
             message,
-            '😂'
+            'ð'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐋𝐈𝐒𝐓𝐀 𝐉𝐀́ 𝐕𝐀𝐙𝐈𝐀*
-│
-│  Não existem piadas
-│  cadastradas para apagar.
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððð ððÌ ððððð*
+â
+â  NÃ£o existem piadas
+â  cadastradas para apagar.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -14631,33 +14633,33 @@ async function limparPiadas(message) {
 
     await reagir(
         message,
-        '⚠️'
+        'â ï¸'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺⚠️༻❃•═┓
-│
-│  *𝐋𝐈𝐌𝐏𝐀𝐑 𝐏𝐈𝐀𝐃𝐀𝐒*
-│
-├➤ Você está prestes a apagar
-│   *TODAS* as piadas cadastradas.
-│
-│  📚 Total:
-│   *${piadas.length} piada${piadas.length === 1 ? '' : 's'}*
-│
-│  *⚠️ 𝙀𝙨𝙨𝙖 𝙖çã𝙤 𝙣ã𝙤 𝙥𝙤𝙙𝙚 𝙨𝙚𝙧 
-│ 𝙙𝙚𝙨𝙛𝙚𝙞𝙩𝙖 𝙖𝙪𝙩𝙤𝙢𝙖𝙩𝙞𝙘𝙖𝙢𝙚𝙣𝙩𝙚.*
-│
-│  Para confirmar, responda:
-│
-│  *𝑺𝑰𝑴*
-│
-│  Para cancelar, responda:
-│
-│  *𝑵Ã𝑶*
-│
-┗═•❃༺⚠️༻❃•═┛`
+        `âââ¢âà¼ºâ ï¸à¼»ââ¢ââ
+â
+â  *ðððððð ðððððð*
+â
+ââ¤ VocÃª estÃ¡ prestes a apagar
+â   *TODAS* as piadas cadastradas.
+â
+â  ð Total:
+â   *${piadas.length} piada${piadas.length === 1 ? '' : 's'}*
+â
+â  *â ï¸ ðð¨ð¨ð ðÃ§Ã£ð¤ ð£Ã£ð¤ ð¥ð¤ðð ð¨ðð§ 
+â ððð¨ðððð©ð ððªð©ð¤ð¢ðð©ðððð¢ðð£ð©ð.*
+â
+â  Para confirmar, responda:
+â
+â  *ðºð°ð´*
+â
+â  Para cancelar, responda:
+â
+â  *ðµÃð¶*
+â
+âââ¢âà¼ºâ ï¸à¼»ââ¢ââ`
     );
 
     const chatId =
@@ -14677,7 +14679,7 @@ async function limparPiadas(message) {
 }
 
 // ============================================================
-// 📄 CARREGAR PIADAS DE ARQUIVO
+// ð CARREGAR PIADAS DE ARQUIVO
 // ============================================================
 
 async function carregarPiadas(message) {
@@ -14686,25 +14688,25 @@ async function carregarPiadas(message) {
 
         await reagir(
             message,
-            '📄'
+            'ð'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐂𝐀𝐑𝐑𝐄𝐆𝐀𝐑 𝐏𝐈𝐀𝐃𝐀𝐒*
-│
-├➤ Envie um arquivo *.txt*
-│   contendo uma piada por linha.
-│
-│  💡 Exemplo:
-│
-│  Piada número 1
-│  Piada número 2
-│  Piada número 3
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ðððððððð ðððððð*
+â
+ââ¤ Envie um arquivo *.txt*
+â   contendo uma piada por linha.
+â
+â  ð¡ Exemplo:
+â
+â  Piada nÃºmero 1
+â  Piada nÃºmero 2
+â  Piada nÃºmero 3
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -14717,7 +14719,7 @@ async function carregarPiadas(message) {
 
         if (!midia) {
             throw new Error(
-                'Arquivo não disponível.'
+                'Arquivo nÃ£o disponÃ­vel.'
             );
         }
 
@@ -14728,19 +14730,19 @@ async function carregarPiadas(message) {
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺❌༻❃•═┓
-│
-│  *𝐀𝐑𝐐𝐔𝐈𝐕𝐎 𝐈𝐍𝐕𝐀́𝐋𝐈𝐃𝐎*
-│
-├➤ O arquivo precisa ser
-│   um *.txt*.
-│
-┗═•❃༺❌༻❃•═┛`
+                `âââ¢âà¼ºâà¼»ââ¢ââ
+â
+â  *ððððððð ððððÌðððð*
+â
+ââ¤ O arquivo precisa ser
+â   um *.txt*.
+â
+âââ¢âà¼ºâà¼»ââ¢ââ`
             );
 
             return;
@@ -14770,19 +14772,19 @@ async function carregarPiadas(message) {
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐀𝐑𝐐𝐔𝐈𝐕𝐎 𝐕𝐀𝐙𝐈𝐎*
-│
-├➤ Nenhuma piada foi
-│   encontrada no arquivo.
-│
-┗═•❃༺😂༻❃•═┛`
+                `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððððððð ððððð*
+â
+ââ¤ Nenhuma piada foi
+â   encontrada no arquivo.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
             );
 
             return;
@@ -14801,93 +14803,93 @@ async function carregarPiadas(message) {
 
         await reagir(
             message,
-            '✅'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐏𝐈𝐀𝐃𝐀𝐒 𝐂𝐀𝐑𝐑𝐄𝐆𝐀𝐃𝐀𝐒!*
-│
-├➤ 📥 Adicionadas:
-│   *${novasPiadas.length}*
-│
-├➤ 📚 Total agora:
-│   *${piadas.length}*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ðððððð ðððððððððð!*
+â
+ââ¤ ð¥ Adicionadas:
+â   *${novasPiadas.length}*
+â
+ââ¤ ð Total agora:
+â   *${piadas.length}*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao carregar piadas:',
+            'â Erro ao carregar piadas:',
             erro
         );
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐄𝐑𝐑𝐎 𝐀𝐎 𝐂𝐀𝐑𝐑𝐄𝐆𝐀𝐑*
-│
-├➤ Não foi possível ler
-│   o arquivo de piadas.
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ðððð ðð ðððððððð*
+â
+ââ¤ NÃ£o foi possÃ­vel ler
+â   o arquivo de piadas.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
     }
 }
 
 // ============================================================
-// 💘 COMANDO CANTADA
+// ð COMANDO CANTADA
 // ============================================================
 
 async function mandarCantada(message) {
 
     const cantadasLeves = [
 
-        '🌹 Você acredita em amor à primeira vista ou eu preciso passar aqui de novo?',
+        'ð¹ VocÃª acredita em amor Ã  primeira vista ou eu preciso passar aqui de novo?',
 
-        '💘 Você não é Google, mas tem tudo que eu estava procurando.',
+        'ð VocÃª nÃ£o Ã© Google, mas tem tudo que eu estava procurando.',
 
-        '✨ Se beleza fosse tempo, você seria uma eternidade.',
+        'â¨ Se beleza fosse tempo, vocÃª seria uma eternidade.',
 
-        '🌹 Você tem mapa? Porque eu me perdi no seu sorriso.',
+        'ð¹ VocÃª tem mapa? Porque eu me perdi no seu sorriso.',
 
-        '💫 Acho que meu Wi-Fi encontrou sua conexão.',
+        'ð« Acho que meu Wi-Fi encontrou sua conexÃ£o.',
 
-        '❤️ Eu não sou fotógrafo, mas consigo imaginar nós dois juntos.',
+        'â¤ï¸ Eu nÃ£o sou fotÃ³grafo, mas consigo imaginar nÃ³s dois juntos.',
 
-        '🌷 Seu sorriso devia ser considerado patrimônio mundial.',
+        'ð· Seu sorriso devia ser considerado patrimÃ´nio mundial.',
 
-        '💖 Você não é estrela, mas conseguiu iluminar meu dia.'
+        'ð VocÃª nÃ£o Ã© estrela, mas conseguiu iluminar meu dia.'
 
     ];
 
     const cantadasAtrevidas = [
 
-        '😏 Eu ia fazer uma cantada inteligente, mas você me deixou sem raciocínio.',
+        'ð Eu ia fazer uma cantada inteligente, mas vocÃª me deixou sem raciocÃ­nio.',
 
-        '🔥 Você sempre é assim ou resolveu ficar irresistível só hoje?',
+        'ð¥ VocÃª sempre Ã© assim ou resolveu ficar irresistÃ­vel sÃ³ hoje?',
 
-        '😏 Se beleza desse cadeia, você já estaria cumprindo prisão perpétua.',
+        'ð Se beleza desse cadeia, vocÃª jÃ¡ estaria cumprindo prisÃ£o perpÃ©tua.',
 
-        '🔥 Eu tinha uma cantada perfeita, mas esqueci quando te vi.',
+        'ð¥ Eu tinha uma cantada perfeita, mas esqueci quando te vi.',
 
-        '😏 Você é perigoso(a). Eu mal te conheço e já estou querendo te conhecer melhor.',
+        'ð VocÃª Ã© perigoso(a). Eu mal te conheÃ§o e jÃ¡ estou querendo te conhecer melhor.',
 
-        '🔥 Se eu ganhasse R$1 toda vez que pensei em você, já estaria rico.',
+        'ð¥ Se eu ganhasse R$1 toda vez que pensei em vocÃª, jÃ¡ estaria rico.',
 
-        '😏 Você tem certeza que não é golpe? Porque parece bom demais para ser verdade.',
+        'ð VocÃª tem certeza que nÃ£o Ã© golpe? Porque parece bom demais para ser verdade.',
 
-        '🔥 Acho que você acabou de transformar meu "oi" em interesse.'
+        'ð¥ Acho que vocÃª acabou de transformar meu "oi" em interesse.'
 
     ];
 
@@ -14910,7 +14912,7 @@ async function mandarCantada(message) {
     if (idPessoa) {
         await responderComMencoes(
             message,
-            `💘 ${mencaoDaPessoa(pessoa)}\n\n${cantada}`,
+            `ð ${mencaoDaPessoa(pessoa)}\n\n${cantada}`,
             undefined,
             { mentions: [idPessoa] }
         );
@@ -14925,7 +14927,7 @@ async function mandarCantada(message) {
 // MENU JOGOS
 // ============================================================
 // ============================================================
-// 🎰 SLOTS
+// ð° SLOTS
 // ============================================================
 
 async function minerar(message) {
@@ -14942,8 +14944,8 @@ async function minerar(message) {
 
         if (restante > 0) {
             const segundos = Math.ceil(restante / 1000);
-            await reagir(message, '⏳');
-            await responderCitando(message, `⏳ _Sua mina ainda está sendo preparada._\n\nTente novamente em *${segundos}s*.`);
+            await reagir(message, 'â³');
+            await responderCitando(message, `â³ _Sua mina ainda estÃ¡ sendo preparada._\n\nTente novamente em *${segundos}s*.`);
             return;
         }
 
@@ -14956,13 +14958,13 @@ async function minerar(message) {
         let valor;
 
         if (sorte < 0.05) {
-            minerio = 'Diamante'; emoji = '💎'; valor = Math.floor(Math.random() * 501) + 500;
+            minerio = 'Diamante'; emoji = 'ð'; valor = Math.floor(Math.random() * 501) + 500;
         } else if (sorte < 0.20) {
-            minerio = 'Ouro'; emoji = '🥇'; valor = Math.floor(Math.random() * 151) + 250;
+            minerio = 'Ouro'; emoji = 'ð¥'; valor = Math.floor(Math.random() * 151) + 250;
         } else if (sorte < 0.50) {
-            minerio = 'Prata'; emoji = '🥈'; valor = Math.floor(Math.random() * 71) + 120;
+            minerio = 'Prata'; emoji = 'ð¥'; valor = Math.floor(Math.random() * 71) + 120;
         } else {
-            minerio = 'Carvão'; emoji = '🪨'; valor = Math.floor(Math.random() * 51) + 30;
+            minerio = 'CarvÃ£o'; emoji = 'ðª¨'; valor = Math.floor(Math.random() * 51) + 30;
         }
 
         if (temPicareta) valor = Math.floor(valor * 1.25);
@@ -14972,37 +14974,37 @@ async function minerar(message) {
         salvarMoedas();
 
         await reagir(message, emoji);
-        await responderCitando(message, `┏═•❃༺⛏️༻❃•═┓
-├✯ *𝐌𝐈𝐍𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-│
-├➤ ${emoji} Você encontrou *${minerio}*!
-├➤ 🪙 Valor: *${formatarMoedas(valor)} moedas*
-${temPicareta ? '├➤ ⛏️ Picareta Reforçada: *+25%*\n' : ''}│
-├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)} moedas*
-│
-┗═•❃༺⛏️༻❃•═┛`);
+        await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+ââ¯ *ðððððððÌ§ðÌð*
+â
+ââ¤ ${emoji} VocÃª encontrou *${minerio}*!
+ââ¤ ðª Valor: *${formatarMoedas(valor)} moedas*
+${temPicareta ? 'ââ¤ âï¸ Picareta ReforÃ§ada: *+25%*\n' : ''}â
+ââ¤ ð° Saldo: *${formatarMoedas(carteira.saldo)} moedas*
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro na mineração:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro na mineraÃ§Ã£o:', erro);
+        await reagir(message, 'â');
     }
 }
 
 async function mostrarLoja(message) {
-    let texto = `┏═•❃༺🏪༻❃•═┓
-│      *𝐋𝐎𝐉𝐀 𝐉𝐔𝐒𝐓 𝐌𝐀𝐑𝐊𝐄𝐓*
-├✯
-│
+    let texto = `âââ¢âà¼ºðªà¼»ââ¢ââ
+â      *ðððð ðððð ðððððð*
+ââ¯
+â
 `;
     for (const [id, item] of Object.entries(ITENS_LOJA)) {
-        texto += `├➤ ${item.emoji} *${id}* — *${formatarMoedas(item.preco)} 🪙*\n│   _${item.descricao}_\n│\n`;
+        texto += `ââ¤ ${item.emoji} *${id}* â *${formatarMoedas(item.preco)} ðª*\nâ   _${item.descricao}_\nâ\n`;
     }
-    texto += `├✯
-│
-├➤ Comprar: *${PREFIXO}comprar <item>*
-├➤ Exemplo: *${PREFIXO}comprar picareta*
-│
-┗═•❃༺🏪༻❃•═┛`;
-    await reagir(message, '🏪');
+    texto += `ââ¯
+â
+ââ¤ Comprar: *${PREFIXO}comprar <item>*
+ââ¤ Exemplo: *${PREFIXO}comprar picareta*
+â
+âââ¢âà¼ºðªà¼»ââ¢ââ`;
+    await reagir(message, 'ðª');
     await responderCitando(message, texto);
 }
 
@@ -15012,15 +15014,15 @@ async function comprarItem(message, argumentos) {
     const item = ITENS_LOJA[escolha];
 
     if (!item) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Item inválido._ Use *${PREFIXO}loja* para ver os produtos.`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Item invÃ¡lido._ Use *${PREFIXO}loja* para ver os produtos.`);
         return;
     }
 
     const carteira = garantirCarteira(usuarioId);
     if (carteira.saldo < item.preco) {
-        await reagir(message, '💸');
-        await responderCitando(message, `💸 _Você precisa de *${formatarMoedas(item.preco)} moedas* para comprar ${item.emoji} ${item.nome}._\n\nSeu saldo: *${formatarMoedas(carteira.saldo)} moedas*.`);
+        await reagir(message, 'ð¸');
+        await responderCitando(message, `ð¸ _VocÃª precisa de *${formatarMoedas(item.preco)} moedas* para comprar ${item.emoji} ${item.nome}._\n\nSeu saldo: *${formatarMoedas(carteira.saldo)} moedas*.`);
         return;
     }
 
@@ -15029,32 +15031,32 @@ async function comprarItem(message, argumentos) {
     registrarTransacao('compra', usuarioId, null, item.preco, item.nome);
     salvarMoedas();
 
-    await reagir(message, '🛒');
-    await responderCitando(message, `┏═•❃༺🛒༻❃•═┓
-├✯ *𝐂𝐎𝐌𝐏𝐑𝐀 𝐑𝐄𝐀𝐋𝐈𝐙𝐀𝐃𝐀!*
-│
-├➤ ${item.emoji} *${item.nome}*
-├➤ 🪙 Pago: *${formatarMoedas(item.preco)} moedas*
-├➤ 📦 Quantidade: *${quantidadeItem(usuarioId, escolha)}x*
-│
-├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)} moedas*
-│
-┗═•❃༺🛒༻❃•═┛`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ðððððð ððððððððð!*
+â
+ââ¤ ${item.emoji} *${item.nome}*
+ââ¤ ðª Pago: *${formatarMoedas(item.preco)} moedas*
+ââ¤ ð¦ Quantidade: *${quantidadeItem(usuarioId, escolha)}x*
+â
+ââ¤ ð° Saldo: *${formatarMoedas(carteira.saldo)} moedas*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function mostrarInventario(message) {
     const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
     garantirCarteira(usuarioId);
-    let texto = `┏═•❃༺🎒༻❃•═┓
-├✯ *𝐒𝐄𝐔 𝐈𝐍𝐕𝐄𝐍𝐓𝐀́𝐑𝐈𝐎*
-│
+    let texto = `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ððð ðððððððÌððð*
+â
 `;
     for (const [id, item] of Object.entries(ITENS_LOJA)) {
-        texto += `├➤ ${item.emoji} *${item.nome}*: ${quantidadeItem(usuarioId, id)}x\n`;
+        texto += `ââ¤ ${item.emoji} *${item.nome}*: ${quantidadeItem(usuarioId, id)}x\n`;
     }
-    texto += `│
-┗═•❃༺🎒༻❃•═┛`;
-    await reagir(message, '🎒');
+    texto += `â
+âââ¢âà¼ºðà¼»ââ¢ââ`;
+    await reagir(message, 'ð');
     await responderCitando(message, texto);
 }
 
@@ -15064,23 +15066,23 @@ async function mostrarSaldo(message) {
         if (!usuarioId) return;
         const carteira = garantirCarteira(usuarioId);
         salvarMoedas();
-        await reagir(message, '💰');
-        await responderCitando(message, `┏═•❃༺💰༻❃•═┓
-│       *𝐒𝐄𝐔 𝐒𝐀𝐋𝐃𝐎*
-├✯
-│
-├➤ 🪙 *${formatarMoedas(carteira.saldo)} moedas*
-│
-├➤ ⛏️ Minerações: *${carteira.mineracoes}*
-├➤ 🥷 Roubos bem-sucedidos: *${carteira.roubosSucesso}*
-│
-├➤ ⛏️ *${PREFIXO}minerar*
-├➤ 🏪 *${PREFIXO}loja*
-├➤ 🎰 *${PREFIXO}slots 100*
-│
-┗═•❃༺💰༻❃•═┛`);
+        await reagir(message, 'ð°');
+        await responderCitando(message, `âââ¢âà¼ºð°à¼»ââ¢ââ
+â       *ððð ððððð*
+ââ¯
+â
+ââ¤ ðª *${formatarMoedas(carteira.saldo)} moedas*
+â
+ââ¤ âï¸ MineraÃ§Ãµes: *${carteira.mineracoes}*
+ââ¤ ð¥· Roubos bem-sucedidos: *${carteira.roubosSucesso}*
+â
+ââ¤ âï¸ *${PREFIXO}minerar*
+ââ¤ ðª *${PREFIXO}loja*
+ââ¤ ð° *${PREFIXO}slots 100*
+â
+âââ¢âà¼ºð°à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro ao mostrar saldo:', erro);
+        console.error('â Erro ao mostrar saldo:', erro);
     }
 }
 
@@ -15089,63 +15091,63 @@ async function jogarSlots(message, argumento) {
         const usuarioId = await resolverIdEconomia(obterIdRemetente(message));
         const argumentoLimpo = String(argumento || '').trim();
         if (!usuarioId || !/^\d+$/.test(argumentoLimpo)) {
-            await reagir(message, '❌');
-            await responderCitando(message, `❌ _Informe uma aposta inteira válida._\n\nA aposta mínima é *10 moedas*.\nExemplo: *${PREFIXO}slots 100*`);
+            await reagir(message, 'â');
+            await responderCitando(message, `â _Informe uma aposta inteira vÃ¡lida._\n\nA aposta mÃ­nima Ã© *10 moedas*.\nExemplo: *${PREFIXO}slots 100*`);
             return;
         }
 
         const aposta = Number(argumentoLimpo);
         if (!Number.isSafeInteger(aposta) || aposta < 10) {
-            await reagir(message, '❌');
-            await responderCitando(message, `❌ _A aposta deve ser um número inteiro entre *10* e *${formatarMoedas(Number.MAX_SAFE_INTEGER)}* moedas._`);
+            await reagir(message, 'â');
+            await responderCitando(message, `â _A aposta deve ser um nÃºmero inteiro entre *10* e *${formatarMoedas(Number.MAX_SAFE_INTEGER)}* moedas._`);
             return;
         }
 
         const carteira = garantirCarteira(usuarioId);
         if (aposta > carteira.saldo) {
-            await reagir(message, '💸');
-            await responderCitando(message, `💸 _Saldo insuficiente._\n\nAposta: *${formatarMoedas(aposta)}*\nSaldo: *${formatarMoedas(carteira.saldo)}*`);
+            await reagir(message, 'ð¸');
+            await responderCitando(message, `ð¸ _Saldo insuficiente._\n\nAposta: *${formatarMoedas(aposta)}*\nSaldo: *${formatarMoedas(carteira.saldo)}*`);
             return;
         }
 
         carteira.saldo -= aposta;
         registrarTransacao('slots_aposta', usuarioId, null, aposta, 'Aposta nos slots');
 
-        const simbolos = ['🍒','🍋','🍉','🔔','⭐','💎','7️⃣'];
+        const simbolos = ['ð','ð','ð','ð','â­','ð','7ï¸â£'];
         const rolos = [0,1,2].map(() => simbolos[Math.floor(Math.random() * simbolos.length)]);
         let multiplicador = 0;
 
-        if (rolos.every(s => s === '7️⃣')) multiplicador = 50;
-        else if (rolos.every(s => s === '💎')) multiplicador = 25;
-        else if (rolos.every(s => s === '⭐')) multiplicador = 15;
-        else if (rolos.every(s => s === '🔔')) multiplicador = 10;
-        else if (rolos.every(s => s === '🍉')) multiplicador = 7;
-        else if (rolos.every(s => s === '🍋')) multiplicador = 5;
-        else if (rolos.every(s => s === '🍒')) multiplicador = 3;
+        if (rolos.every(s => s === '7ï¸â£')) multiplicador = 50;
+        else if (rolos.every(s => s === 'ð')) multiplicador = 25;
+        else if (rolos.every(s => s === 'â­')) multiplicador = 15;
+        else if (rolos.every(s => s === 'ð')) multiplicador = 10;
+        else if (rolos.every(s => s === 'ð')) multiplicador = 7;
+        else if (rolos.every(s => s === 'ð')) multiplicador = 5;
+        else if (rolos.every(s => s === 'ð')) multiplicador = 3;
         else if (rolos[0] === rolos[1] || rolos[1] === rolos[2] || rolos[0] === rolos[2]) multiplicador = 2;
 
         const premio = aposta * multiplicador;
         if (!Number.isSafeInteger(premio)) {
-            console.error('❌ Prêmio dos slots excedeu o limite seguro:', { aposta, multiplicador });
+            console.error('â PrÃªmio dos slots excedeu o limite seguro:', { aposta, multiplicador });
             carteira.saldo += aposta;
             historicoEconomia.pop();
             salvarMoedas();
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ _Não foi possível processar essa aposta com segurança. Suas moedas foram devolvidas._');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â _NÃ£o foi possÃ­vel processar essa aposta com seguranÃ§a. Suas moedas foram devolvidas._');
             return;
         }
 
         carteira.saldo += premio;
         if (premio > 0) {
-            registrarTransacao('slots_premio', null, usuarioId, premio, `Prêmio dos slots: ${rolos.join(' ')}, ${multiplicador}x`);
+            registrarTransacao('slots_premio', null, usuarioId, premio, `PrÃªmio dos slots: ${rolos.join(' ')}, ${multiplicador}x`);
         }
         salvarMoedas();
 
-        await reagir(message, multiplicador ? '🎉' : '🎰');
-        await responderCitando(message, `┏═•❃༺🎰༻❃•═┓\n│      *𝐉𝐔𝐒𝐓 𝐒𝐋𝐎𝐓𝐒*\n├✯\n│\n│      ${rolos.join(' │ ')}\n│\n├➤ 🎲 Aposta: *${formatarMoedas(aposta)}*\n├➤ 🎉 Multiplicador: *${multiplicador}x*\n├➤ 🪙 Prêmio: *${formatarMoedas(premio)}*\n├➤ 💰 Saldo: *${formatarMoedas(carteira.saldo)}*\n│\n┗═•❃༺🎰༻❃•═┛`);
+        await reagir(message, multiplicador ? 'ð' : 'ð°');
+        await responderCitando(message, `âââ¢âà¼ºð°à¼»ââ¢ââ\nâ      *ðððð ððððð*\nââ¯\nâ\nâ      ${rolos.join(' â ')}\nâ\nââ¤ ð² Aposta: *${formatarMoedas(aposta)}*\nââ¤ ð Multiplicador: *${multiplicador}x*\nââ¤ ðª PrÃªmio: *${formatarMoedas(premio)}*\nââ¤ ð° Saldo: *${formatarMoedas(carteira.saldo)}*\nâ\nâââ¢âà¼ºð°à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro nos slots:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro nos slots:', erro);
+        await reagir(message, 'â');
     }
 }
 
@@ -15157,70 +15159,70 @@ async function doarMoedas(message, argumentos) {
     const partes = String(argumentos || '').trim().split(/\s+/);
     const valorTexto = partes[0] || '';
     if (!/^\d+$/.test(valorTexto)) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe um valor inteiro válido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe um valor inteiro vÃ¡lido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
         return;
     }
     const valor = Number(valorTexto);
 
     if (!Number.isSafeInteger(valor) || valor <= 0) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe um valor válido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe um valor vÃ¡lido._\n\nExemplo: *${PREFIXO}doar 500 @fulano*`);
         return;
     }
 
     if (idsIguais(remetente, destinatario)) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Você não pode doar para si mesmo._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _VocÃª nÃ£o pode doar para si mesmo._');
         return;
     }
 
     const carteira = garantirCarteira(remetente);
     if (carteira.saldo < valor) {
-        await reagir(message, '💸');
-        await responderCitando(message, `💸 _Você não possui moedas suficientes._\n\nSeu saldo: *${formatarMoedas(carteira.saldo)}*\nValor: *${formatarMoedas(valor)}*`);
+        await reagir(message, 'ð¸');
+        await responderCitando(message, `ð¸ _VocÃª nÃ£o possui moedas suficientes._\n\nSeu saldo: *${formatarMoedas(carteira.saldo)}*\nValor: *${formatarMoedas(valor)}*`);
         return;
     }
 
     const antesRemetente = carteira.saldo;
-    if (!transferirMoedas(remetente, destinatario, valor, 'doacao', 'Doação entre usuários')) return;
+    if (!transferirMoedas(remetente, destinatario, valor, 'doacao', 'DoaÃ§Ã£o entre usuÃ¡rios')) return;
     const saldoDestinatario = garantirCarteira(destinatario).saldo;
     const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    await reagir(message, '💸');
-    await responderCitando(message, `┏═•❃༺💸༻❃•═┓
-│       *𝐂𝐎𝐌𝐏𝐑𝐎𝐕𝐀𝐍𝐓𝐄 𝐃𝐄 𝐃𝐎𝐀𝐂̧𝐀̃𝐎*
-├✯
-│
-├➤ 👤 De: *${mencaoDaPessoa(remetente)}*
-├➤ 🎁 Para: *${mencaoDaPessoa(pessoa)}*
-├➤ 🪙 Valor: *${formatarMoedas(valor)} moedas*
-│
-├➤ 💰 Saldo após envio: *${formatarMoedas(antesRemetente - valor)}*
-├➤ 💰 Saldo do destinatário: *${formatarMoedas(saldoDestinatario)}*
-├➤ 🕐 Horário: *${hora}*
-│
-├✯ *𝐓𝐑𝐀𝐍𝐒𝐀𝐂̧𝐀̃𝐎 𝐂𝐎𝐍𝐅𝐈𝐑𝐌𝐀𝐃𝐀* ✅
-┗═•❃༺💸༻❃•═┛`, { mentions: [remetente, destinatario] });
+    await reagir(message, 'ð¸');
+    await responderCitando(message, `âââ¢âà¼ºð¸à¼»ââ¢ââ
+â       *ððððððððððð ðð ððððÌ§ðÌð*
+ââ¯
+â
+ââ¤ ð¤ De: *${mencaoDaPessoa(remetente)}*
+ââ¤ ð Para: *${mencaoDaPessoa(pessoa)}*
+ââ¤ ðª Valor: *${formatarMoedas(valor)} moedas*
+â
+ââ¤ ð° Saldo apÃ³s envio: *${formatarMoedas(antesRemetente - valor)}*
+ââ¤ ð° Saldo do destinatÃ¡rio: *${formatarMoedas(saldoDestinatario)}*
+ââ¤ ð HorÃ¡rio: *${hora}*
+â
+ââ¯ *ðððððððÌ§ðÌð ðððððððððð* â
+âââ¢âà¼ºð¸à¼»ââ¢ââ`, { mentions: [remetente, destinatario] });
 }
 
 async function sortearMoedas(message, argumentos) {
     if (!(await exigirAdmin(message))) return;
     const valorTexto = String(argumentos || '').trim();
     if (!/^\d+$/.test(valorTexto)) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe um valor inteiro válido._\n\nExemplo: *${PREFIXO}sortearm 500*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe um valor inteiro vÃ¡lido._\n\nExemplo: *${PREFIXO}sortearm 500*`);
         return;
     }
     const valor = Number(valorTexto);
     if (!Number.isSafeInteger(valor) || valor <= 0) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe o valor do sorteio._\n\nExemplo: *${PREFIXO}sortearm 500*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe o valor do sorteio._\n\nExemplo: *${PREFIXO}sortearm 500*`);
         return;
     }
     if (!message.from.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _Esse comando sÃ³ funciona em grupos._');
         return;
     }
 
@@ -15243,8 +15245,8 @@ async function sortearMoedas(message, argumentos) {
     }, message.from, client.info?.wid?._serialized || null);
 
     if (dados.erro || !dados.jogadores?.length) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Não encontrei participantes elegíveis para o sorteio._`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _NÃ£o encontrei participantes elegÃ­veis para o sorteio._`);
         return;
     }
 
@@ -15256,25 +15258,25 @@ async function sortearMoedas(message, argumentos) {
     salvarMoedas();
     const hora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    await reagir(message, '🎉');
-    await enviarComMencoes(message.from, `┏═•❃༺🎉༻❃•═┓
-│       *𝐒𝐎𝐑𝐓𝐄𝐈𝐎 𝐃𝐄 𝐌𝐎𝐄𝐃𝐀𝐒*
-├✯
-│
-├➤ 🎯 O vencedor é *${mencaoDaPessoa(vencedor)}*!
-├➤ 🪙 Prêmio: *${formatarMoedas(valor)} moedas*
-├➤ 🕐 Horário: *${hora}*
-│
-├➤ 👑 Sorteio criado por um administrador.
-├➤ 💰 As moedas foram geradas pelo bot.
-│
-┗═•❃༺🎉༻❃•═┛`, { mentions: [vencedor] });
+    await reagir(message, 'ð');
+    await enviarComMencoes(message.from, `âââ¢âà¼ºðà¼»ââ¢ââ
+â       *ððððððð ðð ðððððð*
+ââ¯
+â
+ââ¤ ð¯ O vencedor Ã© *${mencaoDaPessoa(vencedor)}*!
+ââ¤ ðª PrÃªmio: *${formatarMoedas(valor)} moedas*
+ââ¤ ð HorÃ¡rio: *${hora}*
+â
+ââ¤ ð Sorteio criado por um administrador.
+ââ¤ ð° As moedas foram geradas pelo bot.
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`, { mentions: [vencedor] });
 }
 
 async function rankingDinheiro(message) {
     if (!message.from.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _O ranking de moedas só funciona em grupos._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _O ranking de moedas sÃ³ funciona em grupos._');
         return;
     }
 
@@ -15309,30 +15311,30 @@ async function rankingDinheiro(message) {
         .map(item => ({ id: item.id, saldo: item.carteira.saldo }))
         .sort((a,b) => b.saldo - a.saldo || a.id.localeCompare(b.id)).findIndex(x => idsIguais(x.id, eu)) + 1;
 
-    let texto = `┏═•❃༺🏆༻❃•═┓
-│    *𝐑𝐀𝐍𝐊𝐈𝐍𝐆 𝐃𝐄 𝐌𝐎𝐄𝐃𝐀𝐒*
-├✯
-│
+    let texto = `âââ¢âà¼ºðà¼»ââ¢ââ
+â    *ððððððð ðð ðððððð*
+ââ¯
+â
 `;
-    const medalhas = ['🥇','🥈','🥉'];
+    const medalhas = ['ð¥','ð¥','ð¥'];
     lista.forEach((item, i) => {
-        texto += `├➤ ${medalhas[i] || `${i+1}º`} *${mencaoDaPessoa(item.id)}* — *${formatarMoedas(item.saldo)} 🪙*\n`;
+        texto += `ââ¤ ${medalhas[i] || `${i+1}Âº`} *${mencaoDaPessoa(item.id)}* â *${formatarMoedas(item.saldo)} ðª*\n`;
     });
-    texto += `│
-├➤ 📍 Sua posição: *${posicao > 0 ? `${posicao}º` : 'fora do ranking'}*
-│
-┗═•❃༺🏆༻❃•═┛`;
-    await reagir(message, '🏆');
+    texto += `â
+ââ¤ ð Sua posiÃ§Ã£o: *${posicao > 0 ? `${posicao}Âº` : 'fora do ranking'}*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`;
+    await reagir(message, 'ð');
     await enviarComMencoes(message.from, texto, { mentions: lista.map(x => x.id) });
 }
 
 // ============================================================
-// 🥔 BATATA QUENTE / 🔫 ROLETA RUSSA
+// ð¥ BATATA QUENTE / ð« ROLETA RUSSA
 // ============================================================
 
 async function obterJogadoresParaEliminacao(message) {
     if (!message.from || !message.from.endsWith('@g.us')) {
-        return { erro: 'Esse jogo só pode ser usado em grupos.' };
+        return { erro: 'Esse jogo sÃ³ pode ser usado em grupos.' };
     }
 
     try {
@@ -15343,12 +15345,12 @@ async function obterJogadoresParaEliminacao(message) {
                     const chat = Store.Chat.get(chatId);
 
                     if (!chat) {
-                        return { erro: 'Grupo não encontrado.' };
+                        return { erro: 'Grupo nÃ£o encontrado.' };
                     }
 
                     const participantes = chat.groupMetadata?.participants;
                     if (!participantes) {
-                        return { erro: 'Participantes não encontrados.' };
+                        return { erro: 'Participantes nÃ£o encontrados.' };
                     }
 
                     let modelos = [];
@@ -15385,13 +15387,13 @@ async function obterJogadoresParaEliminacao(message) {
 
         if (!dados || dados.erro) {
             return {
-                erro: dados?.erro || 'Não consegui obter os participantes.'
+                erro: dados?.erro || 'NÃ£o consegui obter os participantes.'
             };
         }
 
         return { jogadores: dados.jogadores || [] };
     } catch (erro) {
-        console.error('❌ Erro ao obter jogadores do jogo:', erro);
+        console.error('â Erro ao obter jogadores do jogo:', erro);
         return { erro: String(erro?.message || erro) };
     }
 }
@@ -15405,12 +15407,12 @@ async function expulsarJogadorDoGrupo(message, idUsuario) {
                     const chat = Store.Chat.get(chatId);
 
                     if (!chat) {
-                        return { sucesso: false, erro: 'Grupo não encontrado.' };
+                        return { sucesso: false, erro: 'Grupo nÃ£o encontrado.' };
                     }
 
                     const participantes = chat.groupMetadata?.participants;
                     if (!participantes) {
-                        return { sucesso: false, erro: 'Participantes não encontrados.' };
+                        return { sucesso: false, erro: 'Participantes nÃ£o encontrados.' };
                     }
 
                     let participante = null;
@@ -15434,14 +15436,14 @@ async function expulsarJogadorDoGrupo(message, idUsuario) {
                     if (!participante) {
                         return {
                             sucesso: false,
-                            erro: 'Participante não encontrado.'
+                            erro: 'Participante nÃ£o encontrado.'
                         };
                     }
 
                     if (participante.isAdmin || participante.isSuperAdmin) {
                         return {
                             sucesso: false,
-                            erro: 'O participante é administrador.'
+                            erro: 'O participante Ã© administrador.'
                         };
                     }
 
@@ -15467,10 +15469,10 @@ async function expulsarJogadorDoGrupo(message, idUsuario) {
 
         return resultado || {
             sucesso: false,
-            erro: 'Resposta vazia da remoção.'
+            erro: 'Resposta vazia da remoÃ§Ã£o.'
         };
     } catch (erro) {
-        console.error('❌ Erro ao expulsar jogador:', erro);
+        console.error('â Erro ao expulsar jogador:', erro);
         return {
             sucesso: false,
             erro: String(erro?.message || erro)
@@ -15507,7 +15509,7 @@ async function explodirBatataQuente(chatId, jogo) {
 
     await enviarComMencoes(
         chatId,
-        `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ ⏰ *O tempo acabou!*\n├➤ A batata explodiu na mão de *${mencao}*! 💥\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🥔༻❃•═┛`,
+        `âââ¢âà¼ºð¥à¼»ââ¢ââ\nâ\nâ  *ðððððð ðððððð!*\nâ\nââ¤ â° *O tempo acabou!*\nââ¤ A batata explodiu na mÃ£o de *${mencao}*! ð¥\nâ\nââ¤ *${mencao} foi expulso do grupo!*\nâââ¢âà¼ºð¥à¼»ââ¢ââ`,
         { mentions: [atual.jogador] }
     );
 
@@ -15517,7 +15519,7 @@ async function explodirBatataQuente(chatId, jogo) {
     if (!remocao.sucesso) {
         await enviarComMencoes(
             chatId,
-            `⚠️ A batata explodiu em @${String(atual.jogador).split('@')[0]}, mas não consegui expulsá-lo.\n\n❌ ${remocao.erro}`,
+            `â ï¸ A batata explodiu em @${String(atual.jogador).split('@')[0]}, mas nÃ£o consegui expulsÃ¡-lo.\n\nâ ${remocao.erro}`,
             { mentions: [atual.jogador] }
         );
     }
@@ -15529,7 +15531,7 @@ function iniciarTimerBatataQuente(chatId, jogo) {
     jogo.expiraEm = Date.now() + TEMPO_BATATA_QUENTE;
     jogo.timeout = setTimeout(() => {
         explodirBatataQuente(chatId, jogo).catch(erro => {
-            console.error('❌ ERRO AO EXPLODIR A BATATA QUENTE:', erro);
+            console.error('â ERRO AO EXPLODIR A BATATA QUENTE:', erro);
         });
     }, TEMPO_BATATA_QUENTE);
 }
@@ -15548,7 +15550,7 @@ async function verificarParticipanteBatataQuente(message, idsDestino) {
                     const participantes = chat?.groupMetadata?.participants;
 
                     if (!participantes) {
-                        return { erro: 'Não consegui obter os participantes do grupo.' };
+                        return { erro: 'NÃ£o consegui obter os participantes do grupo.' };
                     }
 
                     let modelos = [];
@@ -15597,12 +15599,12 @@ async function verificarParticipanteBatataQuente(message, idsDestino) {
         );
 
         if (!resultado) {
-            return { erro: 'Não consegui verificar o participante.' };
+            return { erro: 'NÃ£o consegui verificar o participante.' };
         }
 
         return resultado;
     } catch (erro) {
-        console.error('❌ Erro ao verificar participante da batata:', erro);
+        console.error('â Erro ao verificar participante da batata:', erro);
         return { erro: String(erro?.message || erro) };
     }
 }
@@ -15610,25 +15612,25 @@ async function verificarParticipanteBatataQuente(message, idsDestino) {
 async function passarBatataQuente(message) {
     try {
         if (!message.from?.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ A batata quente só pode ser passada em grupos.');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â A batata quente sÃ³ pode ser passada em grupos.');
             return;
         }
 
         const jogo = jogosEliminacao.get(message.from);
 
         if (!jogo || jogo.tipo !== 'batata') {
-            await reagir(message, '❌');
-            await responderCitando(message, `❌ Não existe uma *batata quente* em andamento neste grupo.\n\n🥔 Inicie com *${PREFIXO}batata*.`);
+            await reagir(message, 'â');
+            await responderCitando(message, `â NÃ£o existe uma *batata quente* em andamento neste grupo.\n\nð¥ Inicie com *${PREFIXO}batata*.`);
             return;
         }
 
         const remetente = obterIdRemetente(message);
         if (!idsIguais(remetente, jogo.jogador)) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
             await responderCitando(
                 message,
-                `❌ A batata está com @${String(jogo.jogador).split('@')[0]}! Somente quem está segurando a batata pode usar *${PREFIXO}passar*.`,
+                `â A batata estÃ¡ com @${String(jogo.jogador).split('@')[0]}! Somente quem estÃ¡ segurando a batata pode usar *${PREFIXO}passar*.`,
                 { mentions: [jogo.jogador] }
             );
             return;
@@ -15638,14 +15640,14 @@ async function passarBatataQuente(message) {
         const destino = pessoa ? obterIdDeMencao(pessoa) : null;
 
         if (!destino) {
-            await reagir(message, '❌');
-            await responderCitando(message, `🥔 Você precisa mencionar quem vai receber a batata.\n\n💡 Exemplo: *${PREFIXO}passar @pessoa*`);
+            await reagir(message, 'â');
+            await responderCitando(message, `ð¥ VocÃª precisa mencionar quem vai receber a batata.\n\nð¡ Exemplo: *${PREFIXO}passar @pessoa*`);
             return;
         }
 
         if (idsIguais(remetente, destino)) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ Você não pode passar a batata para você mesmo!');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â VocÃª nÃ£o pode passar a batata para vocÃª mesmo!');
             return;
         }
 
@@ -15658,26 +15660,26 @@ async function passarBatataQuente(message) {
         );
 
         if (verificacaoDestino.erro) {
-            await reagir(message, '❌');
-            await responderCitando(message, `❌ ${verificacaoDestino.erro}`);
+            await reagir(message, 'â');
+            await responderCitando(message, `â ${verificacaoDestino.erro}`);
             return;
         }
 
         if (!verificacaoDestino.encontrado) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
             await responderComMencoes(
                 message,
-                `❌ @${String(destino).split('@')[0]} não é um participante válido deste grupo.`,
+                `â @${String(destino).split('@')[0]} nÃ£o Ã© um participante vÃ¡lido deste grupo.`,
                 { mentions: [destino] }
             );
             return;
         }
 
         if (verificacaoDestino.isAdmin || verificacaoDestino.isSuperAdmin) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
             await responderComMencoes(
                 message,
-                `❌ @${String(destino).split('@')[0]} é administrador e não pode receber a batata.\n_Administradores e o próprio bot não participam._`,
+                `â @${String(destino).split('@')[0]} Ã© administrador e nÃ£o pode receber a batata.\n_Administradores e o prÃ³prio bot nÃ£o participam._`,
                 { mentions: [destino] }
             );
             return;
@@ -15688,24 +15690,24 @@ async function passarBatataQuente(message) {
         iniciarTimerBatataQuente(message.from, jogo);
 
         const segundos = Math.ceil(TEMPO_BATATA_QUENTE / 1000);
-        await reagir(message, '🥔');
+        await reagir(message, 'ð¥');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ 🥔 @${String(remetente).split('@')[0]} passou a batata para @${String(destino).split('@')[0]}!\n├➤ ⏰ *${segundos} segundos!*\n│\n└➤ _Passe antes que ela exploda!_ 💥\n┗═•❃༺🥔༻❃•═┛`,
+            `âââ¢âà¼ºð¥à¼»ââ¢ââ\nâ\nâ  *ðððððð ðððððð!*\nâ\nââ¤ ð¥ @${String(remetente).split('@')[0]} passou a batata para @${String(destino).split('@')[0]}!\nââ¤ â° *${segundos} segundos!*\nâ\nââ¤ _Passe antes que ela exploda!_ ð¥\nâââ¢âà¼ºð¥à¼»ââ¢ââ`,
             { mentions: [remetente, destino] }
         );
     } catch (erro) {
-        console.error('❌ ERRO AO PASSAR BATATA QUENTE:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ Ocorreu um erro ao passar a batata quente.');
+        console.error('â ERRO AO PASSAR BATATA QUENTE:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â Ocorreu um erro ao passar a batata quente.');
     }
 }
 
 async function jogarBatataQuente(message) {
     try {
         if (!message.from?.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ A batata quente só pode ser jogada em grupos!');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â A batata quente sÃ³ pode ser jogada em grupos!');
             return;
         }
 
@@ -15714,21 +15716,21 @@ async function jogarBatataQuente(message) {
         }
 
         if (jogosEliminacao.has(message.from)) {
-            await reagir(message, '❌');
-            await responderCitando(message, `🥔 Já existe uma *batata quente* ou outro jogo de eliminação em andamento neste grupo.`);
+            await reagir(message, 'â');
+            await responderCitando(message, `ð¥ JÃ¡ existe uma *batata quente* ou outro jogo de eliminaÃ§Ã£o em andamento neste grupo.`);
             return;
         }
 
         const jogadores = await obterJogadoresParaEliminacao(message);
         if (jogadores.erro) {
-            await reagir(message, '❌');
-            await responderCitando(message, `❌ ${jogadores.erro}`);
+            await reagir(message, 'â');
+            await responderCitando(message, `â ${jogadores.erro}`);
             return;
         }
 
         if (jogadores.jogadores.length < 2) {
-            await reagir(message, '❌');
-            await responderCitando(message, '❌ Preciso de pelo menos *2 participantes que não sejam administradores* para jogar a batata quente!');
+            await reagir(message, 'â');
+            await responderCitando(message, 'â Preciso de pelo menos *2 participantes que nÃ£o sejam administradores* para jogar a batata quente!');
             return;
         }
 
@@ -15747,24 +15749,24 @@ async function jogarBatataQuente(message) {
         const segundos = Math.ceil(TEMPO_BATATA_QUENTE / 1000);
         const mencao = `@${String(inicial).split('@')[0]}`;
 
-        await reagir(message, '🥔');
+        await reagir(message, 'ð¥');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺🥔༻❃•═┓\n│\n│  *𝐁𝐀𝐓𝐀𝐓𝐀 𝐐𝐔𝐄𝐍𝐓𝐄!*\n│\n├➤ 🥔 A batata começou com *${mencao}*!\n├➤ ⏰ Você tem *${segundos} segundos* para passar!\n│\n├➤ 💡 Use *${PREFIXO}passar @pessoa*\n├➤ ⚠️ Somente quem está com a batata pode passá-la.\n│\n└➤ _Se o tempo acabar, a batata explode!_ 💥\n┗═•❃༺🥔༻❃•═┛`,
+            `âââ¢âà¼ºð¥à¼»ââ¢ââ\nâ\nâ  *ðððððð ðððððð!*\nâ\nââ¤ ð¥ A batata comeÃ§ou com *${mencao}*!\nââ¤ â° VocÃª tem *${segundos} segundos* para passar!\nâ\nââ¤ ð¡ Use *${PREFIXO}passar @pessoa*\nââ¤ â ï¸ Somente quem estÃ¡ com a batata pode passÃ¡-la.\nâ\nââ¤ _Se o tempo acabar, a batata explode!_ ð¥\nâââ¢âà¼ºð¥à¼»ââ¢ââ`,
             { mentions: [inicial] }
         );
     } catch (erro) {
         limparJogoBatataQuente(message.from);
-        console.error('❌ ERRO NA BATATA QUENTE:', erro);
-        await responderCitando(message, '❌ Ocorreu um erro ao iniciar a batata quente.');
+        console.error('â ERRO NA BATATA QUENTE:', erro);
+        await responderCitando(message, 'â Ocorreu um erro ao iniciar a batata quente.');
     }
 }
 
 async function jogarRoletaRussa(message) {
     try {
         if (!message.from.endsWith('@g.us')) {
-            await reagir(message, '❌');
-            await message.reply(aplicarEstiloMensagem('❌ A roleta russa só pode ser usada em grupos!'));
+            await reagir(message, 'â');
+            await message.reply(aplicarEstiloMensagem('â A roleta russa sÃ³ pode ser usada em grupos!'));
             return;
         }
 
@@ -15773,21 +15775,21 @@ async function jogarRoletaRussa(message) {
         }
 
         if (jogosEliminacao.has(message.from)) {
-            await reagir(message, '❌');
-            await message.reply(aplicarEstiloMensagem('❌ Já existe um jogo de eliminação em andamento neste grupo.'));
+            await reagir(message, 'â');
+            await message.reply(aplicarEstiloMensagem('â JÃ¡ existe um jogo de eliminaÃ§Ã£o em andamento neste grupo.'));
             return;
         }
 
         const jogadores = await obterJogadoresParaEliminacao(message);
         if (jogadores.erro) {
-            await reagir(message, '❌');
-            await message.reply(aplicarEstiloMensagem(`❌ ${jogadores.erro}`));
+            await reagir(message, 'â');
+            await message.reply(aplicarEstiloMensagem(`â ${jogadores.erro}`));
             return;
         }
 
         if (jogadores.jogadores.length < 2) {
-            await reagir(message, '❌');
-            await message.reply(aplicarEstiloMensagem('❌ Preciso de pelo menos *2 participantes que não sejam administradores* para girar a roleta russa!'));
+            await reagir(message, 'â');
+            await message.reply(aplicarEstiloMensagem('â Preciso de pelo menos *2 participantes que nÃ£o sejam administradores* para girar a roleta russa!'));
             return;
         }
 
@@ -15800,10 +15802,10 @@ async function jogarRoletaRussa(message) {
 
         const mencao = `@${String(azarado).split('@')[0]}`;
 
-        await reagir(message, '🔫');
+        await reagir(message, 'ð«');
         await enviarComMencoes(
             message.from,
-            `┏═•❃༺🔫༻❃•═┓\n│\n│  *𝐑𝐎𝐋𝐄𝐓𝐀 𝐑𝐔𝐒𝐒𝐀!*\n│\n├➤ A roleta girou... 🔄\n├➤ O destino escolheu *${mencao}*! 💀\n│\n└➤ *${mencao} foi expulso do grupo!*\n┗═•❃༺🔫༻❃•═┓`,
+            `âââ¢âà¼ºð«à¼»ââ¢ââ\nâ\nâ  *ðððððð ððððð!*\nâ\nââ¤ A roleta girou... ð\nââ¤ O destino escolheu *${mencao}*! ð\nâ\nââ¤ *${mencao} foi expulso do grupo!*\nâââ¢âà¼ºð«à¼»ââ¢ââ`,
             { mentions: [azarado] }
         );
 
@@ -15814,32 +15816,32 @@ async function jogarRoletaRussa(message) {
         if (!remocao.sucesso) {
             await enviarComMencoes(
                 message.from,
-                `⚠️ A roleta escolheu @${String(azarado).split('@')[0]}, mas não consegui expulsá-lo.\n\n❌ ${remocao.erro}`,
+                `â ï¸ A roleta escolheu @${String(azarado).split('@')[0]}, mas nÃ£o consegui expulsÃ¡-lo.\n\nâ ${remocao.erro}`,
                 { mentions: [azarado] }
             );
         }
     } catch (erro) {
         jogosEliminacao.delete(message.from);
-        console.error('❌ ERRO NA ROLETA RUSSA:', erro);
-        await message.reply(aplicarEstiloMensagem('❌ Ocorreu um erro ao girar a roleta russa.'));
+        console.error('â ERRO NA ROLETA RUSSA:', erro);
+        await message.reply(aplicarEstiloMensagem('â Ocorreu um erro ao girar a roleta russa.'));
     }
 }
 
 
 // ============================================================
-// 🪢 FORCA
+// ðª¢ FORCA
 // ============================================================
 
 const PALAVRAS_FORCA = [
-    'abacaxi', 'avião', 'banana', 'bicicleta', 'borboleta',
+    'abacaxi', 'aviÃ£o', 'banana', 'bicicleta', 'borboleta',
     'cachorro', 'cavalo', 'computador', 'chocolate', 'dinossauro',
     'elefante', 'escola', 'espelho', 'foguete', 'floresta',
-    'girafa', 'hamburguer', 'jacaré', 'janela', 'lápis',
+    'girafa', 'hamburguer', 'jacarÃ©', 'janela', 'lÃ¡pis',
     'macaco', 'montanha', 'navio', 'oceano', 'pipoca',
     'pirata', 'planeta', 'queijo', 'sorvete', 'telefone',
-    'tigre', 'universo', 'vampiro', 'violão', 'zebra',
-    'castelo', 'dragão', 'tesouro', 'robô', 'futebol',
-    'morcego', 'astronauta', 'chave', 'geladeira', 'televisão',
+    'tigre', 'universo', 'vampiro', 'violÃ£o', 'zebra',
+    'castelo', 'dragÃ£o', 'tesouro', 'robÃ´', 'futebol',
+    'morcego', 'astronauta', 'chave', 'geladeira', 'televisÃ£o',
     'travesseiro', 'dinheiro', 'amizade', 'aventura', 'tempestade'
 ];
 
@@ -15860,7 +15862,7 @@ function formatarPalavraForca(jogo) {
     return Array.from(jogo.palavra)
         .map(letra => {
             const chave = normalizarJogoTexto(letra);
-            return jogo.descobertas.has(chave) ? letra.toUpperCase() : '＿';
+            return jogo.descobertas.has(chave) ? letra.toUpperCase() : 'ï¼¿';
         })
         .join(' ');
 }
@@ -15872,14 +15874,14 @@ function limparJogoForca(chatId) {
 async function iniciarForca(message) {
     const chatId = message?.from;
     if (!chatId?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🪢༻❃•═┓\n├✯ *𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ ❌ _Esse jogo só funciona em grupos._\n┗═•❃༺🪢༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðª¢à¼»ââ¢ââ\nââ¯ *ððððð*\nâ\nââ¤ â _Esse jogo sÃ³ funciona em grupos._\nâââ¢âà¼ºðª¢à¼»ââ¢ââ`);
         return;
     }
 
     if (jogosForca.has(chatId)) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🪢༻❃•═┓\n├✯ *𝐅𝐎𝐑𝐂𝐀 𝐄𝐌 𝐀𝐍𝐃𝐀𝐌𝐄𝐍𝐓𝐎*\n│\n├➤ ⚠️ Já existe uma rodada ativa.\n├➤ 👑 Um admin pode usar *${PREFIXO}revforca*.\n┗═•❃༺🪢༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðª¢à¼»ââ¢ââ\nââ¯ *ððððð ðð ððððððððð*\nâ\nââ¤ â ï¸ JÃ¡ existe uma rodada ativa.\nââ¤ ð Um admin pode usar *${PREFIXO}revforca*.\nâââ¢âà¼ºðª¢à¼»ââ¢ââ`);
         return;
     }
 
@@ -15892,18 +15894,18 @@ async function iniciarForca(message) {
     };
     jogosForca.set(chatId, jogo);
 
-    await reagir(message, '🪢');
+    await reagir(message, 'ðª¢');
     await responderCitando(
         message,
-        `┏═•❃༺🪢༻❃•═┓\n│\n│      *𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ 🔤 Palavra: *${formatarPalavraForca(jogo)}*\n├➤ ❤️ Erros restantes: *${MAX_ERROS_FORCA}*\n│\n├➤ 💡 Use *${PREFIXO}forca letra* para chutar uma letra.\n├➤ 🎯 Você também pode tentar a palavra inteira.\n│\n└➤ _Boa sorte!_ 👀\n┗═•❃༺🪢༻❃•═┛`
+        `âââ¢âà¼ºðª¢à¼»ââ¢ââ\nâ\nâ      *ððððð*\nâ\nââ¤ ð¤ Palavra: *${formatarPalavraForca(jogo)}*\nââ¤ â¤ï¸ Erros restantes: *${MAX_ERROS_FORCA}*\nâ\nââ¤ ð¡ Use *${PREFIXO}forca letra* para chutar uma letra.\nââ¤ ð¯ VocÃª tambÃ©m pode tentar a palavra inteira.\nâ\nââ¤ _Boa sorte!_ ð\nâââ¢âà¼ºðª¢à¼»ââ¢ââ`
     );
 }
 
 async function jogarForca(message, argumentos = '') {
     const chatId = message?.from;
     if (!chatId?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🪢༻❃•═┓\n├✯ *𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ ❌ _Esse jogo só funciona em grupos._\n┗═•❃༺🪢༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðª¢à¼»ââ¢ââ\nââ¯ *ððððð*\nâ\nââ¤ â _Esse jogo sÃ³ funciona em grupos._\nâââ¢âà¼ºðª¢à¼»ââ¢ââ`);
         return;
     }
 
@@ -15915,8 +15917,8 @@ async function jogarForca(message, argumentos = '') {
 
     const jogo = jogosForca.get(chatId);
     if (!jogo) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ Não existe uma forca em andamento. Use *${PREFIXO}forca* para começar.`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â NÃ£o existe uma forca em andamento. Use *${PREFIXO}forca* para comeÃ§ar.`);
         return;
     }
 
@@ -15926,20 +15928,20 @@ async function jogarForca(message, argumentos = '') {
     if (tentativa.length > 1) {
         if (tentativa === normalizarJogoTexto(jogo.palavra)) {
             limparJogoForca(chatId);
-            await reagir(message, '🎉');
-            await responderCitando(message, `🎉 *${obterNomeRemetente(message)}* acertou a palavra!\n\n🪢 A palavra era: *${jogo.palavra.toUpperCase()}*`);
+            await reagir(message, 'ð');
+            await responderCitando(message, `ð *${obterNomeRemetente(message)}* acertou a palavra!\n\nðª¢ A palavra era: *${jogo.palavra.toUpperCase()}*`);
             return;
         }
 
         jogo.erros.add(tentativa);
     } else {
         if (!/^[a-z]$/i.test(tentativa)) {
-            await responderCitando(message, '❌ Envie apenas uma letra ou tente a palavra inteira.');
+            await responderCitando(message, 'â Envie apenas uma letra ou tente a palavra inteira.');
             return;
         }
 
         if (jogo.descobertas.has(tentativa) || jogo.erros.has(tentativa)) {
-            await responderCitando(message, `⚠️ A letra *${tentativa.toUpperCase()}* já foi tentada.`);
+            await responderCitando(message, `â ï¸ A letra *${tentativa.toUpperCase()}* jÃ¡ foi tentada.`);
             return;
         }
 
@@ -15954,22 +15956,22 @@ async function jogarForca(message, argumentos = '') {
 
     if (venceu) {
         limparJogoForca(chatId);
-        await reagir(message, '🎉');
-        await responderCitando(message, `🎉 *${obterNomeRemetente(message)}* completou a forca!\n\n🪢 Palavra: *${jogo.palavra.toUpperCase()}*`);
+        await reagir(message, 'ð');
+        await responderCitando(message, `ð *${obterNomeRemetente(message)}* completou a forca!\n\nðª¢ Palavra: *${jogo.palavra.toUpperCase()}*`);
         return;
     }
 
     if (jogo.erros.size >= MAX_ERROS_FORCA) {
         limparJogoForca(chatId);
-        await reagir(message, '💀');
-        await responderCitando(message, `💀 *Fim de jogo!*\n\n🪢 A palavra era: *${jogo.palavra.toUpperCase()}*\n❌ Erros: *${[...jogo.erros].join(', ').toUpperCase()}*`);
+        await reagir(message, 'ð');
+        await responderCitando(message, `ð *Fim de jogo!*\n\nðª¢ A palavra era: *${jogo.palavra.toUpperCase()}*\nâ Erros: *${[...jogo.erros].join(', ').toUpperCase()}*`);
         return;
     }
 
-    await reagir(message, tentativa.length === 1 && jogo.descobertas.has(tentativa) ? '✅' : '❌');
+    await reagir(message, tentativa.length === 1 && jogo.descobertas.has(tentativa) ? 'â' : 'â');
     await responderCitando(
         message,
-        `🪢 *FORCA*\n\n🔤 ${formatarPalavraForca(jogo)}\n❤️ Erros restantes: *${MAX_ERROS_FORCA - jogo.erros.size}*\n❌ Letras erradas: *${jogo.erros.size ? [...jogo.erros].join(', ').toUpperCase() : 'nenhuma'}*`
+        `ðª¢ *FORCA*\n\nð¤ ${formatarPalavraForca(jogo)}\nâ¤ï¸ Erros restantes: *${MAX_ERROS_FORCA - jogo.erros.size}*\nâ Letras erradas: *${jogo.erros.size ? [...jogo.erros].join(', ').toUpperCase() : 'nenhuma'}*`
     );
 }
 
@@ -15978,18 +15980,18 @@ async function revelarForca(message) {
 
     const jogo = jogosForca.get(message.from);
     if (!jogo) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺👑༻❃•═┓\n├✯ *𝐑𝐄𝐕𝐄𝐋𝐀𝐑 𝐅𝐎𝐑𝐂𝐀*\n│\n├➤ ❌ _Não existe uma rodada ativa._\n┗═•❃༺👑༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nââ¯ *ððððððð ððððð*\nâ\nââ¤ â _NÃ£o existe uma rodada ativa._\nâââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
 
     limparJogoForca(message.from);
-    await reagir(message, '👑');
-    await responderCitando(message, `┏═•❃༺👑༻❃•═┓\n│      *𝐅𝐎𝐑𝐂𝐀 𝐑𝐄𝐕𝐄𝐋𝐀𝐃𝐀*\n│\n├➤ 👑 _Um administrador encerrou a rodada._\n├➤ 🪢 Palavra: *${jogo.palavra.toUpperCase()}*\n│\n┗═•❃༺👑༻❃•═┛`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ððððð ðððððððð*\nâ\nââ¤ ð _Um administrador encerrou a rodada._\nââ¤ ðª¢ Palavra: *${jogo.palavra.toUpperCase()}*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 // ============================================================
-// 🛑 STOP
+// ð STOP
 // ============================================================
 
 function limparJogoStop(chatId) {
@@ -16041,25 +16043,25 @@ async function finalizarStop(chatId, motivo = 'tempo') {
     const pontos = pontuarStop(respostas);
     const ranking = Object.keys(pontos).sort((a, b) => pontos[b] - pontos[a]);
 
-    let texto = `┏═•❃༺🛑༻❃•═┓\n│      *𝐒𝐓𝐎𝐏!*\n│\n├➤ 🔤 Letra: *${jogo.letra}*\n├➤ ${motivo === 'manual' ? '🛑 O jogo foi encerrado.' : '⏰ O tempo acabou!'}\n│\n`;
+    let texto = `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ðððð!*\nâ\nââ¤ ð¤ Letra: *${jogo.letra}*\nââ¤ ${motivo === 'manual' ? 'ð O jogo foi encerrado.' : 'â° O tempo acabou!'}\nâ\n`;
 
     if (!ranking.length) {
-        texto += '├➤ 😶 Ninguém enviou respostas.\n';
+        texto += 'ââ¤ ð¶ NinguÃ©m enviou respostas.\n';
     } else {
         ranking.forEach((id, indice) => {
-            texto += `├➤ ${indice === 0 ? '🥇' : indice === 1 ? '🥈' : indice === 2 ? '🥉' : '🏅'} @${String(id).split('@')[0]} — *${pontos[id]} pontos*\n`;
+            texto += `ââ¤ ${indice === 0 ? 'ð¥' : indice === 1 ? 'ð¥' : indice === 2 ? 'ð¥' : 'ð'} @${String(id).split('@')[0]} â *${pontos[id]} pontos*\n`;
         });
     }
 
-    texto += '│\n├➤ 📋 Respostas:\n';
+    texto += 'â\nââ¤ ð Respostas:\n';
     for (const id of ranking) {
         const respostasPessoa = jogo.respostas[id] || [];
-        texto += `│\n│ @${String(id).split('@')[0]}\n`;
+        texto += `â\nâ @${String(id).split('@')[0]}\n`;
         CATEGORIAS_STOP.forEach((categoria, indice) => {
-            texto += `│   ${categoria}: *${respostasPessoa[indice] || 'sem resposta'}*\n`;
+            texto += `â   ${categoria}: *${respostasPessoa[indice] || 'sem resposta'}*\n`;
         });
     }
-    texto += '│\n┗═•❃༺🛑༻❃•═┛';
+    texto += 'â\nâââ¢âà¼ºðà¼»ââ¢ââ';
 
     await enviarComMencoes(chatId, texto, { mentions: ranking });
 }
@@ -16067,8 +16069,8 @@ async function finalizarStop(chatId, motivo = 'tempo') {
 async function jogarStop(message, argumentos = '') {
     const chatId = message?.from;
     if (!chatId?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🛑༻❃•═┓\n├✯ *𝐒𝐓𝐎𝐏*\n│\n├➤ ❌ _Esse jogo só funciona em grupos._\n┗═•❃༺🛑༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nââ¯ *ðððð*\nâ\nââ¤ â _Esse jogo sÃ³ funciona em grupos._\nâââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
 
@@ -16077,7 +16079,7 @@ async function jogarStop(message, argumentos = '') {
 
     if (!atual) {
         if (entrada && normalizarJogoTexto(entrada) !== 'iniciar') {
-            await responderCitando(message, `❌ Não existe um STOP em andamento. Use *${PREFIXO}stop* para começar.`);
+            await responderCitando(message, `â NÃ£o existe um STOP em andamento. Use *${PREFIXO}stop* para comeÃ§ar.`);
             return;
         }
 
@@ -16090,13 +16092,13 @@ async function jogarStop(message, argumentos = '') {
         };
         jogosStop.set(chatId, jogo);
         jogo.timeout = setTimeout(() => {
-            finalizarStop(chatId).catch(erro => console.error('❌ ERRO AO FINALIZAR STOP:', erro));
+            finalizarStop(chatId).catch(erro => console.error('â ERRO AO FINALIZAR STOP:', erro));
         }, TEMPO_STOP);
 
-        await reagir(message, '🛑');
+        await reagir(message, 'ð');
         await responderCitando(
             message,
-            `┏═•❃༺🛑༻❃•═┓\n│      *𝐒𝐓𝐎𝐏!*\n│\n├➤ 🔤 Letra sorteada: *${letra}*\n├➤ ⏰ Tempo: *60 segundos*\n│\n├➤ 📝 Categorias:\n│   1. Nome\n│   2. Animal\n│   3. Comida\n│   4. Lugar\n│   5. Objeto\n│\n├➤ 💡 Responda assim:\n│ *${PREFIXO}stop João | Jacaré | Jaca | Japão | Janela*\n│\n└➤ 🛑 Um admin pode encerrar usando *${PREFIXO}stop parar*.\n┗═•❃༺🛑༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ðððð!*\nâ\nââ¤ ð¤ Letra sorteada: *${letra}*\nââ¤ â° Tempo: *60 segundos*\nâ\nââ¤ ð Categorias:\nâ   1. Nome\nâ   2. Animal\nâ   3. Comida\nâ   4. Lugar\nâ   5. Objeto\nâ\nââ¤ ð¡ Responda assim:\nâ *${PREFIXO}stop JoÃ£o | JacarÃ© | Jaca | JapÃ£o | Janela*\nâ\nââ¤ ð Um admin pode encerrar usando *${PREFIXO}stop parar*.\nâââ¢âà¼ºðà¼»ââ¢ââ`
         );
         return;
     }
@@ -16109,24 +16111,24 @@ async function jogarStop(message, argumentos = '') {
 
     const respostas = entrada.split('|').map(item => item.trim());
     if (respostas.length !== CATEGORIAS_STOP.length) {
-        await responderCitando(message, `❌ Envie exatamente *${CATEGORIAS_STOP.length} respostas*, separadas por |.\n\nExemplo: *${PREFIXO}stop João | Jacaré | Jaca | Japão | Janela*`);
+        await responderCitando(message, `â Envie exatamente *${CATEGORIAS_STOP.length} respostas*, separadas por |.\n\nExemplo: *${PREFIXO}stop JoÃ£o | JacarÃ© | Jaca | JapÃ£o | Janela*`);
         return;
     }
 
     const id = obterIdRemetente(message);
     atual.respostas[id] = respostas;
-    await reagir(message, '📝');
-    await responderCitando(message, `✅ Suas respostas foram registradas! Aguarde o fim do STOP.\n\n🔤 Letra: *${atual.letra}*`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `â Suas respostas foram registradas! Aguarde o fim do STOP.\n\nð¤ Letra: *${atual.letra}*`);
 }
 
 // ============================================================
-// 🔒 GRUPO: SOMENTE ADM / TODOS
+// ð GRUPO: SOMENTE ADM / TODOS
 // ============================================================
 
 async function configurarGrupoMensagens(message, argumentos = '') {
     if (!message?.from?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺🔒༻❃•═┓\n├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐃𝐄 𝐆𝐑𝐔𝐏𝐎*\n│\n├➤ ❌ _Esse comando só funciona em grupos._\n│\n┗═•❃༺🔒༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nââ¯ *ððððððð ðð ððððð*\nâ\nââ¤ â _Esse comando sÃ³ funciona em grupos._\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
 
@@ -16134,8 +16136,8 @@ async function configurarGrupoMensagens(message, argumentos = '') {
 
     const modo = String(argumentos || '').trim().toLowerCase();
     if (!['f', 'a'].includes(modo)) {
-        await reagir(message, '❓');
-        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│      *𝐂𝐎𝐍𝐓𝐑𝐎𝐋𝐄 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n├➤ 🔒 *${PREFIXO}gp f*\n│   _Somente administradores podem falar._\n│\n├➤ 🔓 *${PREFIXO}gp a*\n│   _Todos podem falar novamente._\n│\n┗═•❃༺⚙️༻❃•═┛`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ\nâ      *ðððððððð ðð ððððð*\nâ\nââ¤ ð *${PREFIXO}gp f*\nâ   _Somente administradores podem falar._\nâ\nââ¤ ð *${PREFIXO}gp a*\nâ   _Todos podem falar novamente._\nâ\nâââ¢âà¼ºâï¸à¼»ââ¢ââ`);
         return;
     }
 
@@ -16149,12 +16151,12 @@ async function configurarGrupoMensagens(message, argumentos = '') {
                     });
 
                     if (!chat) {
-                        return { sucesso: false, erro: 'grupo não encontrado' };
+                        return { sucesso: false, erro: 'grupo nÃ£o encontrado' };
                     }
 
                     const GroupAction = window.require('WAWebSetPropertyGroupAction');
                     if (!GroupAction?.setGroupProperty) {
-                        return { sucesso: false, erro: 'ação do grupo indisponível' };
+                        return { sucesso: false, erro: 'aÃ§Ã£o do grupo indisponÃ­vel' };
                     }
 
                     await GroupAction.setGroupProperty(
@@ -16176,20 +16178,20 @@ async function configurarGrupoMensagens(message, argumentos = '') {
         );
 
         if (!resultado?.sucesso) {
-            throw new Error(resultado?.erro || 'O WhatsApp recusou a alteração.');
+            throw new Error(resultado?.erro || 'O WhatsApp recusou a alteraÃ§Ã£o.');
         }
 
-        await reagir(message, somenteAdmins ? '🔒' : '🔓');
+        await reagir(message, somenteAdmins ? 'ð' : 'ð');
         await responderCitando(
             message,
             somenteAdmins
-                ? `┏═•❃༺🔒༻❃•═┓\n│      *𝐆𝐑𝐔𝐏𝐎 𝐅𝐄𝐂𝐇𝐀𝐃𝐎*\n│\n├➤ 👑 _Somente administradores podem enviar mensagens._\n│\n├➤ 🔓 Para abrir novamente:\n│   *${PREFIXO}gp a*\n│\n┗═•❃༺🔒༻❃•═┛`
-                : `┏═•❃༺🔓༻❃•═┓\n│       *𝐆𝐑𝐔𝐏𝐎 𝐀𝐁𝐄𝐑𝐓𝐎*\n│\n├➤ 👥 _Todos os membros podem enviar mensagens._\n│\n├➤ 🔒 Para fechar novamente:\n│   *${PREFIXO}gp f*\n│\n┗═•❃༺🔓༻❃•═┛`
+                ? `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ððððð ððððððð*\nâ\nââ¤ ð _Somente administradores podem enviar mensagens._\nâ\nââ¤ ð Para abrir novamente:\nâ   *${PREFIXO}gp a*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`
+                : `âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ððððð ðððððð*\nâ\nââ¤ ð¥ _Todos os membros podem enviar mensagens._\nâ\nââ¤ ð Para fechar novamente:\nâ   *${PREFIXO}gp f*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`
         );
     } catch (erro) {
-        console.error('❌ ERRO AO ALTERAR PERMISSÃO DE MENSAGENS DO GRUPO:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│    *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n├➤ _Não consegui alterar as permissões._\n│\n├➤ 👑 Verifique se o bot é administrador.\n│\n┗═•❃༺❌༻❃•═┛`);
+        console.error('â ERRO AO ALTERAR PERMISSÃO DE MENSAGENS DO GRUPO:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ    *ðððð ðð ððððð*\nâ\nââ¤ _NÃ£o consegui alterar as permissÃµes._\nâ\nââ¤ ð Verifique se o bot Ã© administrador.\nâ\nâââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
@@ -16197,90 +16199,90 @@ async function menuJogos(message) {
 
     await reagir(
         message,
-        '🎮'
+        'ð®'
     );
 
     await responderCitando(
         message,
-        `┏═•❃༺🎮༻❃•═┓
-│
-│      *🎮 𝐉𝐎𝐆𝐎𝐒*
-│
-├✯
-│
-├➤ 🎲 *${PREFIXO}dado*
-│   _Rola um dado_
-│
-├➤ 🪙 *${PREFIXO}moeda*
-│   _Cara ou coroa_
-│
-├➤ 🔮 *${PREFIXO}sn*
-│   _Sim ou não_
-│
-├➤ ✂️ *${PREFIXO}ppt*
-│   _Pedra, papel ou tesoura_
-│
-├➤ 🔢 *${PREFIXO}adivinha*
-│   _Adivinhe o número_
-│
-├➤ 🎯 *${PREFIXO}chute @pessoa*
-│   _Desafie alguém_
-│
-├➤ ❤️ *${PREFIXO}ppp @pessoa*
-│   _Pega, pensa ou passa?_
-│
-├➤ ⛏️ *${PREFIXO}minerar*
-│   _Minerar e ganhar moedas_
-│
-├➤ 🏪 *${PREFIXO}loja*
-│   _Ver a loja de itens_
-│
-├➤ 🛒 *${PREFIXO}comprar <item>*
-│   _Comprar um item_
-│
-├➤ 🎒 *${PREFIXO}inventario*
-│   _Ver seus itens_
-│
-├➤ 🎰 *${PREFIXO}slots 100*
-│   _Aposte suas moedas_
-│
-├➤ 💰 *${PREFIXO}saldo*
-│   _Ver sua carteira_
-│
-├➤ 💸 *${PREFIXO}doar 500 @pessoa*
-│   _Transferir moedas para alguém_
-│
-├➤ 🏆 *${PREFIXO}rankingdinheiro*
-│   _Ver os mais ricos do grupo_
-│
-├➤ 🎉 *${PREFIXO}sortearm 500*
-│   _Sorteio de moedas para admins_
-│
-│
-├➤ 🥔 *${PREFIXO}batata*
-│   _Começa a batata quente com tempo_
-│
-├➤ 🥔 *${PREFIXO}passar @pessoa*
-│   _Passa a batata para outra pessoa_
-│
-├➤ 🔫 *${PREFIXO}rr*
-│   _Roleta russa: alguém será expulso_
-│
-├➤ 🪢 *${PREFIXO}forca*
-│   _Jogue forca com o grupo_
-│
-├➤ 👑 *${PREFIXO}revforca*
-│   _Revela a palavra da forca (ADM)_
-│
-├➤ 🛑 *${PREFIXO}stop*
-│   _Jogue STOP com o grupo_
-│
-┗═•❃༺🎮༻❃•═┛`
+        `âââ¢âà¼ºð®à¼»ââ¢ââ
+â
+â      *ð® ððððð*
+â
+ââ¯
+â
+ââ¤ ð² *${PREFIXO}dado*
+â   _Rola um dado_
+â
+ââ¤ ðª *${PREFIXO}moeda*
+â   _Cara ou coroa_
+â
+ââ¤ ð® *${PREFIXO}sn*
+â   _Sim ou nÃ£o_
+â
+ââ¤ âï¸ *${PREFIXO}ppt*
+â   _Pedra, papel ou tesoura_
+â
+ââ¤ ð¢ *${PREFIXO}adivinha*
+â   _Adivinhe o nÃºmero_
+â
+ââ¤ ð¯ *${PREFIXO}chute @pessoa*
+â   _Desafie alguÃ©m_
+â
+ââ¤ â¤ï¸ *${PREFIXO}ppp @pessoa*
+â   _Pega, pensa ou passa?_
+â
+ââ¤ âï¸ *${PREFIXO}minerar*
+â   _Minerar e ganhar moedas_
+â
+ââ¤ ðª *${PREFIXO}loja*
+â   _Ver a loja de itens_
+â
+ââ¤ ð *${PREFIXO}comprar <item>*
+â   _Comprar um item_
+â
+ââ¤ ð *${PREFIXO}inventario*
+â   _Ver seus itens_
+â
+ââ¤ ð° *${PREFIXO}slots 100*
+â   _Aposte suas moedas_
+â
+ââ¤ ð° *${PREFIXO}saldo*
+â   _Ver sua carteira_
+â
+ââ¤ ð¸ *${PREFIXO}doar 500 @pessoa*
+â   _Transferir moedas para alguÃ©m_
+â
+ââ¤ ð *${PREFIXO}rankingdinheiro*
+â   _Ver os mais ricos do grupo_
+â
+ââ¤ ð *${PREFIXO}sortearm 500*
+â   _Sorteio de moedas para admins_
+â
+â
+ââ¤ ð¥ *${PREFIXO}batata*
+â   _ComeÃ§a a batata quente com tempo_
+â
+ââ¤ ð¥ *${PREFIXO}passar @pessoa*
+â   _Passa a batata para outra pessoa_
+â
+ââ¤ ð« *${PREFIXO}rr*
+â   _Roleta russa: alguÃ©m serÃ¡ expulso_
+â
+ââ¤ ðª¢ *${PREFIXO}forca*
+â   _Jogue forca com o grupo_
+â
+ââ¤ ð *${PREFIXO}revforca*
+â   _Revela a palavra da forca (ADM)_
+â
+ââ¤ ð *${PREFIXO}stop*
+â   _Jogue STOP com o grupo_
+â
+âââ¢âà¼ºð®à¼»ââ¢ââ`
     );
 }
 
 // ============================================================
-// 🔔 EXIGIR ADMIN PARA AVISOS
+// ð EXIGIR ADMIN PARA AVISOS
 // ============================================================
 
 async function exigirAdminAviso(message) {
@@ -16290,7 +16292,7 @@ async function exigirAdminAviso(message) {
         const chatId = message.from;
 
         // ========================================================
-        // VERIFICAR SE É GRUPO
+        // VERIFICAR SE Ã GRUPO
         // ========================================================
 
         if (
@@ -16298,16 +16300,16 @@ async function exigirAdminAviso(message) {
             !chatId.endsWith('@g.us')
         ) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺🔔༻❃•═┓
-├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐃𝐄 𝐆𝐑𝐔𝐏𝐎*
-│
-├➤ _Esse comando só funciona em grupos._
-│
-┗═•❃༺🔔༻❃•═┛`
+                `âââ¢âà¼ºðà¼»ââ¢ââ
+ââ¯ *ððððððð ðð ððððð*
+â
+ââ¤ _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
             );
 
             return false;
@@ -16334,7 +16336,7 @@ async function exigirAdminAviso(message) {
                         ) {
                             return {
                                 erro:
-                                    'Coleções do WhatsApp não disponíveis.'
+                                    'ColeÃ§Ãµes do WhatsApp nÃ£o disponÃ­veis.'
                             };
                         }
 
@@ -16344,7 +16346,7 @@ async function exigirAdminAviso(message) {
                         if (!chat) {
                             return {
                                 erro:
-                                    'Grupo não encontrado.'
+                                    'Grupo nÃ£o encontrado.'
                             };
                         }
 
@@ -16354,7 +16356,7 @@ async function exigirAdminAviso(message) {
                         if (!participantes) {
                             return {
                                 erro:
-                                    'Participantes não encontrados.'
+                                    'Participantes nÃ£o encontrados.'
                             };
                         }
 
@@ -16427,35 +16429,35 @@ async function exigirAdminAviso(message) {
         ) {
 
             console.error(
-                '❌ Erro ao obter dados do grupo:',
+                'â Erro ao obter dados do grupo:',
                 dadosChat?.erro
             );
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺⚠️༻❃•═┓
-├✯ *𝐄𝐑𝐑𝐎 𝐀𝐎 𝐕𝐄𝐑𝐈𝐅𝐈𝐂𝐀𝐑*
-│
-├➤ _Não foi possível verificar_
-│   _as permissões do grupo._
-│
-┗═•❃༺⚠️༻❃•═┓`
+                `âââ¢âà¼ºâ ï¸à¼»ââ¢ââ
+ââ¯ *ðððð ðð ððððððððð*
+â
+ââ¤ _NÃ£o foi possÃ­vel verificar_
+â   _as permissÃµes do grupo._
+â
+âââ¢âà¼ºâ ï¸à¼»ââ¢ââ`
             );
 
             return false;
         }
 
         // ========================================================
-        // VERIFICAR ADMIN DO USUÁRIO
+        // VERIFICAR ADMIN DO USUÃRIO
         // ========================================================
 
         const idRemetente =
             obterIdRemetente(message);
 
         console.log(
-            '========== 🔔 ADMIN AVISO =========='
+            '========== ð ADMIN AVISO =========='
         );
 
         console.log(
@@ -16497,33 +16499,33 @@ async function exigirAdminAviso(message) {
             );
 
         // ========================================================
-        // USUÁRIO NÃO É ADMIN
+        // USUÃRIO NÃO Ã ADMIN
         // ========================================================
 
         if (!usuarioAdmin) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺🚫༻❃•═┓
-├✯ *𝐀𝐂𝐄𝐒𝐒𝐎 𝐍𝐄𝐆𝐀𝐃𝐎*
-│
-├➤ _Você precisa ser administrador_
-│   _para gerenciar os avisos._
-│
-┗═•❃༺🚫༻❃•═┓`
+                `âââ¢âà¼ºð«à¼»ââ¢ââ
+ââ¯ *ðððððð ðððððð*
+â
+ââ¤ _VocÃª precisa ser administrador_
+â   _para gerenciar os avisos._
+â
+âââ¢âà¼ºð«à¼»ââ¢ââ`
             );
 
             return false;
         }
 
         // ========================================================
-        // USUÁRIO É ADMIN
+        // USUÃRIO Ã ADMIN
         // ========================================================
 
         console.log(
-            '✅ USUÁRIO É ADMINISTRADOR!'
+            'â USUÃRIO Ã ADMINISTRADOR!'
         );
 
         return true;
@@ -16531,23 +16533,23 @@ async function exigirAdminAviso(message) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro ao verificar administrador:',
+            'â Erro ao verificar administrador:',
             erro
         );
 
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `┏═•❃༺⚠️༻❃•═┓
-├✯ *𝐄𝐑𝐑𝐎*
-│
-├➤ _Não foi possível verificar_
-│   _suas permissões._
-│
-├➤ _Tente novamente em alguns segundos._
-│
-┗═•❃༺⚠️༻❃•═┓`
+            `âââ¢âà¼ºâ ï¸à¼»ââ¢ââ
+ââ¯ *ðððð*
+â
+ââ¤ _NÃ£o foi possÃ­vel verificar_
+â   _suas permissÃµes._
+â
+ââ¤ _Tente novamente em alguns segundos._
+â
+âââ¢âà¼ºâ ï¸à¼»ââ¢ââ`
         );
 
         return false;
@@ -16587,21 +16589,21 @@ async function adicionarAviso(message, argumentos) {
     const separador = texto.indexOf('/');
 
     if (separador === -1) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `╭─〔 🔔 *NOVO AVISO* 〕
-│
-│ ❌ Formato inválido!
-│
-│ Use:
-│ *;aviso HH:MM / mensagem*
-│
-│ Exemplo:
-│ *;aviso 12:30 / Hora do almoço*
-│
-╰────────────────`
+            `â­âã ð *NOVO AVISO* ã
+â
+â â Formato invÃ¡lido!
+â
+â Use:
+â *;aviso HH:MM / mensagem*
+â
+â Exemplo:
+â *;aviso 12:30 / Hora do almoÃ§o*
+â
+â°ââââââââââââââââ`
         );
 
         return;
@@ -16611,40 +16613,40 @@ async function adicionarAviso(message, argumentos) {
     const mensagem = texto.slice(separador + 1).trim();
 
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora)) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `╭─〔 🔔 *NOVO AVISO* 〕
-│
-│ ❌ *Horário inválido!*
-│
-│ Use o formato:
-│ *HH:MM*
-│
-│ Exemplo:
-│ *12:30*
-│
-╰────────────────`
+            `â­âã ð *NOVO AVISO* ã
+â
+â â *HorÃ¡rio invÃ¡lido!*
+â
+â Use o formato:
+â *HH:MM*
+â
+â Exemplo:
+â *12:30*
+â
+â°ââââââââââââââââ`
         );
 
         return;
     }
 
     if (!mensagem) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `╭─〔 🔔 *NOVO AVISO* 〕
-│
-│ ❌ Você precisa informar
-│ a mensagem do aviso.
-│
-│ Exemplo:
-│ *;aviso 12:30 / Hora do almoço*
-│
-╰────────────────`
+            `â­âã ð *NOVO AVISO* ã
+â
+â â VocÃª precisa informar
+â a mensagem do aviso.
+â
+â Exemplo:
+â *;aviso 12:30 / Hora do almoÃ§o*
+â
+â°ââââââââââââââââ`
         );
 
         return;
@@ -16669,19 +16671,19 @@ async function adicionarAviso(message, argumentos) {
 
     salvarAvisos();
 
-    await reagir(message, '🔔');
+    await reagir(message, 'ð');
 
     await responderCitando(
         message,
-        `╭─〔 🔔 *𝐀𝐕𝐈𝐒𝐎 𝐀𝐆𝐄𝐍𝐃𝐀𝐃𝐎* 〕
-│
-│ ✅ *𝑨𝒗𝒊𝒔𝒐 𝒄𝒓𝒊𝒂𝒅𝒐 𝒄𝒐𝒎 𝒔𝒖𝒄𝒆𝒔𝒔𝒐!*
-│
-│ 🕐 𝐇𝐨𝐫á𝐫𝐢𝐨: *${hora}*
-│ 💬 𝑴𝒆𝒏𝒔𝒂𝒈𝒆𝒎: *${mensagem}*
-│ 🔁 𝑹𝒆𝒑𝒆𝒕𝒊çã𝒐: *Diariamente*
-│
-╰────────────────`
+        `â­âã ð *ððððð ðððððððð* ã
+â
+â â *ð¨ðððð ðððððð ððð ððððððð!*
+â
+â ð ðð¨ð«Ã¡ð«ð¢ð¨: *${hora}*
+â ð¬ ð´ððððððð: *${mensagem}*
+â ð ð¹ðððððÃ§Ã£ð: *Diariamente*
+â
+â°ââââââââââââââââ`
     );
 }
 
@@ -16691,21 +16693,21 @@ async function removerAviso(message, argumentos) {
     const hora = String(argumentos || '').trim();
 
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora)) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `╭─〔 🗑️ *REMOVER AVISO* 〕
-│
-│ ❌ Horário inválido!
-│
-│ Use:
-│ *;rem_aviso HH:MM*
-│
-│ Exemplo:
-│ *;rem_aviso 12:30*
-│
-╰────────────────`
+            `â­âã ðï¸ *REMOVER AVISO* ã
+â
+â â HorÃ¡rio invÃ¡lido!
+â
+â Use:
+â *;rem_aviso HH:MM*
+â
+â Exemplo:
+â *;rem_aviso 12:30*
+â
+â°ââââââââââââââââ`
         );
 
         return;
@@ -16716,22 +16718,22 @@ async function removerAviso(message, argumentos) {
     const encontrados = lista.filter(aviso => aviso.hora === hora);
 
     if (encontrados.length === 0) {
-        await reagir(message, '📭');
+        await reagir(message, 'ð­');
 
         await responderCitando(
             message,
-            `╭─〔 🗑️ *REMOVER AVISO* 〕
-│
-│ 📭 Nenhum aviso encontrado
-│ para o horário *${hora}*.
-│
-╰────────────────`
+            `â­âã ðï¸ *REMOVER AVISO* ã
+â
+â ð­ Nenhum aviso encontrado
+â para o horÃ¡rio *${hora}*.
+â
+â°ââââââââââââââââ`
         );
 
         return;
     }
 
-    // Se houver apenas um aviso nesse horário
+    // Se houver apenas um aviso nesse horÃ¡rio
     if (encontrados.length === 1) {
         const indice = lista.findIndex(
             aviso => aviso.id === encontrados[0].id
@@ -16745,24 +16747,24 @@ async function removerAviso(message, argumentos) {
 
         salvarAvisos();
 
-        await reagir(message, '🗑️');
+        await reagir(message, 'ðï¸');
 
         await responderCitando(
             message,
-            `╭─〔 🗑️ *𝑨𝑽𝑰𝑺𝑶 𝑹𝑬𝑴𝑶𝑽𝑰𝑫𝑶* 〕
-│
-│ ✅ *𝑨𝒗𝒊𝒔𝒐 𝒓𝒆𝒎𝒐𝒗𝒊𝒅𝒐 𝒄𝒐𝒎 𝒔𝒖𝒄𝒆𝒔𝒔𝒐!*
-│
-│ 🕐 𝐇𝐨𝐫á𝐫𝐢𝐨: *${removido.hora}*
-│ 💬  𝑴𝒆𝒏𝒔𝒂𝒈𝒆𝒎: *${removido.mensagem}*
-│
-╰────────────────`
+            `â­âã ðï¸ *ð¨ð½ð°ðºð¶ ð¹ð¬ð´ð¶ð½ð°ð«ð¶* ã
+â
+â â *ð¨ðððð ðððððððð ððð ððððððð!*
+â
+â ð ðð¨ð«Ã¡ð«ð¢ð¨: *${removido.hora}*
+â ð¬  ð´ððððððð: *${removido.mensagem}*
+â
+â°ââââââââââââââââ`
         );
 
         return;
     }
 
-    // Mais de um aviso no mesmo horário
+    // Mais de um aviso no mesmo horÃ¡rio
     const chave = `${message.from}_${obterIdRemetente(message)}`;
 
     confirmacoesRemoverAviso.set(chave, {
@@ -16770,29 +16772,29 @@ async function removerAviso(message, argumentos) {
         ids: encontrados.map(aviso => aviso.id)
     });
 
-    let resposta = `╭─〔 🗑️ *REMOVER AVISO* 〕
-│
-│ ⚠️ Existem *${encontrados.length} avisos*
-│ cadastrados para *${hora}*.
-│
-│ Escolha qual deseja remover:
-│
+    let resposta = `â­âã ðï¸ *REMOVER AVISO* ã
+â
+â â ï¸ Existem *${encontrados.length} avisos*
+â cadastrados para *${hora}*.
+â
+â Escolha qual deseja remover:
+â
 `;
 
     encontrados.forEach((aviso, index) => {
-        resposta += `│ *${index + 1}.* 💬 ${aviso.mensagem}
-│
+        resposta += `â *${index + 1}.* ð¬ ${aviso.mensagem}
+â
 `;
     });
 
-    resposta += `│ ─────────────────
-│
-│ 👉 Responda apenas com o
-│ número do aviso.
-│
-│ Exemplo: *1*
-│
-╰────────────────`;
+    resposta += `â âââââââââââââââââ
+â
+â ð Responda apenas com o
+â nÃºmero do aviso.
+â
+â Exemplo: *1*
+â
+â°ââââââââââââââââ`;
 
     await responderCitando(message, resposta);
 }
@@ -16807,7 +16809,7 @@ async function processarSelecaoRemoverAviso(message) {
         return false;
     }
 
-    // Se o usuário quiser executar outro comando,
+    // Se o usuÃ¡rio quiser executar outro comando,
     // deixa o processamento normal continuar.
     if (message.body.trim().startsWith(PREFIXO)) {
     }
@@ -16817,15 +16819,15 @@ async function processarSelecaoRemoverAviso(message) {
     if (texto.toLowerCase() === 'cancelar') {
         confirmacoesRemoverAviso.delete(chave);
 
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `╭─〔 🗑️ *REMOVER AVISO* 〕
-│
-│ ❌ *Operação cancelada.*
-│
-╰────────────────`
+            `â­âã ðï¸ *REMOVER AVISO* ã
+â
+â â *OperaÃ§Ã£o cancelada.*
+â
+â°ââââââââââââââââ`
         );
 
         return true;
@@ -16840,16 +16842,16 @@ async function processarSelecaoRemoverAviso(message) {
     ) {
         await responderCitando(
             message,
-            `╭─〔 🗑️ *REMOVER AVISO* 〕
-│
-│ ❌ Opção inválida!
-│
-│ Responda com um número
-│ entre *1* e *${pendencia.ids.length}*.
-│
-│ Ou envie *cancelar*.
-│
-╰────────────────`
+            `â­âã ðï¸ *REMOVER AVISO* ã
+â
+â â OpÃ§Ã£o invÃ¡lida!
+â
+â Responda com um nÃºmero
+â entre *1* e *${pendencia.ids.length}*.
+â
+â Ou envie *cancelar*.
+â
+â°ââââââââââââââââ`
         );
 
         return true;
@@ -16870,15 +16872,15 @@ async function processarSelecaoRemoverAviso(message) {
     confirmacoesRemoverAviso.delete(chave);
 
     if (indice === -1) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `╭─〔 🗑️ *REMOVER AVISO* 〕
-│
-│ ❌ Esse aviso não existe mais.
-│
-╰────────────────`
+            `â­âã ðï¸ *REMOVER AVISO* ã
+â
+â â Esse aviso nÃ£o existe mais.
+â
+â°ââââââââââââââââ`
         );
 
         return true;
@@ -16892,18 +16894,18 @@ async function processarSelecaoRemoverAviso(message) {
 
     salvarAvisos();
 
-    await reagir(message, '🗑️');
+    await reagir(message, 'ðï¸');
 
     await responderCitando(
         message,
-        `╭─〔 🗑️ *AVISO REMOVIDO* 〕
-│
-│ ✅ *Aviso removido com sucesso!*
-│
-│ 🕐 Horário: *${removido.hora}*
-│ 💬 Mensagem: *${removido.mensagem}*
-│
-╰────────────────`
+        `â­âã ðï¸ *AVISO REMOVIDO* ã
+â
+â â *Aviso removido com sucesso!*
+â
+â ð HorÃ¡rio: *${removido.hora}*
+â ð¬ Mensagem: *${removido.mensagem}*
+â
+â°ââââââââââââââââ`
     );
 
     return true;
@@ -16914,9 +16916,9 @@ function fonteEstilizada(texto) {
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
     const estilizado =
-        '𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉' +
-        '𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣' +
-        '𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿';
+        'ð°ð±ð²ð³ð´ðµð¶ð·ð¸ð¹ðºð»ð¼ð½ð¾ð¿ðððððððððð' +
+        'ððððððððððððððððððððððð ð¡ð¢ð£' +
+        'ð¶ð·ð¸ð¹ðºð»ð¼ð½ð¾ð¿';
 
     const mapa = {};
 
@@ -16941,16 +16943,16 @@ async function listarAvisos(message) {
 
     if (lista.length === 0) {
 
-        await reagir(message, '🔔');
+        await reagir(message, 'ð');
 
         await responderCitando(
             message,
-            `┏═•❃༺✿༻❃•═┓
-├✯ *🔔 𝑨𝑽𝑰𝑺𝑶𝑺 𝑷𝑹𝑶𝑮𝑹𝑨𝑴𝑨𝑫𝑶𝑺*
-│
-├➤ _𝑵ã𝒐 𝒉á 𝒂𝒗𝒊𝒔𝒐𝒔 𝒑𝒓𝒐𝒈𝒓𝒂𝒎𝒂𝒅𝒐𝒔._
-│
-┗═•❃༺✿༻❃•═┓`
+            `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ð ð¨ð½ð°ðºð¶ðº ð·ð¹ð¶ð®ð¹ð¨ð´ð¨ð«ð¶ðº*
+â
+ââ¤ _ðµÃ£ð ðÃ¡ ðððððð ððððððððððð._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
         );
 
         return;
@@ -16960,22 +16962,22 @@ async function listarAvisos(message) {
         a.hora.localeCompare(b.hora)
     );
 
-    let texto = `┏═•❃༺✿༻❃•═┓
-├✯ *🔔 𝑨𝑽𝑰𝑺𝑶𝑺 𝑷𝑹𝑶𝑮𝑹𝑨𝑴𝑨𝑫𝑶𝑺*
-│
+    let texto = `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ð ð¨ð½ð°ðºð¶ðº ð·ð¹ð¶ð®ð¹ð¨ð´ð¨ð«ð¶ðº*
+â
 `;
 
     avisosOrdenados.forEach((aviso, index) => {
 
-        texto += `├➤ *${index + 1}. ⏰ ${aviso.hora}*
-│   ↳ *${aviso.mensagem}*
-│
+        texto += `ââ¤ *${index + 1}. â° ${aviso.hora}*
+â   â³ *${aviso.mensagem}*
+â
 `;
     });
 
-    texto += `┗═•❃༺✿༻❃•═┓`;
+    texto += `âââ¢âà¼ºâ¿à¼»ââ¢ââ`;
 
-    await reagir(message, '🔔');
+    await reagir(message, 'ð');
 
     await responderCitando(
         message,
@@ -16990,21 +16992,21 @@ async function jogoPPP(message) {
         const chatId = message.from;
 
         // ========================================================
-        // VERIFICAR SE É GRUPO
+        // VERIFICAR SE Ã GRUPO
         // ========================================================
 
         if (!chatId || !chatId.endsWith('@g.us')) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐏𝐄𝐆𝐀, 𝐏𝐄𝐍𝐒𝐀 𝐎𝐔 𝐏𝐀𝐒𝐒𝐀*
-│
-├➤ _Esse jogo só funciona em grupos._
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðððð, ððððð ðð ððððð*
+â
+ââ¤ _Esse jogo sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return;
@@ -17067,7 +17069,7 @@ async function jogoPPP(message) {
                 } catch (erro) {
 
                     console.error(
-                        '❌ Erro ao obter participantes do PPP:',
+                        'â Erro ao obter participantes do PPP:',
                         erro
                     );
 
@@ -17085,16 +17087,16 @@ async function jogoPPP(message) {
             participantes.length === 0
         ) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐏𝐄𝐆𝐀, 𝐏𝐄𝐍𝐒𝐀 𝐎𝐔 𝐏𝐀𝐒𝐒𝐀*
-│
-├➤ _Não consegui encontrar os participantes._
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðððð, ððððð ðð ððððð*
+â
+ââ¤ _NÃ£o consegui encontrar os participantes._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return;
@@ -17113,16 +17115,16 @@ async function jogoPPP(message) {
 
         if (disponiveis.length === 0) {
 
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐏𝐄𝐆𝐀, 𝐏𝐄𝐍𝐒𝐀 𝐎𝐔 𝐏𝐀𝐒𝐒𝐀*
-│
-├➤ _Não há participantes disponíveis._
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðððð, ððððð ðð ððððð*
+â
+ââ¤ _NÃ£o hÃ¡ participantes disponÃ­veis._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return;
@@ -17143,23 +17145,23 @@ async function jogoPPP(message) {
             escolhido.id;
 
         // ========================================================
-        // MONTAR MENÇÃO
+        // MONTAR MENÃÃO
         // ========================================================
 
         const numeroMencao =
             idEscolhido.split('@')[0];
 
-        await reagir(message, '🎯');
+        await reagir(message, 'ð¯');
         // ========================================================
         // ENVIAR MENSAGEM
         // ========================================================
 
-        const textoPPP = `┏═•❃༺✿༻❃•═┓
-├✯ *𝐏𝐄𝐆𝐀, 𝐏𝐄𝐍𝐒𝐀 𝐎𝐔 𝐏𝐀𝐒𝐒𝐀*
-│
-├➤ @${numeroMencao}
-│
-┗═•❃༺✿༻❃•═┓`;
+        const textoPPP = `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðððð, ððððð ðð ððððð*
+â
+ââ¤ @${numeroMencao}
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`;
 
         // Envia a mensagem do PPP
         await enviarComMencoes(
@@ -17214,7 +17216,7 @@ async function jogoPPP(message) {
 
                 } catch (erro) {
                     console.error(
-                        '❌ Erro ao localizar mensagem PPP:',
+                        'â Erro ao localizar mensagem PPP:',
                         erro
                     );
 
@@ -17226,31 +17228,31 @@ async function jogoPPP(message) {
         );
 
         console.log(
-            '🎯 ID DA MENSAGEM PPP:',
+            'ð¯ ID DA MENSAGEM PPP:',
             mensagemPPP
         );
 
         if (!mensagemPPP || !mensagemPPP.id) {
             throw new Error(
-                'Não foi possível localizar o ID da mensagem do PPP.'
+                'NÃ£o foi possÃ­vel localizar o ID da mensagem do PPP.'
             );
         }
 
         // Cria a enquete
    const enquete =
             new Poll(
-                '𝐏𝐞𝐠𝐚, 𝐩𝐞𝐧𝐬𝐚 𝐨𝐮 𝐩𝐚𝐬𝐬𝐚?',
+                'ððð ð, ð©ðð§ð¬ð ð¨ð® ð©ðð¬ð¬ð?',
                 [
-                    '❤️ 𝐏𝐞𝐠𝐚',
-                    '💭 𝐏𝐞𝐧𝐬𝐚',
-                    '❌ 𝐏𝐚𝐬𝐬𝐚'
+                    'â¤ï¸ ððð ð',
+                    'ð­ ððð§ð¬ð',
+                    'â ððð¬ð¬ð'
                 ],
                 {
                     allowMultipleAnswers: false
                 }
             );
 
-        // Envia a enquete respondendo à mensagem do PPP
+        // Envia a enquete respondendo Ã  mensagem do PPP
         await client.sendMessage(
             chatId,
             enquete,
@@ -17261,20 +17263,20 @@ async function jogoPPP(message) {
 
     } catch (erro) {
         console.error(
-            '❌ Erro no jogo PPP:',
+            'â Erro no jogo PPP:',
             erro
         );
 
-        await reagir(message, '❌');
+        await reagir(message, 'â');
 
         await responderCitando(
             message,
-            `┏═•❃༺✿༻❃•═┓
-├✯ *𝐏𝐄𝐆𝐀, 𝐏𝐄𝐍𝐒𝐀 𝐎𝐔 𝐏𝐀𝐒𝐒𝐀*
-│
-├➤ _Ocorreu um erro ao realizar o sorteio._
-│
-┗═•❃༺✿༻❃•═┓`
+            `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðððð, ððððð ðð ððððð*
+â
+ââ¤ _Ocorreu um erro ao realizar o sorteio._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
         );
     }
 }
@@ -17283,35 +17285,35 @@ async function comandoOiAuto(message) {
     try {
         const chatId = message.from;
 
-        // Só funciona em grupos
+        // SÃ³ funciona em grupos
         if (!chatId || !chatId.endsWith('@g.us')) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐎𝐈 𝐀𝐔𝐓𝐎*
-│
-├➤ _Esse comando só funciona em grupos._
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðð ðððð*
+â
+ââ¤ _Esse comando sÃ³ funciona em grupos._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return;
         }
 
-        // Verifica se quem usou é administrador
+        // Verifica se quem usou Ã© administrador
         if (!(await exigirAdmin(message))) {
-            await reagir(message, '❌');
+            await reagir(message, 'â');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐎𝐈 𝐀𝐔𝐓𝐎*
-│
-├➤ _Apenas administradores podem usar esse comando._
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðð ðððð*
+â
+ââ¤ _Apenas administradores podem usar esse comando._
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             return;
@@ -17321,7 +17323,7 @@ async function comandoOiAuto(message) {
         const ativo = oiAutoAtivo.get(chatId) === true;
 
         // ========================================================
-        // 🔴 DESATIVAR
+        // ð´ DESATIVAR
         // ========================================================
 
         if (ativo) {
@@ -17330,22 +17332,22 @@ async function comandoOiAuto(message) {
 
             salvarOiAuto();
 
-            await reagir(message, '🔴');
+            await reagir(message, 'ð´');
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐎𝐈 𝐀𝐔𝐓𝐎*
-│
-├➤ 🔴 _Comando desativado!_
-│
-├➤ O bot não responderá mais automaticamente.
-│
-┗═•❃༺✿༻❃•═┓`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðð ðððð*
+â
+ââ¤ ð´ _Comando desativado!_
+â
+ââ¤ O bot nÃ£o responderÃ¡ mais automaticamente.
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
         // ========================================================
-        // 🟢 ATIVAR
+        // ð¢ ATIVAR
         // ========================================================
 
         } else {
@@ -17357,21 +17359,21 @@ async function comandoOiAuto(message) {
 
             salvarOiAuto();
 
-            await reagir(message, '🟢');
+            await reagir(message, 'ð¢');
 
             await enviarComMencoes(
                 chatId,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐎𝐈 𝐀𝐔𝐓𝐎*
-│
-├➤ 🟢 _𝐂𝐨𝐦𝐚𝐧𝐝𝐨 𝐚𝐭𝐢𝐯𝐚𝐝𝐨!_
-│
-├➤ 𝐐𝐮𝐚𝐧𝐝𝐨 @553298631752 𝐦𝐚𝐧𝐝𝐚𝐫 "𝐨𝐢", "𝐨𝐥𝐚" 𝐨𝐮 "𝐨𝐥á",
-│   𝐨 𝐛𝐨𝐭 𝐫𝐞𝐬𝐩𝐨𝐧𝐝𝐞𝐫á:
-│
-├➤ *Ola Incrivel Bea!*
-│
-┗═•❃༺✿༻❃•═┓`,
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ðð ðððð*
+â
+ââ¤ ð¢ _ðð¨ð¦ðð§ðð¨ ðð­ð¢ð¯ððð¨!_
+â
+ââ¤ ðð®ðð§ðð¨ @553298631752 ð¦ðð§ððð« "ð¨ð¢", "ð¨ð¥ð" ð¨ð® "ð¨ð¥Ã¡",
+â   ð¨ ðð¨ð­ ð«ðð¬ð©ð¨ð§ððð«Ã¡:
+â
+ââ¤ *Ola Incrivel Bea!*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`,
                 {
                     quotedMessageId: message.id._serialized,
                     mentions: [numeroOiAuto]
@@ -17382,33 +17384,33 @@ async function comandoOiAuto(message) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro no comando OI AUTO:',
+            'â Erro no comando OI AUTO:',
             erro
         );
 
-        await reagir(message, '❌');
+        await reagir(message, 'â');
     }
 }
 
 // ============================================================
-// 🎙️ TTS E MODIFICADORES DE VOZ
+// ðï¸ TTS E MODIFICADORES DE VOZ
 // ============================================================
 
 const EFEITOS_VOZ = {
-    esquilo: { nome: '🐿️ Esquilo', filtro: 'asetrate=44100*1.55,aresample=44100,atempo=0.645' },
-    chipmunk: { nome: '🐿️ Chipmunk', filtro: 'asetrate=44100*1.8,aresample=44100,atempo=0.556' },
-    agudo: { nome: '🔊 Agudo', filtro: 'asetrate=44100*1.35,aresample=44100,atempo=0.741' },
-    demonio: { nome: '👹 Demônio', filtro: 'asetrate=44100*0.62,aresample=44100,atempo=1.613,acompressor=threshold=-18dB:ratio=3:attack=5:release=80' },
-    grave: { nome: '🗿 Grave', filtro: 'asetrate=44100*0.72,aresample=44100,atempo=1.389' },
-    robo: { nome: '🤖 Robô', filtro: 'highpass=f=180,lowpass=f=5200,aecho=0.8:0.7:35:0.3,aphaser=in_gain=0.5:out_gain=0.7:delay=2:decay=0.4:speed=0.6' },
-    radio: { nome: '📻 Rádio', filtro: 'highpass=f=350,lowpass=f=3000,acompressor=threshold=-18dB:ratio=4:attack=5:release=80' },
-    telefone: { nome: '☎️ Telefone', filtro: 'highpass=f=500,lowpass=f=2500,acompressor=threshold=-20dB:ratio=5:attack=3:release=60' },
-    megafone: { nome: '📢 Megafone', filtro: 'highpass=f=250,lowpass=f=4200,acompressor=threshold=-16dB:ratio=6:attack=2:release=50,aecho=0.8:0.6:25:0.2' },
-    eco: { nome: '🏔️ Eco', filtro: 'aecho=0.8:0.88:650:0.45' },
-    cavern: { nome: '🕳️ Caverna', filtro: 'aecho=0.8:0.9:900:0.5,aecho=0.8:0.7:1800:0.3' },
-    alien: { nome: '👽 Alienígena', filtro: 'asetrate=44100*1.25,aresample=44100,atempo=0.8,aphaser=in_gain=0.5:out_gain=0.7:delay=3:decay=0.5:speed=0.8' },
-    distorcido: { nome: '💥 Distorcido', filtro: 'acrusher=bits=8:mix=0.75,acompressor=threshold=-12dB:ratio=5:attack=2:release=40' },
-    reverso: { nome: '🔄 Reverso', filtro: 'areverse' }
+    esquilo: { nome: 'ð¿ï¸ Esquilo', filtro: 'asetrate=44100*1.55,aresample=44100,atempo=0.645' },
+    chipmunk: { nome: 'ð¿ï¸ Chipmunk', filtro: 'asetrate=44100*1.8,aresample=44100,atempo=0.556' },
+    agudo: { nome: 'ð Agudo', filtro: 'asetrate=44100*1.35,aresample=44100,atempo=0.741' },
+    demonio: { nome: 'ð¹ DemÃ´nio', filtro: 'asetrate=44100*0.62,aresample=44100,atempo=1.613,acompressor=threshold=-18dB:ratio=3:attack=5:release=80' },
+    grave: { nome: 'ð¿ Grave', filtro: 'asetrate=44100*0.72,aresample=44100,atempo=1.389' },
+    robo: { nome: 'ð¤ RobÃ´', filtro: 'highpass=f=180,lowpass=f=5200,aecho=0.8:0.7:35:0.3,aphaser=in_gain=0.5:out_gain=0.7:delay=2:decay=0.4:speed=0.6' },
+    radio: { nome: 'ð» RÃ¡dio', filtro: 'highpass=f=350,lowpass=f=3000,acompressor=threshold=-18dB:ratio=4:attack=5:release=80' },
+    telefone: { nome: 'âï¸ Telefone', filtro: 'highpass=f=500,lowpass=f=2500,acompressor=threshold=-20dB:ratio=5:attack=3:release=60' },
+    megafone: { nome: 'ð¢ Megafone', filtro: 'highpass=f=250,lowpass=f=4200,acompressor=threshold=-16dB:ratio=6:attack=2:release=50,aecho=0.8:0.6:25:0.2' },
+    eco: { nome: 'ðï¸ Eco', filtro: 'aecho=0.8:0.88:650:0.45' },
+    cavern: { nome: 'ð³ï¸ Caverna', filtro: 'aecho=0.8:0.9:900:0.5,aecho=0.8:0.7:1800:0.3' },
+    alien: { nome: 'ð½ AlienÃ­gena', filtro: 'asetrate=44100*1.25,aresample=44100,atempo=0.8,aphaser=in_gain=0.5:out_gain=0.7:delay=3:decay=0.5:speed=0.8' },
+    distorcido: { nome: 'ð¥ Distorcido', filtro: 'acrusher=bits=8:mix=0.75,acompressor=threshold=-12dB:ratio=5:attack=2:release=40' },
+    reverso: { nome: 'ð Reverso', filtro: 'areverse' }
 };
 
 function obterEfeitoDeVoz(comando) {
@@ -17422,7 +17424,7 @@ async function executarFFmpeg(args) {
         processo.stderr.on('data', parte => { erro += parte.toString(); });
         processo.on('error', reject);
         processo.on('close', codigo => {
-            if (codigo !== 0) return reject(new Error(`FFmpeg terminou com código ${codigo}: ${erro.trim()}`));
+            if (codigo !== 0) return reject(new Error(`FFmpeg terminou com cÃ³digo ${codigo}: ${erro.trim()}`));
             resolve();
         });
     });
@@ -17458,7 +17460,7 @@ function formatarErroDownload(erro) {
     }
 }
 
-// Cache local para áudios gerados pelo próprio bot.
+// Cache local para Ã¡udios gerados pelo prÃ³prio bot.
 // Isso evita depender de um novo download do WhatsApp a cada efeito aplicado.
 const CACHE_AUDIO_TTL = 30 * 60 * 1000;
 const CACHE_AUDIO_MAXIMO = 50;
@@ -17475,8 +17477,8 @@ function obterChavesMensagem(mensagem) {
         if (!chaves.includes(chave)) chaves.push(chave);
     };
 
-    // O id.id é o identificador interno da mensagem e normalmente permanece
-    // igual mesmo quando whatsapp-web.js expõe $1/_serialized de formas diferentes.
+    // O id.id Ã© o identificador interno da mensagem e normalmente permanece
+    // igual mesmo quando whatsapp-web.js expÃµe $1/_serialized de formas diferentes.
     adicionar(id.id);
     adicionar(id.$1);
     adicionar(id._serialized);
@@ -17567,7 +17569,7 @@ async function guardarAudioNoCache(mensagem, caminhoOrigem) {
     const caminhoCache = path.join(pastaCache, `${nomeSeguro}-${Date.now()}.ogg`);
     await fs.promises.copyFile(caminhoOrigem, caminhoCache);
 
-    // Remove qualquer entrada anterior que corresponda a uma das representações
+    // Remove qualquer entrada anterior que corresponda a uma das representaÃ§Ãµes
     // deste mesmo ID, evitando arquivos duplicados no cache.
     const anteriores = new Set();
     for (const chave of chaves) {
@@ -17588,7 +17590,7 @@ async function guardarAudioNoCache(mensagem, caminhoOrigem) {
     };
 
     // Guarda todas as formas do ID. Assim, sendMessage() e getQuotedMessage()
-    // podem usar representações diferentes e ainda encontrar o mesmo arquivo.
+    // podem usar representaÃ§Ãµes diferentes e ainda encontrar o mesmo arquivo.
     for (const chave of chaves) {
         cacheAudioLocal.set(chave, item);
     }
@@ -17600,9 +17602,9 @@ async function guardarAudioNoCache(mensagem, caminhoOrigem) {
 async function baixarMidiaWhatsAppCompativel(mensagem) {
     const raw = mensagem?.rawData || mensagem?._data || {};
 
-    // O WhatsApp Web atual está migrando os IDs de _serialized para $1.
-    // Para mídia, tentamos primeiro usar os dados criptográficos que já vieram
-    // no próprio objeto Message, sem depender da busca Msg.get().
+    // O WhatsApp Web atual estÃ¡ migrando os IDs de _serialized para $1.
+    // Para mÃ­dia, tentamos primeiro usar os dados criptogrÃ¡ficos que jÃ¡ vieram
+    // no prÃ³prio objeto Message, sem depender da busca Msg.get().
     const mediaRaw = raw.mediaData || raw.media || {};
     const dadosDiretos = {
         directPath: raw.directPath || mediaRaw.directPath || mensagem?.directPath,
@@ -17667,13 +17669,13 @@ async function baixarMidiaWhatsAppCompativel(mensagem) {
             ultimoErro = erroDireto;
         }
     } else {
-        ultimoErro = new Error('Dados criptográficos da mídia incompletos no objeto Message.');
+        ultimoErro = new Error('Dados criptogrÃ¡ficos da mÃ­dia incompletos no objeto Message.');
     }
 
     const id = mensagem?.id || {};
     const candidatos = [];
 
-    // $1 é o novo nome usado por algumas versões recentes do WhatsApp Web.
+    // $1 Ã© o novo nome usado por algumas versÃµes recentes do WhatsApp Web.
     if (id.$1) candidatos.push(id.$1);
     if (id._serialized && !candidatos.includes(id._serialized)) {
         candidatos.push(id._serialized);
@@ -17757,11 +17759,11 @@ async function baixarMidiaWhatsAppCompativel(mensagem) {
         }
     }
 
-    // Último recurso: usa a implementação oficial da biblioteca. Não fazemos
+    // Ãltimo recurso: usa a implementaÃ§Ã£o oficial da biblioteca. NÃ£o fazemos
     // reload() aqui porque Message.reload() ainda depende de id._serialized em
     // whatsapp-web.js 1.34.7 e pode substituir o erro real por outro t: t.
-    // Alguns áudios citados pelo bot chegam como objetos simples, sem o
-    // método downloadMedia(). Nesse caso não devemos chamar esse método.
+    // Alguns Ã¡udios citados pelo bot chegam como objetos simples, sem o
+    // mÃ©todo downloadMedia(). Nesse caso nÃ£o devemos chamar esse mÃ©todo.
     if (typeof mensagem?.downloadMedia === 'function') {
         try {
             const midia = await mensagem.downloadMedia();
@@ -17770,10 +17772,10 @@ async function baixarMidiaWhatsAppCompativel(mensagem) {
             ultimoErro = erroOficial;
         }
     } else if (!ultimoErro) {
-        ultimoErro = new Error('Objeto de mídia citado não possui downloadMedia().');
+        ultimoErro = new Error('Objeto de mÃ­dia citado nÃ£o possui downloadMedia().');
     }
 
-    throw new Error(`Download de mídia falhou: ${formatarErroDownload(ultimoErro)}`);
+    throw new Error(`Download de mÃ­dia falhou: ${formatarErroDownload(ultimoErro)}`);
 }
 
 async function modificarAudio(message, comando) {
@@ -17783,8 +17785,8 @@ async function modificarAudio(message, comando) {
     try {
         const mensagemAudio = await obterMensagemDeAudio(message);
         if (!mensagemAudio) {
-            await reagir(message, '🎙️');
-            await responderCitando(message, `┏═•❃༺🎙️༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🎙️ _Envie um áudio junto com_ *${PREFIXO}${comando}*\n│   _ou responda a um áudio com o comando._\n│\n┗═•❃༺🎙️༻❃•═┓`);
+            await reagir(message, 'ðï¸');
+            await responderCitando(message, `âââ¢âà¼ºðï¸à¼»ââ¢ââ\nâ       *ðððððð ðð ððð*\nââ¯\nâ\nââ¤ ðï¸ _Envie um Ã¡udio junto com_ *${PREFIXO}${comando}*\nâ   _ou responda a um Ã¡udio com o comando._\nâ\nâââ¢âà¼ºðï¸à¼»ââ¢ââ`);
             return true;
         }
 
@@ -17796,8 +17798,8 @@ async function modificarAudio(message, comando) {
         let entradaEhDoCache = false;
 
         try {
-            // Primeiro tenta usar o arquivo local. Isso é especialmente importante
-            // para TTS e para cadeias de vários efeitos enviados pelo próprio bot.
+            // Primeiro tenta usar o arquivo local. Isso Ã© especialmente importante
+            // para TTS e para cadeias de vÃ¡rios efeitos enviados pelo prÃ³prio bot.
             const caminhoCache = await obterAudioDoCache(mensagemAudio);
 
             if (caminhoCache) {
@@ -17825,11 +17827,11 @@ async function modificarAudio(message, comando) {
                 }
 
                 if (!midia) {
-                    throw new Error(`Não foi possível baixar o áudio do WhatsApp após 3 tentativas: ${ultimoErroDownload?.message || 'mídia indisponível'}`);
+                    throw new Error(`NÃ£o foi possÃ­vel baixar o Ã¡udio do WhatsApp apÃ³s 3 tentativas: ${ultimoErroDownload?.message || 'mÃ­dia indisponÃ­vel'}`);
                 }
                 if (!String(midia.mimetype || '').toLowerCase().startsWith('audio/')) {
-                    await reagir(message, '❌');
-                    await responderCitando(message, '❌ _A mídia selecionada não é um áudio válido._');
+                    await reagir(message, 'â');
+                    await responderCitando(message, 'â _A mÃ­dia selecionada nÃ£o Ã© um Ã¡udio vÃ¡lido._');
                     return true;
                 }
 
@@ -17843,16 +17845,16 @@ async function modificarAudio(message, comando) {
             }
 
             const dados = await fs.promises.readFile(saida);
-            if (!dados.length) throw new Error('FFmpeg não gerou o áudio processado.');
+            if (!dados.length) throw new Error('FFmpeg nÃ£o gerou o Ã¡udio processado.');
 
             const audio = new MessageMedia('audio/ogg; codecs=opus', dados.toString('base64'), `${comando}.ogg`);
-            await reagir(message, '🎙️');
-            await responderCitando(message, `┏═•❃༺🎙️༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ ${efeito.nome}\n│   _Áudio processado com sucesso!_\n│\n┗═•❃༺🎙️༻❃•═┓`);
+            await reagir(message, 'ðï¸');
+            await responderCitando(message, `âââ¢âà¼ºðï¸à¼»ââ¢ââ\nâ       *ðððððð ðð ððð*\nââ¯\nâ\nââ¤ ${efeito.nome}\nâ   _Ãudio processado com sucesso!_\nâ\nâââ¢âà¼ºðï¸à¼»ââ¢ââ`);
 
             const mensagemEnviada = await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
 
-            // Guarda o resultado pelo ID da mensagem enviada. O próximo efeito
-            // encontrará este arquivo localmente e não precisará baixá-lo do WhatsApp.
+            // Guarda o resultado pelo ID da mensagem enviada. O prÃ³ximo efeito
+            // encontrarÃ¡ este arquivo localmente e nÃ£o precisarÃ¡ baixÃ¡-lo do WhatsApp.
             await guardarAudioNoCache(mensagemEnviada, saida);
         } finally {
             if (!entradaEhDoCache) {
@@ -17861,9 +17863,9 @@ async function modificarAudio(message, comando) {
             await fs.promises.unlink(saida).catch(() => {});
         }
     } catch (erro) {
-        console.error(`❌ Erro no efeito de voz ${comando}:`, erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐄𝐅𝐄𝐈𝐓𝐎 𝐃𝐄 𝐕𝐎𝐙*\n├✯\n│\n├➤ ❌ _Não consegui aplicar_ *${efeito.nome}*\n│   _Verifique se o áudio é válido e tente novamente._\n│\n┗═•❃༺❌༻❃•═┓`);
+        console.error(`â Erro no efeito de voz ${comando}:`, erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ       *ðððððð ðð ððð*\nââ¯\nâ\nââ¤ â _NÃ£o consegui aplicar_ *${efeito.nome}*\nâ   _Verifique se o Ã¡udio Ã© vÃ¡lido e tente novamente._\nâ\nâââ¢âà¼ºâà¼»ââ¢ââ`);
     }
     return true;
 }
@@ -17871,13 +17873,13 @@ async function modificarAudio(message, comando) {
 async function comandoTTS(message, argumentos) {
     const texto = String(argumentos || '').trim();
     if (!texto) {
-        await reagir(message, '🗣️');
-        await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Informe o texto que devo falar._\n│\n├➤ Exemplo: *${PREFIXO}tts Olá pessoal, tudo bem?*\n│\n┗═•❃༺🗣️༻❃•═┓`);
+        await reagir(message, 'ð£ï¸');
+        await responderCitando(message, `âââ¢âà¼ºð£ï¸à¼»ââ¢ââ\nâ       *ððððð ðððð ððð*\nââ¯\nâ\nââ¤ ð£ï¸ _Informe o texto que devo falar._\nâ\nââ¤ Exemplo: *${PREFIXO}tts OlÃ¡ pessoal, tudo bem?*\nâ\nâââ¢âà¼ºð£ï¸à¼»ââ¢ââ`);
         return;
     }
     if (texto.length > 10000) {
-        await reagir(message, '⚠️');
-        await responderCitando(message, `┏═•❃༺⚠️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ ⚠️ _O texto para TTS deve ter no máximo 10.000 caracteres._\n│\n┗═•❃༺⚠️༻❃•═┓`);
+        await reagir(message, 'â ï¸');
+        await responderCitando(message, `âââ¢âà¼ºâ ï¸à¼»ââ¢ââ\nâ       *ððððð ðððð ððð*\nââ¯\nâ\nââ¤ â ï¸ _O texto para TTS deve ter no mÃ¡ximo 10.000 caracteres._\nâ\nâââ¢âà¼ºâ ï¸à¼»ââ¢ââ`);
         return;
     }
 
@@ -17886,10 +17888,10 @@ async function comandoTTS(message, argumentos) {
         const resposta = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
         if (!resposta.ok) throw new Error(`Google TTS respondeu HTTP ${resposta.status}`);
         const dados = Buffer.from(await resposta.arrayBuffer());
-        if (!dados.length) throw new Error('Google TTS não retornou áudio.');
+        if (!dados.length) throw new Error('Google TTS nÃ£o retornou Ã¡udio.');
 
         // O Google TTS retorna MP3, mas o WhatsApp funciona de forma muito
-        // mais confiável com mensagem de voz em OGG/Opus.
+        // mais confiÃ¡vel com mensagem de voz em OGG/Opus.
         const pasta = path.join(os.tmpdir(), 'justbot-voz');
         await fs.promises.mkdir(pasta, { recursive: true });
         const id = `tts-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -17905,7 +17907,7 @@ async function comandoTTS(message, argumentos) {
             ]);
 
             const dadosOpus = await fs.promises.readFile(saida);
-            if (!dadosOpus.length) throw new Error('FFmpeg não gerou o áudio OGG.');
+            if (!dadosOpus.length) throw new Error('FFmpeg nÃ£o gerou o Ã¡udio OGG.');
 
             const audio = new MessageMedia(
                 'audio/ogg; codecs=opus',
@@ -17913,12 +17915,12 @@ async function comandoTTS(message, argumentos) {
                 'tts.ogg'
             );
 
-            await reagir(message, '🗣️');
-            await responderCitando(message, `┏═•❃༺🗣️༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐏𝐀𝐑𝐀 𝐕𝐎𝐙*\n├✯\n│\n├➤ 🗣️ _Voz gerada com sucesso!_\n│   _Seu áudio está logo abaixo._\n│\n┗═•❃༺🗣️༻❃•═┓`);
+            await reagir(message, 'ð£ï¸');
+            await responderCitando(message, `âââ¢âà¼ºð£ï¸à¼»ââ¢ââ\nâ       *ððððð ðððð ððð*\nââ¯\nâ\nââ¤ ð£ï¸ _Voz gerada com sucesso!_\nâ   _Seu Ã¡udio estÃ¡ logo abaixo._\nâ\nâââ¢âà¼ºð£ï¸à¼»ââ¢ââ`);
 
             const mensagemEnviada = await client.sendMessage(message.from, audio, { sendAudioAsVoice: true });
 
-            // Mantém o OGG localmente para que efeitos aplicados por resposta
+            // MantÃ©m o OGG localmente para que efeitos aplicados por resposta
             // possam usar o arquivo original sem fazer novo download do WhatsApp.
             await guardarAudioNoCache(mensagemEnviada, saida);
         } finally {
@@ -17928,15 +17930,15 @@ async function comandoTTS(message, argumentos) {
             ]);
         }
     } catch (erro) {
-        console.error('❌ Erro no Google TTS:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui gerar a voz agora. Tente novamente em alguns segundos._');
+        console.error('â Erro no Google TTS:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui gerar a voz agora. Tente novamente em alguns segundos._');
     }
 }
 
 
 // ============================================================
-// 🧰 NOVAS UTILIDADES E DIVERSÃO
+// ð§° NOVAS UTILIDADES E DIVERSÃO
 // ============================================================
 
 const timersUtilidade = new Map();
@@ -17952,7 +17954,7 @@ function formatarDuracao(segundos) {
 }
 
 function formatarPessoaAlvo(pessoa) {
-    return pessoa ? `@${String(idDaPessoa(pessoa) || '').split('@')[0]}` : 'você';
+    return pessoa ? `@${String(idDaPessoa(pessoa) || '').split('@')[0]}` : 'vocÃª';
 }
 
 async function obterAlvoComContato(message, obrigatorio = false) {
@@ -17975,10 +17977,10 @@ async function obterAlvoComContato(message, obrigatorio = false) {
     }
 
     if (obrigatorio) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            `┏═•❃༺👤༻❃•═┓\n├✯ *𝐀𝐋𝐕𝐎 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐎*\n│\n├➤ _Mencione alguém ou responda à mensagem da pessoa._\n│\n├➤ *Exemplo:* *${PREFIXO}nota @pessoa*\n┗═•❃༺👤༻❃•═┓`
+            `âââ¢âà¼ºð¤à¼»ââ¢ââ\nââ¯ *ðððð ððÌð ðððððððððð*\nâ\nââ¤ _Mencione alguÃ©m ou responda Ã  mensagem da pessoa._\nâ\nââ¤ *Exemplo:* *${PREFIXO}nota @pessoa*\nâââ¢âà¼ºð¤à¼»ââ¢ââ`
         );
     }
     return null;
@@ -17996,8 +17998,8 @@ async function responderAlvoComMencao(message, texto, pessoa) {
 }
 
 async function comandoUptime(message) {
-    await reagir(message, '⏱️');
-    await responderCitando(message, `┏═•❃༺⏱️༻❃•═┓\n│      *𝐔𝐏𝐓𝐈𝐌𝐄*\n├✯\n│\n├➤ 🤖 Bot online há: *${formatarDuracao(process.uptime())}*\n├➤ 🟢 Processo ativo e respondendo.\n│\n┗═•❃༺⏱️༻❃•═┓`);
+    await reagir(message, 'â±ï¸');
+    await responderCitando(message, `âââ¢âà¼ºâ±ï¸à¼»ââ¢ââ\nâ      *ðððððð*\nââ¯\nâ\nââ¤ ð¤ Bot online hÃ¡: *${formatarDuracao(process.uptime())}*\nââ¤ ð¢ Processo ativo e respondendo.\nâ\nâââ¢âà¼ºâ±ï¸à¼»ââ¢ââ`);
 }
 
 async function comandoStatus(message) {
@@ -18005,40 +18007,40 @@ async function comandoStatus(message) {
     const usoMB = (memoria.rss / 1024 / 1024).toFixed(1);
     const heapMB = (memoria.heapUsed / 1024 / 1024).toFixed(1);
     const versao = typeof VERSAO !== 'undefined' ? VERSAO : 'atual';
-    await reagir(message, '📊');
-    await responderCitando(message, `┏═•❃༺📊༻❃•═┓\n│       *𝐒𝐓𝐀𝐓𝐔𝐒*\n├✯\n│\n├➤ 🟢 *Online*\n├➤ ⏱️ Uptime: *${formatarDuracao(process.uptime())}*\n├➤ 💾 RAM: *${usoMB} MB*\n├➤ 🧠 Heap: *${heapMB} MB*\n├➤ 🔢 Versão: *${versao}*\n│\n┗═•❃༺📊༻❃•═┓`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ðððððð*\nââ¯\nâ\nââ¤ ð¢ *Online*\nââ¤ â±ï¸ Uptime: *${formatarDuracao(process.uptime())}*\nââ¤ ð¾ RAM: *${usoMB} MB*\nââ¤ ð§  Heap: *${heapMB} MB*\nââ¤ ð¢ VersÃ£o: *${versao}*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function comandoAvatar(message) {
     const pessoa = await obterAlvoComContato(message, false);
     const contato = pessoa || await client.getContactById(obterIdRemetente(message));
     if (!contato) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
         return;
     }
     try {
         const url = await contato.getProfilePicUrl();
         if (!url) {
-            await reagir(message, '👤');
-            await responderCitando(message, `┏═•❃༺👤༻❃•═┓\n│       *𝐅𝐎𝐓𝐎 𝐃𝐄 𝐏𝐄𝐑𝐅𝐈𝐋*\n├✯\n│\n├➤ 👤 _Essa pessoa não possui uma foto de perfil pública._\n│\n┗═•❃༺👤༻❃•═┓`);
+            await reagir(message, 'ð¤');
+            await responderCitando(message, `âââ¢âà¼ºð¤à¼»ââ¢ââ\nâ       *ðððð ðð ðððððð*\nââ¯\nâ\nââ¤ ð¤ _Essa pessoa nÃ£o possui uma foto de perfil pÃºblica._\nâ\nâââ¢âà¼ºð¤à¼»ââ¢ââ`);
             return;
         }
         const midia = await MessageMedia.fromUrl(url, { unsafeMime: true });
-        await reagir(message, '🖼️');
+        await reagir(message, 'ð¼ï¸');
         await client.sendMessage(message.from, midia, {
-            caption: `🖼️ *𝐀𝐕𝐀𝐓𝐀𝐑*\n\n👤 ${contato.pushname || contato.name || 'Usuário'}`
+            caption: `ð¼ï¸ *ðððððð*\n\nð¤ ${contato.pushname || contato.name || 'UsuÃ¡rio'}`
         });
     } catch (erro) {
-        console.error('❌ Erro no avatar:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐄𝐑𝐑𝐎*\n├✯\n│\n├➤ _Não consegui obter a foto de perfil agora._\n│\n┗═•❃༺❌༻❃•═┓`);
+        console.error('â Erro no avatar:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ       *ðððð*\nââ¯\nâ\nââ¤ _NÃ£o consegui obter a foto de perfil agora._\nâ\nâââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
 async function comandoAdmins(message) {
     if (!message.from?.endsWith('@g.us')) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐃𝐄 𝐆𝐑𝐔𝐏𝐎*\n├✯\n│\n├➤ _Esse comando só funciona em grupos._\n│\n┗═•❃༺❌༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ       *ððððððð ðð ððððð*\nââ¯\nâ\nââ¤ _Esse comando sÃ³ funciona em grupos._\nâ\nâââ¢âà¼ºâà¼»ââ¢ââ`);
         return;
     }
     try {
@@ -18058,56 +18060,56 @@ async function comandoAdmins(message) {
             } catch { return []; }
         }, message.from);
         if (!admins.length) throw new Error('Nenhum administrador encontrado.');
-        await reagir(message, '👑');
-        const texto = `┏═•❃༺👑༻❃•═┓\n│      *𝐀𝐃𝐌𝐈𝐍𝐈𝐒𝐓𝐑𝐀𝐃𝐎𝐑𝐄𝐒*\n├✯\n│\n${admins.map((id, i) => `├➤ 👑 ${i + 1}. @${String(id).split('@')[0]}`).join('\n')}\n│\n┗═•❃༺👑༻❃•═┓`;
+        await reagir(message, 'ð');
+        const texto = `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ððððððððððððððð*\nââ¯\nâ\n${admins.map((id, i) => `ââ¤ ð ${i + 1}. @${String(id).split('@')[0]}`).join('\n')}\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`;
         await enviarComMencoes(message.from, texto, { mentions: admins, quotedMessageId: obterIdMensagem(message) });
     } catch (erro) {
-        console.error('❌ Erro ao listar admins:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐄𝐑𝐑𝐎*\n├✯\n│\n├➤ _Não consegui consultar os administradores deste grupo._\n│\n┗═•❃༺❌༻❃•═┓`);
+        console.error('â Erro ao listar admins:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ       *ðððð*\nââ¯\nâ\nââ¤ _NÃ£o consegui consultar os administradores deste grupo._\nâ\nâââ¢âà¼ºâà¼»ââ¢ââ`);
     }
 }
 
 async function comandoId(message) {
     const id = obterIdRemetente(message);
-    await reagir(message, '🆔');
-    await responderCitando(message, `┏═•❃༺🆔༻❃•═┓\n│          *𝐈𝐃*\n├✯\n│\n├➤ 👤 Seu ID:\n│   *${id || 'indisponível'}*\n│\n┗═•❃༺🆔༻❃•═┓`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ          *ðð*\nââ¯\nâ\nââ¤ ð¤ Seu ID:\nâ   *${id || 'indisponÃ­vel'}*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function comandoEscolher(message, argumentos) {
     const opcoes = String(argumentos || '').split(/\s*(?:\||\/|,|;|\bou\b)\s*/i).map(v => v.trim()).filter(Boolean);
     if (opcoes.length < 2) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe pelo menos duas opções._\n\nExemplo: *${PREFIXO}escolher pizza | hambúrguer | sushi*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe pelo menos duas opÃ§Ãµes._\n\nExemplo: *${PREFIXO}escolher pizza | hambÃºrguer | sushi*`);
         return;
     }
     const escolhida = escolherAleatorioSeguro(opcoes);
-    await reagir(message, '🎯');
-    await responderCitando(message, `┏═•❃༺🎯༻❃•═┓\n│       *𝐄𝐒𝐂𝐎𝐋𝐇𝐈*\n├✯\n│\n├➤ 🎲 Entre *${opcoes.length}* opções...\n│\n├➤ 🏆 *${escolhida}*\n│\n┗═•❃༺🎯༻❃•═┓`);
+    await reagir(message, 'ð¯');
+    await responderCitando(message, `âââ¢âà¼ºð¯à¼»ââ¢ââ\nâ       *ððððððð*\nââ¯\nâ\nââ¤ ð² Entre *${opcoes.length}* opÃ§Ãµes...\nâ\nââ¤ ð *${escolhida}*\nâ\nâââ¢âà¼ºð¯à¼»ââ¢ââ`);
 }
 
 async function comandoContador(message, argumentos) {
     const numero = Number.parseInt(String(argumentos || '').trim(), 10);
     if (!Number.isInteger(numero) || numero < 1 || numero > 60) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Use um número entre 1 e 60._\n\nExemplo: *${PREFIXO}contador 10*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Use um nÃºmero entre 1 e 60._\n\nExemplo: *${PREFIXO}contador 10*`);
         return;
     }
     const chatId = message.from;
     const anterior = timersUtilidade.get(`contador:${chatId}`);
     if (anterior) clearInterval(anterior);
     let atual = numero;
-    await reagir(message, '⏳');
-    await responderCitando(message, `⏳ *𝐂𝐎𝐍𝐓𝐀𝐃𝐎𝐑 𝐈𝐍𝐈𝐂𝐈𝐀𝐃𝐎*\n\nContando de *${numero}* até *0*...`);
+    await reagir(message, 'â³');
+    await responderCitando(message, `â³ *ðððððððð ðððððððð*\n\nContando de *${numero}* atÃ© *0*...`);
     const intervalo = setInterval(async () => {
         atual -= 1;
         if (atual <= 0) {
             clearInterval(intervalo);
             timersUtilidade.delete(`contador:${chatId}`);
-            await responderCitando(message, '🔔 *𝐙𝐄𝐑𝐎!*\n\n⏰ Contagem finalizada.');
+            await responderCitando(message, 'ð *ðððð!*\n\nâ° Contagem finalizada.');
             return;
         }
-        if (atual <= 5) await client.sendMessage(chatId, `⏳ *${atual}*`);
+        if (atual <= 5) await client.sendMessage(chatId, `â³ *${atual}*`);
     }, 1000);
     timersUtilidade.set(`contador:${chatId}`, intervalo);
 }
@@ -18116,8 +18118,8 @@ async function comandoCronometro(message, argumentos) {
     const entrada = String(argumentos || '').trim().toLowerCase();
     const match = entrada.match(/^(\d+(?:\.\d+)?)\s*(s|seg|segundos?|m|min|minutos?|h|horas?)$/i);
     if (!match) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe o tempo, por exemplo:_ *${PREFIXO}cronometro 30s* _ou_ *${PREFIXO}cronometro 2m*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe o tempo, por exemplo:_ *${PREFIXO}cronometro 30s* _ou_ *${PREFIXO}cronometro 2m*`);
         return;
     }
     const valor = Number(match[1]);
@@ -18125,91 +18127,91 @@ async function comandoCronometro(message, argumentos) {
     const multiplicador = /^h|hora/i.test(unidade) ? 3600 : (/^m|min/i.test(unidade) ? 60 : 1);
     const segundos = Math.floor(valor * multiplicador);
     if (segundos < 1 || segundos > 86400) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _O cronômetro deve ficar entre 1 segundo e 24 horas._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _O cronÃ´metro deve ficar entre 1 segundo e 24 horas._');
         return;
     }
     const chave = `cronometro:${message.from}`;
     const anterior = timersUtilidade.get(chave);
     if (anterior) clearTimeout(anterior);
-    await reagir(message, '⏱️');
-    await responderCitando(message, `⏱️ *𝐂𝐑𝐎𝐍𝐎̂𝐌𝐄𝐓𝐑𝐎 𝐈𝐍𝐈𝐂𝐈𝐀𝐃𝐎*\n\n🔔 Vou avisar quando passarem *${formatarDuracao(segundos)}*.`);
+    await reagir(message, 'â±ï¸');
+    await responderCitando(message, `â±ï¸ *ðððððÌððððð ðððððððð*\n\nð Vou avisar quando passarem *${formatarDuracao(segundos)}*.`);
     const timeout = setTimeout(async () => {
         timersUtilidade.delete(chave);
-        await responderCitando(message, `🔔 *𝐓𝐄𝐌𝐏𝐎 𝐄𝐒𝐆𝐎𝐓𝐀𝐃𝐎!*\n\n⏱️ O cronômetro de *${formatarDuracao(segundos)}* terminou.`);
+        await responderCitando(message, `ð *ððððð ðððððððð!*\n\nâ±ï¸ O cronÃ´metro de *${formatarDuracao(segundos)}* terminou.`);
     }, segundos * 1000);
     timersUtilidade.set(chave, timeout);
 }
 
 function avaliarExpressaoSegura(expressao) {
-    const limpa = String(expressao || '').replace(/,/g, '.').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').trim();
-    if (!limpa || !/^[0-9+\-*/().%\s]+$/.test(limpa)) throw new Error('expressão inválida');
-    if (/\.{2,}|\/{2,}|\*{2,}|%{2,}/.test(limpa)) throw new Error('expressão inválida');
+    const limpa = String(expressao || '').replace(/,/g, '.').replace(/Ã/g, '*').replace(/Ã·/g, '/').replace(/â/g, '-').trim();
+    if (!limpa || !/^[0-9+\-*/().%\s]+$/.test(limpa)) throw new Error('expressÃ£o invÃ¡lida');
+    if (/\.{2,}|\/{2,}|\*{2,}|%{2,}/.test(limpa)) throw new Error('expressÃ£o invÃ¡lida');
     const resultado = Function(`"use strict"; return (${limpa})`)();
-    if (!Number.isFinite(resultado)) throw new Error('resultado inválido');
+    if (!Number.isFinite(resultado)) throw new Error('resultado invÃ¡lido');
     return resultado;
 }
 
 async function comandoCalculadora(message, argumentos) {
     try {
         const resultado = avaliarExpressaoSegura(argumentos);
-        await reagir(message, '🧮');
-        await responderCitando(message, `┏═•❃༺🧮༻❃•═┓\n│      *𝐂𝐀𝐋𝐂𝐔𝐋𝐀𝐃𝐎𝐑𝐀*\n├✯\n│\n├➤ 📝 *${String(argumentos).trim()}*\n├➤ 🟰 *${resultado}*\n│\n┗═•❃༺🧮༻❃•═┓`);
+        await reagir(message, 'ð§®');
+        await responderCitando(message, `âââ¢âà¼ºð§®à¼»ââ¢ââ\nâ      *ððððððððððð*\nââ¯\nâ\nââ¤ ð *${String(argumentos).trim()}*\nââ¤ ð° *${resultado}*\nâ\nâââ¢âà¼ºð§®à¼»ââ¢ââ`);
     } catch {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Expressão inválida._\n\nExemplo: *${PREFIXO}calculadora (10 + 5) × 2*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _ExpressÃ£o invÃ¡lida._\n\nExemplo: *${PREFIXO}calculadora (10 + 5) Ã 2*`);
     }
 }
 
 async function comandoPorcentagem(message, argumentos) {
     const partes = String(argumentos || '').replace(/,/g, '.').trim().split(/\s+/);
     if (partes.length < 2) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Use:_ *${PREFIXO}porcentagem 20% de 500*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Use:_ *${PREFIXO}porcentagem 20% de 500*`);
         return;
     }
     const numeros = partes.map(Number).filter(Number.isFinite);
     const p = numeros[0];
     const valor = numeros[numeros.length - 1];
     if (!Number.isFinite(p) || !Number.isFinite(valor)) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui entender os números informados._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui entender os nÃºmeros informados._');
         return;
     }
     const resultado = valor * p / 100;
-    await reagir(message, '📊');
-    await responderCitando(message, `┏═•❃༺📊༻❃•═┓\n│      *𝐏𝐎𝐑𝐂𝐄𝐍𝐓𝐀𝐆𝐄𝐌*\n├✯\n│\n├➤ 📊 *${p}%* de *${valor}*\n├➤ 🟰 Resultado: *${resultado}*\n│\n┗═•❃༺📊༻❃•═┓`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ððððððððððð*\nââ¯\nâ\nââ¤ ð *${p}%* de *${valor}*\nââ¤ ð° Resultado: *${resultado}*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function comandoRegra3(message, argumentos) {
     const numeros = String(argumentos || '').replace(/,/g, '.').match(/-?\d+(?:\.\d+)?/g)?.map(Number) || [];
     if (numeros.length !== 3) {
-        await reagir(message, `❌ _Use três números: A B C._\n\nExemplo: *${PREFIXO}regra3 2 10 5*`);
+        await reagir(message, `â _Use trÃªs nÃºmeros: A B C._\n\nExemplo: *${PREFIXO}regra3 2 10 5*`);
         return;
     }
     const [a, b, c] = numeros;
     if (a === 0 || b === 0) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Os dois primeiros valores não podem ser zero._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _Os dois primeiros valores nÃ£o podem ser zero._');
         return;
     }
     const x = (b * c) / a;
-    await reagir(message, '📐');
-    await responderCitando(message, `📐 *𝐑𝐄𝐆𝐑𝐀 𝐃𝐄 𝟑*\n\n${a} → ${b}\n${c} → *${x}*`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `ð *ððððð ðð ð*\n\n${a} â ${b}\n${c} â *${x}*`);
 }
 
 async function comandoConverter(message, argumentos) {
     const partes = String(argumentos || '').replace(/,/g, '.').trim().split(/\s+/);
     if (partes.length < 3) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Use:_ *${PREFIXO}converter 10 km mi*\n\nSuporta km↔mi, m↔ft, kg↔lb, c↔f e f↔c.`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Use:_ *${PREFIXO}converter 10 km mi*\n\nSuporta kmâmi, mâft, kgâlb, câf e fâc.`);
         return;
     }
     const valor = Number(partes[0]);
     const de = partes[1].toLowerCase();
     const para = partes[2].toLowerCase();
     if (!Number.isFinite(valor)) {
-        await reagir(message, '❌');
+        await reagir(message, 'â');
         return;
     }
     const conversoes = {
@@ -18220,13 +18222,13 @@ async function comandoConverter(message, argumentos) {
     };
     const chave = `${de}:${para}`;
     if (!conversoes[chave]) {
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Conversão não suportada. Use km/mi, m/ft, kg/lb ou °C/°F._');
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _ConversÃ£o nÃ£o suportada. Use km/mi, m/ft, kg/lb ou Â°C/Â°F._');
         return;
     }
     const resultado = conversoes[chave](valor);
-    await reagir(message, '🔄');
-    await responderCitando(message, `┏═•❃༺🔄༻❃•═┓\n│       *𝐂𝐎𝐍𝐕𝐄𝐑𝐒𝐀̃𝐎*\n├✯\n│\n├➤ 📥 *${valor} ${de}*\n├➤ 📤 *${Number(resultado.toFixed(6))} ${para}*\n│\n┗═•❃༺🔄༻❃•═┓`);
+    await reagir(message, 'ð');
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ððððððððÌð*\nââ¯\nâ\nââ¤ ð¥ *${valor} ${de}*\nââ¤ ð¤ *${Number(resultado.toFixed(6))} ${para}*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function comandoCotacao(message, argumentos) {
@@ -18235,20 +18237,20 @@ async function comandoCotacao(message, argumentos) {
     const destino = partes[1] || 'BRL';
     const valor = partes[2] ? Number(partes[2].replace(',', '.')) : 1;
     if (!/^[A-Z]{3}$/.test(origem) || !/^[A-Z]{3}$/.test(destino) || !Number.isFinite(valor)) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Use:_ *${PREFIXO}cotacao USD BRL 100*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Use:_ *${PREFIXO}cotacao USD BRL 100*`);
         return;
     }
     try {
         const dados = await buscarJsonAPI(`https://open.er-api.com/v6/latest/${origem}`);
         const taxa = dados?.rates?.[destino];
-        if (!Number.isFinite(taxa)) throw new Error('moeda não encontrada');
-        await reagir(message, '💱');
-        await responderCitando(message, `┏═•❃༺💱༻❃•═┓\n│       *𝐂𝐎𝐓𝐀𝐂̧𝐀̃𝐎*\n├✯\n│\n├➤ 💵 *${valor} ${origem}*\n├➤ 💰 *${(valor * taxa).toFixed(2)} ${destino}*\n├➤ 📈 Taxa: *1 ${origem} = ${taxa.toFixed(6)} ${destino}*\n│\n┗═•❃༺💱༻❃•═┓`);
+        if (!Number.isFinite(taxa)) throw new Error('moeda nÃ£o encontrada');
+        await reagir(message, 'ð±');
+        await responderCitando(message, `âââ¢âà¼ºð±à¼»ââ¢ââ\nâ       *ðððððÌ§ðÌð*\nââ¯\nâ\nââ¤ ðµ *${valor} ${origem}*\nââ¤ ð° *${(valor * taxa).toFixed(2)} ${destino}*\nââ¤ ð Taxa: *1 ${origem} = ${taxa.toFixed(6)} ${destino}*\nâ\nâââ¢âà¼ºð±à¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro na cotação:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui consultar a cotação agora._');
+        console.error('â Erro na cotaÃ§Ã£o:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui consultar a cotaÃ§Ã£o agora._');
     }
 }
 
@@ -18258,150 +18260,150 @@ async function comandoTraduzir(message, argumentos) {
     const para = (partes.shift() || '').toLowerCase();
     const texto = partes.join(' ').trim();
     if (!/^[a-z]{2}$/.test(de) || !/^[a-z]{2}$/.test(para) || !texto) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Use:_ *${PREFIXO}traduzir en pt Hello world*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Use:_ *${PREFIXO}traduzir en pt Hello world*`);
         return;
     }
     try {
         const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${encodeURIComponent(de)}|${encodeURIComponent(para)}`;
         const dados = await buscarJsonAPI(url);
         const traducao = dados?.responseData?.translatedText;
-        if (!traducao) throw new Error('tradução vazia');
-        await reagir(message, '🌐');
-        await responderCitando(message, `┏═•❃༺🌐༻❃•═┓\n│       *𝐓𝐑𝐀𝐃𝐔𝐂̧𝐀̃𝐎*\n├✯\n│\n├➤ 📝 Original: _${texto}_\n├➤ 🌍 *${traducao}*\n├➤ 🔤 ${de.toUpperCase()} → ${para.toUpperCase()}\n│\n┗═•❃༺🌐༻❃•═┓`);
+        if (!traducao) throw new Error('traduÃ§Ã£o vazia');
+        await reagir(message, 'ð');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ððððððÌ§ðÌð*\nââ¯\nâ\nââ¤ ð Original: _${texto}_\nââ¤ ð *${traducao}*\nââ¤ ð¤ ${de.toUpperCase()} â ${para.toUpperCase()}\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro na tradução:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui traduzir esse texto agora._');
+        console.error('â Erro na traduÃ§Ã£o:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui traduzir esse texto agora._');
     }
 }
 
 async function comandoEncurtar(message, argumentos) {
     const url = String(argumentos || '').trim();
     if (!/^https?:\/\//i.test(url)) {
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Informe um link começando com http:// ou https://._\n\nExemplo: *${PREFIXO}encurtar https://exemplo.com*`);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _Informe um link comeÃ§ando com http:// ou https://._\n\nExemplo: *${PREFIXO}encurtar https://exemplo.com*`);
         return;
     }
     try {
         const resposta = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`);
         const curto = (await resposta.text()).trim();
         if (!resposta.ok || !/^https?:\/\//i.test(curto)) throw new Error(curto || 'falha');
-        await reagir(message, '🔗');
-        await responderCitando(message, `┏═•❃༺🔗༻❃•═┓\n│      *𝐋𝐈𝐍𝐊 𝐄𝐍𝐂𝐔𝐑𝐓𝐀𝐃𝐎*\n├✯\n│\n├➤ 🔗 ${curto}\n│\n┗═•❃༺🔗༻❃•═┓`);
+        await reagir(message, 'ð');
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ðððð ððððððððð*\nââ¯\nâ\nââ¤ ð ${curto}\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`);
     } catch (erro) {
-        console.error('❌ Erro ao encurtar:', erro.message);
-        await reagir(message, '❌');
-        await responderCitando(message, '❌ _Não consegui encurtar esse link agora._');
+        console.error('â Erro ao encurtar:', erro.message);
+        await reagir(message, 'â');
+        await responderCitando(message, 'â _NÃ£o consegui encurtar esse link agora._');
     }
 }
 
 const VERDADES = [
-    'Qual foi a última mentira boba que você contou?', 'Qual hábito seu você esconderia de um novo amigo?',
-    'Quem do grupo você chamaria para uma aventura?', 'Qual foi sua maior vergonha na escola?',
-    'Qual coisa você finge gostar para não contrariar alguém?', 'Qual foi a decisão mais impulsiva que você já tomou?'
+    'Qual foi a Ãºltima mentira boba que vocÃª contou?', 'Qual hÃ¡bito seu vocÃª esconderia de um novo amigo?',
+    'Quem do grupo vocÃª chamaria para uma aventura?', 'Qual foi sua maior vergonha na escola?',
+    'Qual coisa vocÃª finge gostar para nÃ£o contrariar alguÃ©m?', 'Qual foi a decisÃ£o mais impulsiva que vocÃª jÃ¡ tomou?'
 ];
 const DESAFIOS = [
-    'Envie o próximo emoji que aparecer no seu teclado.', 'Fale uma frase séria usando apenas emojis.',
-    'Mande uma mensagem começando com "Eu confesso que...".', 'Escolha alguém e faça um elogio sincero.',
-    'Escreva seu nome de trás para frente.', 'Fique 30 segundos sem usar a letra A nas mensagens.'
+    'Envie o prÃ³ximo emoji que aparecer no seu teclado.', 'Fale uma frase sÃ©ria usando apenas emojis.',
+    'Mande uma mensagem comeÃ§ando com "Eu confesso que...".', 'Escolha alguÃ©m e faÃ§a um elogio sincero.',
+    'Escreva seu nome de trÃ¡s para frente.', 'Fique 30 segundos sem usar a letra A nas mensagens.'
 ];
-const RESPOSTAS_8BALL = ['🎱 Com certeza!', '🎱 Provavelmente sim.', '🎱 Os astros dizem que sim.', '🎱 Melhor não contar com isso.', '🎱 Provavelmente não.', '🎱 Impossível saber agora.', '🎱 Pergunte novamente depois.', '🎱 O destino ainda está decidindo.'];
+const RESPOSTAS_8BALL = ['ð± Com certeza!', 'ð± Provavelmente sim.', 'ð± Os astros dizem que sim.', 'ð± Melhor nÃ£o contar com isso.', 'ð± Provavelmente nÃ£o.', 'ð± ImpossÃ­vel saber agora.', 'ð± Pergunte novamente depois.', 'ð± O destino ainda estÃ¡ decidindo.'];
 
 async function comandoVerdade(message) {
-    await reagir(message, '🎭');
-    await responderCitando(message, `┏═•❃༺🎭༻❃•═┓\n│       *𝐕𝐄𝐑𝐃𝐀𝐃𝐄*\n├✯\n│\n├➤ ❓ *${escolherAleatorioSeguro(VERDADES)}*\n│\n┗═•❃༺🎭༻❃•═┓`);
+    await reagir(message, 'ð­');
+    await responderCitando(message, `âââ¢âà¼ºð­à¼»ââ¢ââ\nâ       *ððððððð*\nââ¯\nâ\nââ¤ â *${escolherAleatorioSeguro(VERDADES)}*\nâ\nâââ¢âà¼ºð­à¼»ââ¢ââ`);
 }
 
 async function comandoDesafio(message) {
-    await reagir(message, '🔥');
-    await responderCitando(message, `┏═•❃༺🔥༻❃•═┓\n│       *𝐃𝐄𝐒𝐀𝐅𝐈𝐎*\n├✯\n│\n├➤ 🎯 *${escolherAleatorioSeguro(DESAFIOS)}*\n│\n┗═•❃༺🔥༻❃•═┓`);
+    await reagir(message, 'ð¥');
+    await responderCitando(message, `âââ¢âà¼ºð¥à¼»ââ¢ââ\nâ       *ððððððð*\nââ¯\nâ\nââ¤ ð¯ *${escolherAleatorioSeguro(DESAFIOS)}*\nâ\nâââ¢âà¼ºð¥à¼»ââ¢ââ`);
 }
 
 async function comandoVidente(message, argumentos) {
     if (!String(argumentos || '').trim()) {
-        await reagir(message, '🔮');
-        await responderCitando(message, `┏═•❃༺🔮༻❃•═┓\n│       *𝐕𝐈𝐃𝐄𝐍𝐓𝐄*\n├✯\n│\n├➤ _Faça uma pergunta para a vidente._\n├➤ Exemplo: *${PREFIXO}vidente vou ganhar?*\n│\n┗═•❃༺🔮༻❃•═┓`);
+        await reagir(message, 'ð®');
+        await responderCitando(message, `âââ¢âà¼ºð®à¼»ââ¢ââ\nâ       *ððððððð*\nââ¯\nâ\nââ¤ _FaÃ§a uma pergunta para a vidente._\nââ¤ Exemplo: *${PREFIXO}vidente vou ganhar?*\nâ\nâââ¢âà¼ºð®à¼»ââ¢ââ`);
         return;
     }
-    const respostas = ['🌟 Sim, as chances são altas.', '🌙 Talvez. O destino está nebuloso.', '☄️ Não parece provável.', '🔮 O futuro guarda uma surpresa.', '✨ Os sinais são muito positivos.', '🌀 Tente novamente quando a lua mudar.'];
-    await reagir(message, '🔮');
-    await responderCitando(message, `┏═•❃༺🔮༻❃•═┓\n│       *𝐕𝐈𝐃𝐄𝐍𝐓𝐄*\n├✯\n│\n├➤ ❓ _${String(argumentos).trim()}_\n├➤ 🔮 Resposta: *${escolherAleatorioSeguro(respostas)}*\n│\n┗═•❃༺🔮༻❃•═┓`);
+    const respostas = ['ð Sim, as chances sÃ£o altas.', 'ð Talvez. O destino estÃ¡ nebuloso.', 'âï¸ NÃ£o parece provÃ¡vel.', 'ð® O futuro guarda uma surpresa.', 'â¨ Os sinais sÃ£o muito positivos.', 'ð Tente novamente quando a lua mudar.'];
+    await reagir(message, 'ð®');
+    await responderCitando(message, `âââ¢âà¼ºð®à¼»ââ¢ââ\nâ       *ððððððð*\nââ¯\nâ\nââ¤ â _${String(argumentos).trim()}_\nââ¤ ð® Resposta: *${escolherAleatorioSeguro(respostas)}*\nâ\nâââ¢âà¼ºð®à¼»ââ¢ââ`);
 }
 
 async function comando8Ball(message, argumentos) {
     if (!String(argumentos || '').trim()) {
-        await reagir(message, '🎱');
-        await responderCitando(message, `┏═•❃༺🎱༻❃•═┓\n│       *𝐌𝐀𝐆𝐈𝐂 𝟖 𝐁𝐀𝐋𝐋*\n├✯\n│\n├➤ _Faça uma pergunta._\n├➤ Exemplo: *${PREFIXO}8ball vou passar de fase?*\n│\n┗═•❃༺🎱༻❃•═┓`);
+        await reagir(message, 'ð±');
+        await responderCitando(message, `âââ¢âà¼ºð±à¼»ââ¢ââ\nâ       *ððððð ð ðððð*\nââ¯\nâ\nââ¤ _FaÃ§a uma pergunta._\nââ¤ Exemplo: *${PREFIXO}8ball vou passar de fase?*\nâ\nâââ¢âà¼ºð±à¼»ââ¢ââ`);
         return;
     }
-    await reagir(message, '🎱');
-    await responderCitando(message, `┏═•❃༺🎱༻❃•═┓\n│       *𝐌𝐀𝐆𝐈𝐂 𝟖 𝐁𝐀𝐋𝐋*\n├✯\n│\n├➤ ❓ _${String(argumentos).trim()}_\n├➤ 🎱 Resposta: *${escolherAleatorioSeguro(RESPOSTAS_8BALL)}*\n│\n┗═•❃༺🎱༻❃•═┓`);
+    await reagir(message, 'ð±');
+    await responderCitando(message, `âââ¢âà¼ºð±à¼»ââ¢ââ\nâ       *ððððð ð ðððð*\nââ¯\nâ\nââ¤ â _${String(argumentos).trim()}_\nââ¤ ð± Resposta: *${escolherAleatorioSeguro(RESPOSTAS_8BALL)}*\nâ\nâââ¢âà¼ºð±à¼»ââ¢ââ`);
 }
 
 async function comandoDecidir(message, argumentos) {
     const opcoes = String(argumentos || '').split(/\s*(?:\||\/|,|;|\bou\b)\s*/i).map(v => v.trim()).filter(Boolean);
     if (opcoes.length < 2) {
-        await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│       *𝐎𝐏𝐂̧𝐎̃𝐄𝐒 𝐈𝐍𝐒𝐔𝐅𝐈𝐂𝐈𝐄𝐍𝐓𝐄𝐒*\n├✯\n│\n├➤ _Informe duas ou mais opções._\n├➤ Exemplo: *${PREFIXO}decidir cinema ou praia*\n│\n┗═•❃༺❌༻❃•═┓`);
+        await reagir(message, 'â');
+        await responderCitando(message, `âââ¢âà¼ºâà¼»ââ¢ââ\nâ       *ðððÌ§ðÌðð ððððððððððððð*\nââ¯\nâ\nââ¤ _Informe duas ou mais opÃ§Ãµes._\nââ¤ Exemplo: *${PREFIXO}decidir cinema ou praia*\nâ\nâââ¢âà¼ºâà¼»ââ¢ââ`);
         return;
     }
-    await reagir(message, '⚖️');
-    await responderCitando(message, `┏═•❃༺⚖️༻❃•═┓\n│       *𝐃𝐄𝐂𝐈𝐃𝐈𝐃𝐎!*\n├✯\n│\n├➤ 🎯 Minha escolha: *${escolherAleatorioSeguro(opcoes)}*\n│\n┗═•❃༺⚖️༻❃•═┓`);
+    await reagir(message, 'âï¸');
+    await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ\nâ       *ðððððððð!*\nââ¯\nâ\nââ¤ ð¯ Minha escolha: *${escolherAleatorioSeguro(opcoes)}*\nâ\nâââ¢âà¼ºâï¸à¼»ââ¢ââ`);
 }
 
 async function comandoRelacaoAleatoria(message, tipo) {
     const pessoa = await obterAlvoComContato(message, false);
-    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'vocÃª';
     const valores = { crush: [0, 100], amizade: [20, 100], inimigos: [0, 100] };
     const [min, max] = valores[tipo];
     const porcentagem = crypto.randomInt(min, max + 1);
-    const emojis = { crush: '💘', amizade: '🤝', inimigos: '⚔️' };
-    const titulos = { crush: '𝐂𝐑𝐔𝐒𝐇', amizade: '𝐀𝐌𝐈𝐙𝐀𝐃𝐄', inimigos: '𝐈𝐍𝐈𝐌𝐈𝐆𝐎𝐒' };
-    const frase = tipo === 'crush' ? 'nível de crush' : tipo === 'amizade' ? 'nível de amizade' : 'nível de rivalidade';
+    const emojis = { crush: 'ð', amizade: 'ð¤', inimigos: 'âï¸' };
+    const titulos = { crush: 'ððððð', amizade: 'ððððððð', inimigos: 'ðððððððð' };
+    const frase = tipo === 'crush' ? 'nÃ­vel de crush' : tipo === 'amizade' ? 'nÃ­vel de amizade' : 'nÃ­vel de rivalidade';
     await reagir(message, emojis[tipo]);
-    await responderAlvoComMencao(message, `${emojis[tipo]} *${titulos[tipo]}*\n\n👤 Alvo: ${nome}\n📊 ${frase}: *${porcentagem}%*`, pessoa);
+    await responderAlvoComMencao(message, `${emojis[tipo]} *${titulos[tipo]}*\n\nð¤ Alvo: ${nome}\nð ${frase}: *${porcentagem}%*`, pessoa);
 }
 
 async function comandoFBI(message) {
     const pessoa = await obterAlvoComContato(message, false);
-    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'vocÃª';
     const suspeita = crypto.randomInt(1, 101);
-    const crimes = ['roubo de biscoitos', 'excesso de memes', 'perturbação da paz com áudios', 'contrabando de figurinhas', 'abandono de responsabilidades'];
-    await reagir(message, '🕵️');
-    await responderAlvoComMencao(message, `┏═•❃༺🕵️༻❃•═┓\n│         *𝐅𝐁𝐈*\n├✯\n│\n├➤ 👤 Alvo: ${nome}\n├➤ 🚨 Suspeita: *${suspeita}%*\n├➤ 🗂️ Acusação: _${escolherAleatorioSeguro(crimes)}_\n├➤ 🔎 Status: *${suspeita >= 75 ? 'PROCURADO' : suspeita >= 40 ? 'EM INVESTIGAÇÃO' : 'LIBERADO'}*\n│\n┗═•❃༺🕵️༻❃•═┓`, pessoa);
+    const crimes = ['roubo de biscoitos', 'excesso de memes', 'perturbaÃ§Ã£o da paz com Ã¡udios', 'contrabando de figurinhas', 'abandono de responsabilidades'];
+    await reagir(message, 'ðµï¸');
+    await responderAlvoComMencao(message, `âââ¢âà¼ºðµï¸à¼»ââ¢ââ\nâ         *ððð*\nââ¯\nâ\nââ¤ ð¤ Alvo: ${nome}\nââ¤ ð¨ Suspeita: *${suspeita}%*\nââ¤ ðï¸ AcusaÃ§Ã£o: _${escolherAleatorioSeguro(crimes)}_\nââ¤ ð Status: *${suspeita >= 75 ? 'PROCURADO' : suspeita >= 40 ? 'EM INVESTIGAÃÃO' : 'LIBERADO'}*\nâ\nâââ¢âà¼ºðµï¸à¼»ââ¢ââ`, pessoa);
 }
 
 async function comandoLaudo(message) {
     const pessoa = await obterAlvoComContato(message, false);
-    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
-    const humor = ['caótico', 'questionável', 'surpreendentemente normal', '100% aleatório', 'perigosamente engraçado'];
-    const estado = ['funcionando normalmente', 'precisa de café', 'em modo turbo', 'sob observação dos cientistas'];
-    await reagir(message, '🧪');
-    await responderAlvoComMencao(message, `┏═•❃༺🧪༻❃•═┓\n│          *𝐋𝐀𝐔𝐃𝐎*\n├✯\n│\n├➤ 👤 Paciente: ${nome}\n├➤ 🧠 Estado mental: *${escolherAleatorioSeguro(humor)}*\n├➤ ⚙️ Estado operacional: *${escolherAleatorioSeguro(estado)}*\n├➤ 📋 Diagnóstico: _A ciência ainda não explica._\n│\n┗═•❃༺🧪༻❃•═┓`, pessoa);
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'vocÃª';
+    const humor = ['caÃ³tico', 'questionÃ¡vel', 'surpreendentemente normal', '100% aleatÃ³rio', 'perigosamente engraÃ§ado'];
+    const estado = ['funcionando normalmente', 'precisa de cafÃ©', 'em modo turbo', 'sob observaÃ§Ã£o dos cientistas'];
+    await reagir(message, 'ð§ª');
+    await responderAlvoComMencao(message, `âââ¢âà¼ºð§ªà¼»ââ¢ââ\nâ          *ððððð*\nââ¯\nâ\nââ¤ ð¤ Paciente: ${nome}\nââ¤ ð§  Estado mental: *${escolherAleatorioSeguro(humor)}*\nââ¤ âï¸ Estado operacional: *${escolherAleatorioSeguro(estado)}*\nââ¤ ð DiagnÃ³stico: _A ciÃªncia ainda nÃ£o explica._\nâ\nâââ¢âà¼ºð§ªà¼»ââ¢ââ`, pessoa);
 }
 
 async function comandoCurriculo(message) {
     const pessoa = await obterAlvoComContato(message, false);
     const nome = pessoa?.pushname || pessoa?.name || 'Candidato(a)';
-    const cargos = ['Especialista em memes', 'Analista de grupos', 'Profissional em procrastinação', 'Engenheiro de caos digital', 'Gerente de figurinhas'];
-    const habilidades = ['memes avançados', 'responder rápido', 'sobreviver a grupos', 'usar emojis com precisão', 'tomar decisões questionáveis'];
-    await reagir(message, '📄');
-    await responderAlvoComMencao(message, `┏═•❃༺📄༻❃•═┓\n│       *𝐂𝐔𝐑𝐑𝐈́𝐂𝐔𝐋𝐎*\n├✯\n│\n├➤ 👤 *${nome}*\n├➤ 💼 Cargo: _${escolherAleatorioSeguro(cargos)}_\n├➤ 🛠️ Habilidade: _${escolherAleatorioSeguro(habilidades)}_\n├➤ ⭐ Experiência: *${crypto.randomInt(1, 11)} anos*\n├➤ 💰 Pretensão: *${crypto.randomInt(1200, 12001)} moedas*\n│\n┗═•❃༺📄༻❃•═┓`, pessoa);
+    const cargos = ['Especialista em memes', 'Analista de grupos', 'Profissional em procrastinaÃ§Ã£o', 'Engenheiro de caos digital', 'Gerente de figurinhas'];
+    const habilidades = ['memes avanÃ§ados', 'responder rÃ¡pido', 'sobreviver a grupos', 'usar emojis com precisÃ£o', 'tomar decisÃµes questionÃ¡veis'];
+    await reagir(message, 'ð');
+    await responderAlvoComMencao(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ðððððÌðððð*\nââ¯\nâ\nââ¤ ð¤ *${nome}*\nââ¤ ð¼ Cargo: _${escolherAleatorioSeguro(cargos)}_\nââ¤ ð ï¸ Habilidade: _${escolherAleatorioSeguro(habilidades)}_\nââ¤ â­ ExperiÃªncia: *${crypto.randomInt(1, 11)} anos*\nââ¤ ð° PretensÃ£o: *${crypto.randomInt(1200, 12001)} moedas*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`, pessoa);
 }
 
 async function comandoNota(message) {
     const pessoa = await obterAlvoComContato(message, false);
-    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'você';
+    const nome = pessoa ? formatarPessoaAlvo(pessoa) : 'vocÃª';
     const nota = crypto.randomInt(0, 101) / 10;
-    const avaliacao = nota >= 9 ? 'LENDÁRIO 🏆' : nota >= 7 ? 'Muito bom ⭐' : nota >= 5 ? 'Dá para melhorar 📚' : 'Precisamos conversar com o professor 😭';
-    await reagir(message, '📝');
-    await responderAlvoComMencao(message, `┏═•❃༺📝༻❃•═┓\n│         *𝐍𝐎𝐓𝐀*\n├✯\n│\n├➤ 👤 ${nome}\n├➤ 📊 Nota: *${nota.toFixed(1)}/10*\n├➤ 🏫 Avaliação: *${avaliacao}*\n│\n┗═•❃༺📝༻❃•═┓`, pessoa);
+    const avaliacao = nota >= 9 ? 'LENDÃRIO ð' : nota >= 7 ? 'Muito bom â­' : nota >= 5 ? 'DÃ¡ para melhorar ð' : 'Precisamos conversar com o professor ð­';
+    await reagir(message, 'ð');
+    await responderAlvoComMencao(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ         *ðððð*\nââ¯\nâ\nââ¤ ð¤ ${nome}\nââ¤ ð Nota: *${nota.toFixed(1)}/10*\nââ¤ ð« AvaliaÃ§Ã£o: *${avaliacao}*\nâ\nâââ¢âà¼ºðà¼»ââ¢ââ`, pessoa);
 }
 
 
 // ============================================================
-// 🛡️ ADMINISTRAÇÃO AVANÇADA
+// ð¡ï¸ ADMINISTRAÃÃO AVANÃADA
 // ============================================================
 
 function obterConfiguracaoPersistente(config) {
@@ -18417,7 +18419,7 @@ function obterConfiguracaoPersistente(config) {
 }
 
 function formatarHoraConfig(hora) {
-    return hora || 'não configurado';
+    return hora || 'nÃ£o configurado';
 }
 
 
@@ -18426,22 +18428,22 @@ async function comandoParceria(message, acao='listar', argumentos='') {
     const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from));
     if (!Array.isArray(config.parcerias)) config.parcerias=[];
     const args=String(argumentos||'').trim();
-    if(acao==='adicionar'){if(!args){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}add_parceria nome | contato/link*.`);return;}const partes=args.split('|');const nome=String(partes.shift()||'').trim();const valor=partes.join('|').trim();if(!nome||!valor){await responderCitando(message,'❌ Informe *nome | contato/link* para a parceria.');return;}const item={id:Date.now(),nome,valor,autor:obterIdRemetente(message),data:new Date().toISOString()};config.parcerias.push(item);salvarConfigAdmin();registrarLogAdmin(message,'add_parceria',nome);await responderCitando(message,`🤝 *Parceria adicionada:* ${nome}\n🔗 ${valor}\n🆔 ${item.id}`);return;}
-    if(acao==='remover'){const id=Number(args);const antes=config.parcerias.length;config.parcerias=config.parcerias.filter(x=>x.id!==id);salvarConfigAdmin();registrarLogAdmin(message,'del_parceria',args);await responderCitando(message,antes!==config.parcerias.length?'🗑️ *Parceria removida.*':'❌ _ID de parceria não encontrado._');return;}
-    if(acao==='modo'){const v=args.toLowerCase();if(!['on','off'].includes(v)){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}modoparceria on/off*.`);return;}config.modoParceria=v==='on';salvarConfigAdmin();registrarLogAdmin(message,'modoparceria',v);await responderCitando(message,`🤝 *Modo parceria*: ${config.modoParceria?'🟢 ATIVO':'🔴 INATIVO'}`);return;}
-    const lista=config.parcerias;await responderCitando(message,`┏═•❃༺🤝༻❃•═┓\n│ *𝐏𝐀𝐑𝐂𝐄𝐑𝐈𝐀𝐒*\n├✯\n${lista.length?lista.map((x,i)=>`├➤ *${i+1}.* ${x.nome}\n│   🔗 ${x.valor}\n│   🆔 ${x.id}`).join('\\n'):'├➤ _Nenhuma parceria cadastrada._'}\n├✯\n├➤ Modo: *${config.modoParceria?'🟢 ATIVO':'🔴 INATIVO'}*\n┗═•❃༺🤝༻❃•═┓`);
+    if(acao==='adicionar'){if(!args){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}add_parceria nome | contato/link*.`);return;}const partes=args.split('|');const nome=String(partes.shift()||'').trim();const valor=partes.join('|').trim();if(!nome||!valor){await responderCitando(message,'â Informe *nome | contato/link* para a parceria.');return;}const item={id:Date.now(),nome,valor,autor:obterIdRemetente(message),data:new Date().toISOString()};config.parcerias.push(item);salvarConfigAdmin();registrarLogAdmin(message,'add_parceria',nome);await responderCitando(message,`ð¤ *Parceria adicionada:* ${nome}\nð ${valor}\nð ${item.id}`);return;}
+    if(acao==='remover'){const id=Number(args);const antes=config.parcerias.length;config.parcerias=config.parcerias.filter(x=>x.id!==id);salvarConfigAdmin();registrarLogAdmin(message,'del_parceria',args);await responderCitando(message,antes!==config.parcerias.length?'ðï¸ *Parceria removida.*':'â _ID de parceria nÃ£o encontrado._');return;}
+    if(acao==='modo'){const v=args.toLowerCase();if(!['on','off'].includes(v)){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}modoparceria on/off*.`);return;}config.modoParceria=v==='on';salvarConfigAdmin();registrarLogAdmin(message,'modoparceria',v);await responderCitando(message,`ð¤ *Modo parceria*: ${config.modoParceria?'ð¢ ATIVO':'ð´ INATIVO'}`);return;}
+    const lista=config.parcerias;await responderCitando(message,`âââ¢âà¼ºð¤à¼»ââ¢ââ\nâ *ððððððððð*\nââ¯\n${lista.length?lista.map((x,i)=>`ââ¤ *${i+1}.* ${x.nome}\nâ   ð ${x.valor}\nâ   ð ${x.id}`).join('\\n'):'ââ¤ _Nenhuma parceria cadastrada._'}\nââ¯\nââ¤ Modo: *${config.modoParceria?'ð¢ ATIVO':'ð´ INATIVO'}*\nâââ¢âà¼ºð¤à¼»ââ¢ââ`);
 }
 
 async function comandoSorteioAvancado(message,tipo,argumentos=''){
-    if(!(await exigirAdmin(message)))return;if(sorteiosGrupos.has(message.from)){await responderCitando(message,'⚠️ Já existe um sorteio ativo neste grupo.');return;}
-    const partes=String(argumentos||'').trim().split(/\s+/);const dur=parseDuracao(partes.shift());if(!dur){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${tipo} 10m prêmio${tipo==='sorteio2'?' 2':''}*.`);return;}
-    let quantidade=tipo==='sorteio2'?2:1;if(tipo==='sorteio2'&&/^\d+$/.test(partes.at(-1)||''))quantidade=Math.max(1,Math.min(10,Number(partes.pop())));const premio=partes.join(' ')||(tipo==='sorteiogold'?'Prêmio Gold':'Prêmio surpresa');const dados={premio,participantes:new Set(),fim:Date.now()+dur,quantidade};sorteiosGrupos.set(message.from,dados);
-    await responderCitando(message,`🎁 *SORTEIO ESPECIAL ABERTO!*\n\nPrêmio: *${premio}*\nDuração: *${Math.round(dur/60000)||1} min*\nGanhadores: *${quantidade}*\nParticipe com *${obterPrefixoGrupo(message.from)}participar*`);
-    dados.timer=setTimeout(async()=>{const atual=sorteiosGrupos.get(message.from);if(!atual)return;sorteiosGrupos.delete(message.from);const pool=[...atual.participantes],vencedores=[];while(pool.length&&vencedores.length<atual.quantidade)vencedores.push(pool.splice(crypto.randomInt(pool.length),1)[0]);if(!vencedores.length){await client.sendMessage(message.from,'🎁 Sorteio encerrado sem participantes.');return;}const linhas=vencedores.map((id,i)=>`├➤ ${i+1}. @${String(id).split('@')[0]}`).join('\\n');await enviarComMencoes(message.from,`🏆 *SORTEIO ENCERRADO!*\n\n🎁 Prêmio: *${atual.premio}*\n${linhas}`,{mentions:vencedores});},dur);
+    if(!(await exigirAdmin(message)))return;if(sorteiosGrupos.has(message.from)){await responderCitando(message,'â ï¸ JÃ¡ existe um sorteio ativo neste grupo.');return;}
+    const partes=String(argumentos||'').trim().split(/\s+/);const dur=parseDuracao(partes.shift());if(!dur){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}${tipo} 10m prÃªmio${tipo==='sorteio2'?' 2':''}*.`);return;}
+    let quantidade=tipo==='sorteio2'?2:1;if(tipo==='sorteio2'&&/^\d+$/.test(partes.at(-1)||''))quantidade=Math.max(1,Math.min(10,Number(partes.pop())));const premio=partes.join(' ')||(tipo==='sorteiogold'?'PrÃªmio Gold':'PrÃªmio surpresa');const dados={premio,participantes:new Set(),fim:Date.now()+dur,quantidade};sorteiosGrupos.set(message.from,dados);
+    await responderCitando(message,`ð *SORTEIO ESPECIAL ABERTO!*\n\nPrÃªmio: *${premio}*\nDuraÃ§Ã£o: *${Math.round(dur/60000)||1} min*\nGanhadores: *${quantidade}*\nParticipe com *${obterPrefixoGrupo(message.from)}participar*`);
+    dados.timer=setTimeout(async()=>{const atual=sorteiosGrupos.get(message.from);if(!atual)return;sorteiosGrupos.delete(message.from);const pool=[...atual.participantes],vencedores=[];while(pool.length&&vencedores.length<atual.quantidade)vencedores.push(pool.splice(crypto.randomInt(pool.length),1)[0]);if(!vencedores.length){await client.sendMessage(message.from,'ð Sorteio encerrado sem participantes.');return;}const linhas=vencedores.map((id,i)=>`ââ¤ ${i+1}. @${String(id).split('@')[0]}`).join('\\n');await enviarComMencoes(message.from,`ð *SORTEIO ENCERRADO!*\n\nð PrÃªmio: *${atual.premio}*\n${linhas}`,{mentions:vencedores});},dur);
 }
 
 async function comandoAnagramaAdmin(message,argumentos=''){
-    if(!(await exigirAdmin(message)))return;const palavra=String(argumentos||'').trim();if(!palavra){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}anagrama palavra*.`);return;}const chars=[...palavra];for(let i=chars.length-1;i>0;i--){const j=crypto.randomInt(i+1);[chars[i],chars[j]]=[chars[j],chars[i]];}await responderCitando(message,`🔤 *ANAGRAMA*\n\nPalavra: *${palavra}*\nEmbaralhada: *${chars.join('')}*`);
+    if(!(await exigirAdmin(message)))return;const palavra=String(argumentos||'').trim();if(!palavra){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}anagrama palavra*.`);return;}const chars=[...palavra];for(let i=chars.length-1;i>0;i--){const j=crypto.randomInt(i+1);[chars[i],chars[j]]=[chars[j],chars[i]];}await responderCitando(message,`ð¤ *ANAGRAMA*\n\nPalavra: *${palavra}*\nEmbaralhada: *${chars.join('')}*`);
 }
 
 async function comandoPermissaoComandoAdmin(message, acao, argumentos = '') {
@@ -18453,29 +18455,29 @@ async function comandoPermissaoComandoAdmin(message, acao, argumentos = '') {
 
     if (acao === 'listar') {
         const lista = config.comandosAdmin || [];
-        await responderCitando(message, `┏═•❃༺🔐༻❃•═┓\n│ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒 𝐑𝐄𝐒𝐓𝐑𝐈𝐓𝐎𝐒*\n├✯\n${lista.length ? lista.map((x,i)=>`├➤ ${i+1}. *${prefixo}${x}*`).join('\n') : '├➤ _Nenhum comando adicional foi restrito._'}\n├✯\n│ _Esses comandos exigem que o usuário seja administrador._\n┗═•❃༺🔐༻❃•═┛`);
+        await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ *ðððððððð ððððððððð*\nââ¯\n${lista.length ? lista.map((x,i)=>`ââ¤ ${i+1}. *${prefixo}${x}*`).join('\n') : 'ââ¤ _Nenhum comando adicional foi restrito._'}\nââ¯\nâ _Esses comandos exigem que o usuÃ¡rio seja administrador._\nâââ¢âà¼ºðà¼»ââ¢ââ`);
         return;
     }
 
     if (!nome || !/^[a-z0-9_+\-]{1,40}$/i.test(nome)) {
         const exemplo = acao === 'adicionar' ? `${prefixo}addcmdadm figurinha` : `${prefixo}delcmdadm figurinha`;
-        await responderCitando(message, `❌ _Informe apenas o nome do comando._\n\nExemplo: *${exemplo}*`);
+        await responderCitando(message, `â _Informe apenas o nome do comando._\n\nExemplo: *${exemplo}*`);
         return;
     }
     if (protegidos.has(nome)) {
-        await responderCitando(message, '🔐 _Esse comando já é protegido pelo sistema administrativo e não pode ser alterado por esta lista._');
+        await responderCitando(message, 'ð _Esse comando jÃ¡ Ã© protegido pelo sistema administrativo e nÃ£o pode ser alterado por esta lista._');
         return;
     }
 
     if (acao === 'adicionar') {
         if (config.comandosAdmin.includes(nome)) {
-            await responderCitando(message, `ℹ️ *${prefixo}${nome}* já está restrito aos administradores.`);
+            await responderCitando(message, `â¹ï¸ *${prefixo}${nome}* jÃ¡ estÃ¡ restrito aos administradores.`);
             return;
         }
         config.comandosAdmin.push(nome);
         salvarConfigAdmin();
         registrarLogAdmin(message, 'addcmdadm', nome);
-        await responderCitando(message, `🔐 *${prefixo}${nome}* agora só pode ser usado por administradores.`);
+        await responderCitando(message, `ð *${prefixo}${nome}* agora sÃ³ pode ser usado por administradores.`);
         return;
     }
 
@@ -18483,7 +18485,7 @@ async function comandoPermissaoComandoAdmin(message, acao, argumentos = '') {
     config.comandosAdmin = config.comandosAdmin.filter(x => x !== nome);
     salvarConfigAdmin();
     registrarLogAdmin(message, 'delcmdadm', nome);
-    await responderCitando(message, antes !== config.comandosAdmin.length ? `🔓 *${prefixo}${nome}* voltou a poder ser usado por qualquer membro.` : `⚠️ *${prefixo}${nome}* não estava na lista de comandos restritos.`);
+    await responderCitando(message, antes !== config.comandosAdmin.length ? `ð *${prefixo}${nome}* voltou a poder ser usado por qualquer membro.` : `â ï¸ *${prefixo}${nome}* nÃ£o estava na lista de comandos restritos.`);
 }
 
 async function comandoConfigAdmin(message, argumentos = '') {
@@ -18492,170 +18494,170 @@ async function comandoConfigAdmin(message, argumentos = '') {
     const config = obterConfiguracaoPersistente(obterConfigAdmin(grupo));
     const args = String(argumentos || '').trim();
     const prefixo = obterPrefixoGrupo(grupo);
-    const estado = v => v ? '🟢' : '🔴';
+    const estado = v => v ? 'ð¢' : 'ð´';
 
     if (!args) {
-        await reagir(message, '⚙️');
-        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
-│  *⚙️ 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎*
-├✯
-│
-│  🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-│
-├➤ *${prefixo}config antilink on/off*
-│   _Bloquear links no grupo_
-│
-├➤ *${prefixo}config antiflood on/off*
-│   _Limitar excesso de mensagens_
-│
-├➤ *${prefixo}config antimencao on/off*
-│   _Bloquear marcações_
-│
-├➤ *${prefixo}config antipalavra on/off*
-│   _Bloquear palavras cadastradas_
-│
-├➤ *${prefixo}config autoban on/off*
-│   _Expulsar automaticamente em infrações_
-│
-├➤ *${prefixo}config limitexto on/off*
-│   _Limitar tamanho das mensagens_
-│
-├✯
-│  🖼️ *𝐅𝐈𝐋𝐓𝐑𝐎𝐒 𝐃𝐄 𝐌𝐈́𝐃𝐈𝐀*
-│
-├➤ *${prefixo}config antiimg on/off*
-├➤ *${prefixo}config antivideo on/off*
-├➤ *${prefixo}config antiaudio on/off*
-├➤ *${prefixo}config antidoc on/off*
-├➤ *${prefixo}config antisticker on/off*
-├➤ *${prefixo}config anticatalogo on/off*
-│   _Ativar ou bloquear cada tipo de mídia_
-│
-├✯
-│  👋 *𝐄𝐍𝐓𝐑𝐀𝐃𝐀 𝐄 𝐒𝐀𝐈́𝐃𝐀*
-│
-├➤ *${prefixo}config welcome on/off*
-│   _Mensagem de entrada_
-│
-├➤ *${prefixo}config goodbye on/off*
-│   _Mensagem de saída_
-│
-├✯
-│  🎮 *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒*
-│
-├➤ *${prefixo}config jogos on/off*
-├➤ *${prefixo}config economia on/off*
-├➤ *${prefixo}config xp on/off*
-├➤ *${prefixo}config cmds on/off*
-│   _Ativar ou desativar sistemas do grupo_
-│
-├✯
-│  🏠 *𝐆𝐑𝐔𝐏𝐎*
-│
-├➤ *${prefixo}config multiprefix on/off*
-│   _Aceitar mais de um prefixo_
-│
-├➤ *${prefixo}prefixo*
-│   _Consultar/configurar o prefixo_
-│
-├➤ *${prefixo}regras*
-│   _Consultar as regras do grupo_
-│
-├➤ *${prefixo}logs on/off*
-│   _Registrar ações administrativas_
-│
-├✯
-│  📋 *𝐋𝐈𝐒𝐓𝐀𝐒 𝐄 𝐀𝐉𝐔𝐒𝐓𝐄𝐒*
-│
-├➤ *${prefixo}config palavra add <palavra>*
-├➤ *${prefixo}config palavra remove <palavra>*
-├➤ *${prefixo}config palavra list*
-│
-├➤ *${prefixo}config whitelist add @pessoa*
-├➤ *${prefixo}config whitelist remove @pessoa*
-├➤ *${prefixo}config whitelist list*
-│
-├➤ *${prefixo}config limite <número>*
-├➤ *${prefixo}config flood <número>*
-│
-├✯
-│  🕐 *𝐇𝐎𝐑𝐀́𝐑𝐈𝐎𝐒*
-│
-├➤ *${prefixo}opengp 06:00*
-├➤ *${prefixo}closegp 22:00*
-├➤ *${prefixo}time-status*
-├➤ *${prefixo}rm_opengp*
-│
-├✯
-│  💡 *𝐃𝐄𝐓𝐀𝐋𝐇𝐄𝐒*
-│
-├➤ *${prefixo}config moderacao*
-├➤ *${prefixo}config midia*
-├➤ *${prefixo}config entrada*
-├➤ *${prefixo}config sistemas*
-├➤ *${prefixo}config grupo*
-├➤ *${prefixo}config listas*
-│
-┗═•❃༺⚙️༻❃•═┛`);
+        await reagir(message, 'âï¸');
+        await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ
+â  *âï¸ ððððððððððÌ§ðÌð*
+ââ¯
+â
+â  ð¡ï¸ *ðððððððÌ§ðÌð*
+â
+ââ¤ *${prefixo}config antilink on/off*
+â   _Bloquear links no grupo_
+â
+ââ¤ *${prefixo}config antiflood on/off*
+â   _Limitar excesso de mensagens_
+â
+ââ¤ *${prefixo}config antimencao on/off*
+â   _Bloquear marcaÃ§Ãµes_
+â
+ââ¤ *${prefixo}config antipalavra on/off*
+â   _Bloquear palavras cadastradas_
+â
+ââ¤ *${prefixo}config autoban on/off*
+â   _Expulsar automaticamente em infraÃ§Ãµes_
+â
+ââ¤ *${prefixo}config limitexto on/off*
+â   _Limitar tamanho das mensagens_
+â
+ââ¯
+â  ð¼ï¸ *ððððððð ðð ððÌððð*
+â
+ââ¤ *${prefixo}config antiimg on/off*
+ââ¤ *${prefixo}config antivideo on/off*
+ââ¤ *${prefixo}config antiaudio on/off*
+ââ¤ *${prefixo}config antidoc on/off*
+ââ¤ *${prefixo}config antisticker on/off*
+ââ¤ *${prefixo}config anticatalogo on/off*
+â   _Ativar ou bloquear cada tipo de mÃ­dia_
+â
+ââ¯
+â  ð *ððððððð ð ðððÌðð*
+â
+ââ¤ *${prefixo}config welcome on/off*
+â   _Mensagem de entrada_
+â
+ââ¤ *${prefixo}config goodbye on/off*
+â   _Mensagem de saÃ­da_
+â
+ââ¯
+â  ð® *ðððððððð*
+â
+ââ¤ *${prefixo}config jogos on/off*
+ââ¤ *${prefixo}config economia on/off*
+ââ¤ *${prefixo}config xp on/off*
+ââ¤ *${prefixo}config cmds on/off*
+â   _Ativar ou desativar sistemas do grupo_
+â
+ââ¯
+â  ð  *ððððð*
+â
+ââ¤ *${prefixo}config multiprefix on/off*
+â   _Aceitar mais de um prefixo_
+â
+ââ¤ *${prefixo}prefixo*
+â   _Consultar/configurar o prefixo_
+â
+ââ¤ *${prefixo}regras*
+â   _Consultar as regras do grupo_
+â
+ââ¤ *${prefixo}logs on/off*
+â   _Registrar aÃ§Ãµes administrativas_
+â
+ââ¯
+â  ð *ðððððð ð ððððððð*
+â
+ââ¤ *${prefixo}config palavra add <palavra>*
+ââ¤ *${prefixo}config palavra remove <palavra>*
+ââ¤ *${prefixo}config palavra list*
+â
+ââ¤ *${prefixo}config whitelist add @pessoa*
+ââ¤ *${prefixo}config whitelist remove @pessoa*
+ââ¤ *${prefixo}config whitelist list*
+â
+ââ¤ *${prefixo}config limite <nÃºmero>*
+ââ¤ *${prefixo}config flood <nÃºmero>*
+â
+ââ¯
+â  ð *ððððÌðððð*
+â
+ââ¤ *${prefixo}opengp 06:00*
+ââ¤ *${prefixo}closegp 22:00*
+ââ¤ *${prefixo}time-status*
+ââ¤ *${prefixo}rm_opengp*
+â
+ââ¯
+â  ð¡ *ðððððððð*
+â
+ââ¤ *${prefixo}config moderacao*
+ââ¤ *${prefixo}config midia*
+ââ¤ *${prefixo}config entrada*
+ââ¤ *${prefixo}config sistemas*
+ââ¤ *${prefixo}config grupo*
+ââ¤ *${prefixo}config listas*
+â
+âââ¢âà¼ºâï¸à¼»ââ¢ââ`);
         return;
     }
 
     let chave = args.toLowerCase();
     const secoes = {
-        moderacao: `┏═•❃༺🛡️༻❃•═┓
-│       *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-├✯
-├➤ 🔗 Antilink: *${estado(config.antilink)}*
-├➤ 🚨 Antiflood: *${estado(config.antiflood)}* • ${config.floodLimite}/10s
-├➤ 👥 Anti-menção: *${estado(config.antiMention)}*
-├➤ 🤬 Antipalavra: *${estado(config.antiPalavra)}*
-├➤ 🔨 Autoban: *${estado(config.autoBan)}*
-├➤ 📏 Limite texto: *${estado(config.limitexto)}* • ${config.limiteTexto}
-┗═•❃༺🛡️༻❃•═┓`,
+        moderacao: `âââ¢âà¼ºð¡ï¸à¼»ââ¢ââ
+â       *ðððððððÌ§ðÌð*
+ââ¯
+ââ¤ ð Antilink: *${estado(config.antilink)}*
+ââ¤ ð¨ Antiflood: *${estado(config.antiflood)}* â¢ ${config.floodLimite}/10s
+ââ¤ ð¥ Anti-menÃ§Ã£o: *${estado(config.antiMention)}*
+ââ¤ ð¤¬ Antipalavra: *${estado(config.antiPalavra)}*
+ââ¤ ð¨ Autoban: *${estado(config.autoBan)}*
+ââ¤ ð Limite texto: *${estado(config.limitexto)}* â¢ ${config.limiteTexto}
+âââ¢âà¼ºð¡ï¸à¼»ââ¢ââ`,
         mod: null,
-        midia: `┏═•❃༺🖼️༻❃•═┓
-│       *𝐅𝐈𝐋𝐓𝐑𝐎𝐒 𝐃𝐄 𝐌𝐈́𝐃𝐈𝐀*
-├✯
-├➤ 🖼️ Imagem: *${estado(config.antiImg)}*
-├➤ 🎥 Vídeo: *${estado(config.antiVideo)}*
-├➤ 🎵 Áudio: *${estado(config.antiAudio)}*
-├➤ 📄 Documento: *${estado(config.antiDoc)}*
-├➤ 🧩 Figurinha: *${estado(config.antiSticker)}*
-├➤ 🛍️ Catálogo: *${estado(config.antiCatalogo)}*
-┗═•❃༺🖼️༻❃•═┓`,
-        entrada: `┏═•❃༺👋༻❃•═┓
-│       *𝐄𝐍𝐓𝐑𝐀𝐃𝐀 / 𝐒𝐀𝐈́𝐃𝐀*
-├✯
-├➤ 👋 Welcome: *${estado(config.welcome)}*
-├➤ 🚪 Goodbye: *${estado(config.goodbye)}*
-├➤ 📝 Welcome: _${String(config.welcomeTexto || '').slice(0,80)}_
-├➤ 📝 Goodbye: _${String(config.goodbyeTexto || '').slice(0,80)}_
-┗═•❃༺👋༻❃•═┓`,
-        grupo: `┏═•❃༺🏠༻❃•═┓
-│       *𝐆𝐑𝐔𝐏𝐎*
-├✯
-├➤ 🔣 Prefixo: *${prefixo}*
-├➤ 🔣 Multiprefix: *${estado(config.multiprefix)}*
-├➤ 📜 Regras: *${config.regras ? '🟢' : '🔴'}*
-├➤ 📝 Logs: *${estado(config.logs)}*
-├➤ 🔓 Abertura: *${formatarHoraConfig(config.horarioAbertura)}*
-├➤ 🔒 Fechamento: *${formatarHoraConfig(config.horarioFechamento)}*
-┗═•❃༺🏠༻❃•═┓`,
-        sistemas: `┏═•❃༺🎮༻❃•═┓
-│       *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒*
-├✯
-├➤ 🎮 Jogos: *${estado(config.jogos)}*
-├➤ 💰 Economia: *${estado(config.economia)}*
-├➤ ⭐ XP: *${estado(config.xp)}*
-┗═•❃༺🎮༻❃•═┓`,
-        listas: `┏═•❃༺📋༻❃•═┓
-│       *𝐋𝐈𝐒𝐓𝐀𝐒*
-├✯
-├➤ 🟢 Lista branca: *${Array.isArray(config.listaBranca) ? config.listaBranca.length : 0}*
-├➤ 🤬 Palavras bloqueadas: *${Array.isArray(config.palavrasProibidas) ? config.palavrasProibidas.length : 0}*
-├➤ ⚠️ Advertências registradas: *${Object.values(config.advertencias || {}).reduce((n,v)=>n+(v?.length||0),0)}*
-├➤ 📝 Anotações: *${config.anotacoes.length}*
-┗═•❃༺📋༻❃•═┓`
+        midia: `âââ¢âà¼ºð¼ï¸à¼»ââ¢ââ
+â       *ððððððð ðð ððÌððð*
+ââ¯
+ââ¤ ð¼ï¸ Imagem: *${estado(config.antiImg)}*
+ââ¤ ð¥ VÃ­deo: *${estado(config.antiVideo)}*
+ââ¤ ðµ Ãudio: *${estado(config.antiAudio)}*
+ââ¤ ð Documento: *${estado(config.antiDoc)}*
+ââ¤ ð§© Figurinha: *${estado(config.antiSticker)}*
+ââ¤ ðï¸ CatÃ¡logo: *${estado(config.antiCatalogo)}*
+âââ¢âà¼ºð¼ï¸à¼»ââ¢ââ`,
+        entrada: `âââ¢âà¼ºðà¼»ââ¢ââ
+â       *ððððððð / ðððÌðð*
+ââ¯
+ââ¤ ð Welcome: *${estado(config.welcome)}*
+ââ¤ ðª Goodbye: *${estado(config.goodbye)}*
+ââ¤ ð Welcome: _${String(config.welcomeTexto || '').slice(0,80)}_
+ââ¤ ð Goodbye: _${String(config.goodbyeTexto || '').slice(0,80)}_
+âââ¢âà¼ºðà¼»ââ¢ââ`,
+        grupo: `âââ¢âà¼ºð à¼»ââ¢ââ
+â       *ððððð*
+ââ¯
+ââ¤ ð£ Prefixo: *${prefixo}*
+ââ¤ ð£ Multiprefix: *${estado(config.multiprefix)}*
+ââ¤ ð Regras: *${config.regras ? 'ð¢' : 'ð´'}*
+ââ¤ ð Logs: *${estado(config.logs)}*
+ââ¤ ð Abertura: *${formatarHoraConfig(config.horarioAbertura)}*
+ââ¤ ð Fechamento: *${formatarHoraConfig(config.horarioFechamento)}*
+âââ¢âà¼ºð à¼»ââ¢ââ`,
+        sistemas: `âââ¢âà¼ºð®à¼»ââ¢ââ
+â       *ðððððððð*
+ââ¯
+ââ¤ ð® Jogos: *${estado(config.jogos)}*
+ââ¤ ð° Economia: *${estado(config.economia)}*
+ââ¤ â­ XP: *${estado(config.xp)}*
+âââ¢âà¼ºð®à¼»ââ¢ââ`,
+        listas: `âââ¢âà¼ºðà¼»ââ¢ââ
+â       *ðððððð*
+ââ¯
+ââ¤ ð¢ Lista branca: *${Array.isArray(config.listaBranca) ? config.listaBranca.length : 0}*
+ââ¤ ð¤¬ Palavras bloqueadas: *${Array.isArray(config.palavrasProibidas) ? config.palavrasProibidas.length : 0}*
+ââ¤ â ï¸ AdvertÃªncias registradas: *${Object.values(config.advertencias || {}).reduce((n,v)=>n+(v?.length||0),0)}*
+ââ¤ ð AnotaÃ§Ãµes: *${config.anotacoes.length}*
+âââ¢âà¼ºðà¼»ââ¢ââ`
     };
     if (chave === 'mod') chave = 'moderacao';
     if (secoes[chave]) { await responderCitando(message, secoes[chave]); return; }
@@ -18663,28 +18665,28 @@ async function comandoConfigAdmin(message, argumentos = '') {
     const partes = args.split(/\s+/);
     const alvo = String(partes.shift() || '').toLowerCase();
     const valor = partes.join(' ').trim();
-    const bool = v => ['on','sim','true','1','ativar','ativado'].includes(String(v).toLowerCase()) ? true : ['off','nao','não','false','0','desativar','desativado'].includes(String(v).toLowerCase()) ? false : null;
+    const bool = v => ['on','sim','true','1','ativar','ativado'].includes(String(v).toLowerCase()) ? true : ['off','nao','nÃ£o','false','0','desativar','desativado'].includes(String(v).toLowerCase()) ? false : null;
     const mapa = {antilink:'antilink',antiflood:'antiflood',antimencao:'antiMention',antipalavra:'antiPalavra',autoban:'autoBan',antiimg:'antiImg',antivideo:'antiVideo',antiaudio:'antiAudio',antidoc:'antiDoc',antisticker:'antiSticker',anticatalogo:'antiCatalogo',limitexto:'limitexto',multiprefix:'multiprefix',jogos:'jogos',economia:'economia',xp:'xp',cmds:'cmds',logs:'logs'};
     if (mapa[alvo]) {
         const b=bool(valor);
-        if (b !== null) { config[mapa[alvo]]=b; salvarConfigAdmin(); await reagir(message,b?'🟢':'🔴'); await responderCitando(message,`┏═•❃༺⚙️༻❃•═┓\n├➤ *${alvo}*: ${b?'🟢 ATIVADO':'🔴 DESATIVADO'}\n┗═•❃༺⚙️༻❃•═┓`); return; }
+        if (b !== null) { config[mapa[alvo]]=b; salvarConfigAdmin(); await reagir(message,b?'ð¢':'ð´'); await responderCitando(message,`âââ¢âà¼ºâï¸à¼»ââ¢ââ\nââ¤ *${alvo}*: ${b?'ð¢ ATIVADO':'ð´ DESATIVADO'}\nâââ¢âà¼ºâï¸à¼»ââ¢ââ`); return; }
     }
-    if (alvo === 'antiflood' && /^limite\s+/i.test(valor)) { const n=Number(valor.replace(/^limite\s+/i,'')); if(Number.isInteger(n)&&n>=3&&n<=30){config.floodLimite=n;salvarConfigAdmin();await responderCitando(message,`🚨 *Limite do antiflood:* ${n} mensagens / 10s`);return;} }
-    if (alvo === 'limitexto' && /^limite\s+/i.test(valor)) { const n=Number(valor.replace(/^limite\s+/i,'')); if(Number.isInteger(n)&&n>=100&&n<=10000){config.limiteTexto=n;salvarConfigAdmin();await responderCitando(message,`📏 *Limite de texto:* ${n} caracteres`);return;} }
+    if (alvo === 'antiflood' && /^limite\s+/i.test(valor)) { const n=Number(valor.replace(/^limite\s+/i,'')); if(Number.isInteger(n)&&n>=3&&n<=30){config.floodLimite=n;salvarConfigAdmin();await responderCitando(message,`ð¨ *Limite do antiflood:* ${n} mensagens / 10s`);return;} }
+    if (alvo === 'limitexto' && /^limite\s+/i.test(valor)) { const n=Number(valor.replace(/^limite\s+/i,'')); if(Number.isInteger(n)&&n>=100&&n<=10000){config.limiteTexto=n;salvarConfigAdmin();await responderCitando(message,`ð *Limite de texto:* ${n} caracteres`);return;} }
     if (alvo === 'palavra') {
         const op=String(partes.shift()||'').toLowerCase(); const palavra=partes.join(' ').trim().toLowerCase();
-        if(op==='add'&&palavra){if(!config.palavrasProibidas.includes(palavra))config.palavrasProibidas.push(palavra);config.antiPalavra=true;salvarConfigAdmin();await responderCitando(message,`🤬 Palavra *${palavra}* adicionada e filtro ativado.`);return;}
-        if(op==='remove'&&palavra){config.palavrasProibidas=config.palavrasProibidas.filter(x=>x!==palavra);salvarConfigAdmin();await responderCitando(message,`🗑️ Palavra *${palavra}* removida.`);return;}
-        if(op==='list'){await responderCitando(message,`┏═•❃༺🤬༻❃•═┓\n│ *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n${config.palavrasProibidas.length?config.palavrasProibidas.map((x,i)=>`├➤ ${i+1}. ${x}`).join('\n'):'├➤ _Nenhuma._'}\n┗═•❃༺🤬༻❃•═┓`);return;}
+        if(op==='add'&&palavra){if(!config.palavrasProibidas.includes(palavra))config.palavrasProibidas.push(palavra);config.antiPalavra=true;salvarConfigAdmin();await responderCitando(message,`ð¤¬ Palavra *${palavra}* adicionada e filtro ativado.`);return;}
+        if(op==='remove'&&palavra){config.palavrasProibidas=config.palavrasProibidas.filter(x=>x!==palavra);salvarConfigAdmin();await responderCitando(message,`ðï¸ Palavra *${palavra}* removida.`);return;}
+        if(op==='list'){await responderCitando(message,`âââ¢âà¼ºð¤¬à¼»ââ¢ââ\nâ *ðððððððð ðððððððððð*\nââ¯\n${config.palavrasProibidas.length?config.palavrasProibidas.map((x,i)=>`ââ¤ ${i+1}. ${x}`).join('\n'):'ââ¤ _Nenhuma._'}\nâââ¢âà¼ºð¤¬à¼»ââ¢ââ`);return;}
     }
     if (alvo === 'whitelist') {
         const op=String(partes.shift()||'').toLowerCase();
         const pessoa=await obterAlvoComContato(message,false); const id=pessoa?idDaPessoa(pessoa):null;
-        if(op==='add'&&id){if(!config.listaBranca.includes(id))config.listaBranca.push(id);salvarConfigAdmin();await responderCitando(message,`🟢 @${id.split('@')[0]} foi adicionado à lista branca.`,{mentions:[id]});return;}
-        if(op==='remove'&&id){config.listaBranca=config.listaBranca.filter(x=>x!==id);salvarConfigAdmin();await responderCitando(message,`🗑️ @${id.split('@')[0]} foi removido da lista branca.`,{mentions:[id]});return;}
-        if(op==='list'){await enviarComMencoes(message.from,`┏═•❃༺🟢༻❃•═┓\n│ *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n${config.listaBranca.length?config.listaBranca.map(id=>`├➤ @${String(id).split('@')[0]}`).join('\n'):'├➤ _Nenhuma pessoa cadastrada._'}\n┗═•❃༺🟢༻❃•═┓`,{mentions:config.listaBranca,quotedMessageId:obterIdMensagem(message)});return;}
+        if(op==='add'&&id){if(!config.listaBranca.includes(id))config.listaBranca.push(id);salvarConfigAdmin();await responderCitando(message,`ð¢ @${id.split('@')[0]} foi adicionado Ã  lista branca.`,{mentions:[id]});return;}
+        if(op==='remove'&&id){config.listaBranca=config.listaBranca.filter(x=>x!==id);salvarConfigAdmin();await responderCitando(message,`ðï¸ @${id.split('@')[0]} foi removido da lista branca.`,{mentions:[id]});return;}
+        if(op==='list'){await enviarComMencoes(message.from,`âââ¢âà¼ºð¢à¼»ââ¢ââ\nâ *ððððð ðððððð*\nââ¯\n${config.listaBranca.length?config.listaBranca.map(id=>`ââ¤ @${String(id).split('@')[0]}`).join('\n'):'ââ¤ _Nenhuma pessoa cadastrada._'}\nâââ¢âà¼ºð¢à¼»ââ¢ââ`,{mentions:config.listaBranca,quotedMessageId:obterIdMensagem(message)});return;}
     }
-    await responderCitando(message,`❌ _Configuração não encontrada._\n\nUse *${prefixo}config* para ver as categorias.`);
+    await responderCitando(message,`â _ConfiguraÃ§Ã£o nÃ£o encontrada._\n\nUse *${prefixo}config* para ver as categorias.`);
 }
 
 async function comandoAdvertencia(message, acao, argumentos='') {
@@ -18698,31 +18700,31 @@ async function comandoAdvertencia(message, acao, argumentos='') {
         if(!config.advertencias[id])config.advertencias[id]=[];
         config.advertencias[id].push({motivo,admin:obterIdRemetente(message),data:new Date().toISOString()});
         salvarConfigAdmin(); registrarLogAdmin(message,'adverter',id);
-        await enviarComMencoes(message.from,`┏═•❃༺⚠️༻❃•═┓\n│      *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀*\n├✯\n├➤ 👤 @${id.split('@')[0]}\n├➤ 🔢 Total: *${config.advertencias[id].length}*\n├➤ 📝 Motivo: _${motivo}_\n┗═•❃༺⚠️༻❃•═┓`,{mentions:[id],quotedMessageId:obterIdMensagem(message)});return;
+        await enviarComMencoes(message.from,`âââ¢âà¼ºâ ï¸à¼»ââ¢ââ\nâ      *ðððððððÌðððð*\nââ¯\nââ¤ ð¤ @${id.split('@')[0]}\nââ¤ ð¢ Total: *${config.advertencias[id].length}*\nââ¤ ð Motivo: _${motivo}_\nâââ¢âà¼ºâ ï¸à¼»ââ¢ââ`,{mentions:[id],quotedMessageId:obterIdMensagem(message)});return;
     }
     if(acao==='ver_adv'){
         const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);const lista=config.advertencias[id]||[];
-        await responderCitando(message,`┏═•❃༺⚠️༻❃•═┓\n│      *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n├✯\n├➤ 👤 @${id.split('@')[0]}\n├➤ 🔢 Total: *${lista.length}*\n${lista.length?lista.map((x,i)=>`├➤ ${i+1}. _${x.motivo}_ • ${new Date(x.data).toLocaleDateString('pt-BR')}`).join('\n'):'├➤ _Nenhuma advertência._'}\n┗═•❃༺⚠️༻❃•═┓`,{mentions:[id]});return;
+        await responderCitando(message,`âââ¢âà¼ºâ ï¸à¼»ââ¢ââ\nâ      *ðððððððÌððððð*\nââ¯\nââ¤ ð¤ @${id.split('@')[0]}\nââ¤ ð¢ Total: *${lista.length}*\n${lista.length?lista.map((x,i)=>`ââ¤ ${i+1}. _${x.motivo}_ â¢ ${new Date(x.data).toLocaleDateString('pt-BR')}`).join('\n'):'ââ¤ _Nenhuma advertÃªncia._'}\nâââ¢âà¼ºâ ï¸à¼»ââ¢ââ`,{mentions:[id]});return;
     }
     if(acao==='rm_adv'){
-        const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);const n=Number(args)||1;const lista=config.advertencias[id]||[];lista.splice(0,Math.min(n,lista.length));if(!lista.length)delete config.advertencias[id];salvarConfigAdmin();await responderCitando(message,`🗑️ *${n} advertência(s)* removida(s) de @${id.split('@')[0]}.`,{mentions:[id]});return;
+        const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);const n=Number(args)||1;const lista=config.advertencias[id]||[];lista.splice(0,Math.min(n,lista.length));if(!lista.length)delete config.advertencias[id];salvarConfigAdmin();await responderCitando(message,`ðï¸ *${n} advertÃªncia(s)* removida(s) de @${id.split('@')[0]}.`,{mentions:[id]});return;
     }
     if(acao==='limpar_adv'){
-        config.advertencias={};salvarConfigAdmin();await responderCitando(message,'🧹 *Todas as advertências deste grupo foram apagadas.*');return;
+        config.advertencias={};salvarConfigAdmin();await responderCitando(message,'ð§¹ *Todas as advertÃªncias deste grupo foram apagadas.*');return;
     }
     const entradas=Object.entries(config.advertencias);
-    await enviarComMencoes(message.from,`┏═•❃༺📋༻❃•═┓\n│      *𝐋𝐈𝐒𝐓𝐀 𝐃𝐄 𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n├✯\n${entradas.length?entradas.map(([id,l])=>`├➤ @${id.split('@')[0]} • *${l.length}*`).join('\n'):'├➤ _Nenhuma advertência registrada._'}\n┗═•❃༺📋༻❃•═┓`,{mentions:entradas.map(x=>x[0]),quotedMessageId:obterIdMensagem(message)});
+    await enviarComMencoes(message.from,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ      *ððððð ðð ðððððððÌððððð*\nââ¯\n${entradas.length?entradas.map(([id,l])=>`ââ¤ @${id.split('@')[0]} â¢ *${l.length}*`).join('\n'):'ââ¤ _Nenhuma advertÃªncia registrada._'}\nâââ¢âà¼ºðà¼»ââ¢ââ`,{mentions:entradas.map(x=>x[0]),quotedMessageId:obterIdMensagem(message)});
 }
 
 async function comandoAnotacao(message, acao, argumentos='') {
     if (!(await exigirAdmin(message))) return;
     const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from)); const args=String(argumentos||'').trim();
     if(acao==='anotar'){
-        if(!args){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}anotar título | texto*.`);return;}
-        const [titulo,...rest]=args.split('|');const texto=rest.join('|').trim()||titulo.trim();config.anotacoes.push({id:Date.now(),titulo:titulo.trim(),texto,autor:obterIdRemetente(message),data:new Date().toISOString()});salvarConfigAdmin();await responderCitando(message,`📝 *Anotação salva:* ${titulo.trim()}`);return;
+        if(!args){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}anotar tÃ­tulo | texto*.`);return;}
+        const [titulo,...rest]=args.split('|');const texto=rest.join('|').trim()||titulo.trim();config.anotacoes.push({id:Date.now(),titulo:titulo.trim(),texto,autor:obterIdRemetente(message),data:new Date().toISOString()});salvarConfigAdmin();await responderCitando(message,`ð *AnotaÃ§Ã£o salva:* ${titulo.trim()}`);return;
     }
-    if(acao==='rmnota'){const id=Number(args);const antes=config.anotacoes.length;config.anotacoes=config.anotacoes.filter(n=>n.id!==id);salvarConfigAdmin();await responderCitando(message,antes!==config.anotacoes.length?'🗑️ *Anotação removida.*':'❌ _ID de anotação não encontrado._');return;}
-    await responderCitando(message,`┏═•❃༺📝༻❃•═┓\n│       *𝐀𝐍𝐎𝐓𝐀𝐂̧𝐎̃𝐄𝐒*\n├✯\n${config.anotacoes.length?config.anotacoes.map((n,i)=>`├➤ *${i+1}.* ${n.titulo}\n│   🆔 ${n.id}\n│   _${n.texto}_`).join('\n'): '├➤ _Nenhuma anotação._'}\n┗═•❃༺📝༻❃•═┓`);
+    if(acao==='rmnota'){const id=Number(args);const antes=config.anotacoes.length;config.anotacoes=config.anotacoes.filter(n=>n.id!==id);salvarConfigAdmin();await responderCitando(message,antes!==config.anotacoes.length?'ðï¸ *AnotaÃ§Ã£o removida.*':'â _ID de anotaÃ§Ã£o nÃ£o encontrado._');return;}
+    await responderCitando(message,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ððððððÌ§ðÌðð*\nââ¯\n${config.anotacoes.length?config.anotacoes.map((n,i)=>`ââ¤ *${i+1}.* ${n.titulo}\nâ   ð ${n.id}\nâ   _${n.texto}_`).join('\n'): 'ââ¤ _Nenhuma anotaÃ§Ã£o._'}\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function comandoPalavraAdmin(message, acao, argumentos = '') {
@@ -18731,24 +18733,24 @@ async function comandoPalavraAdmin(message, acao, argumentos = '') {
     const palavra = String(argumentos || '').trim().toLowerCase();
     if (acao === 'listar') {
         const lista = config.palavrasProibidas || [];
-        await responderCitando(message, `┏═•❃༺🤬༻❃•═┓\n│ *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n${lista.length ? lista.map((p,i)=>`├➤ ${i+1}. ${p}`).join('\\n') : '├➤ _Nenhuma palavra cadastrada._'}\n┗═•❃༺🤬༻❃•═┓`); return;
+        await responderCitando(message, `âââ¢âà¼ºð¤¬à¼»ââ¢ââ\nâ *ðððððððð ðððððððððð*\nââ¯\n${lista.length ? lista.map((p,i)=>`ââ¤ ${i+1}. ${p}`).join('\\n') : 'ââ¤ _Nenhuma palavra cadastrada._'}\nâââ¢âà¼ºð¤¬à¼»ââ¢ââ`); return;
     }
-    if (!palavra) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}${acao === 'adicionar' ? 'add_palavra' : 'rm_palavra'} palavra*.`); return; }
+    if (!palavra) { await responderCitando(message, `â Use *${obterPrefixoGrupo(message.from)}${acao === 'adicionar' ? 'add_palavra' : 'rm_palavra'} palavra*.`); return; }
     if (acao === 'adicionar') {
         if (!config.palavrasProibidas.includes(palavra)) config.palavrasProibidas.push(palavra);
         config.antiPalavra = true; salvarConfigAdmin();
-        await responderCitando(message, `🤬 *${palavra}* adicionada à lista de palavras bloqueadas.`); return;
+        await responderCitando(message, `ð¤¬ *${palavra}* adicionada Ã  lista de palavras bloqueadas.`); return;
     }
     const antes = config.palavrasProibidas.length;
     config.palavrasProibidas = config.palavrasProibidas.filter(p => p !== palavra);
     salvarConfigAdmin();
-    await responderCitando(message, antes !== config.palavrasProibidas.length ? `🗑️ *${palavra}* removida da lista.` : `⚠️ *${palavra}* não estava cadastrada.`);
+    await responderCitando(message, antes !== config.palavrasProibidas.length ? `ðï¸ *${palavra}* removida da lista.` : `â ï¸ *${palavra}* nÃ£o estava cadastrada.`);
 }
 
 async function comandoPrefixos(message) {
     if (!(await exigirAdmin(message))) return;
     const config = obterConfigAdmin(message.from);
-    await responderCitando(message, `┏═•❃༺🔣༻❃•═┓\n│ *𝐏𝐑𝐄𝐅𝐈𝐗𝐎𝐒*\n├✯\n├➤ Prefixo do grupo: *${config.prefixo || PREFIXO}*\n├➤ Prefixo padrão: *${PREFIXO}*\n├➤ Multiprefix: *${config.multiprefix ? '🟢 ATIVO' : '🔴 INATIVO'}*\n┗═•❃༺🔣༻❃•═┓`);
+    await responderCitando(message, `âââ¢âà¼ºð£à¼»ââ¢ââ\nâ *ðððððððð*\nââ¯\nââ¤ Prefixo do grupo: *${config.prefixo || PREFIXO}*\nââ¤ Prefixo padrÃ£o: *${PREFIXO}*\nââ¤ Multiprefix: *${config.multiprefix ? 'ð¢ ATIVO' : 'ð´ INATIVO'}*\nâââ¢âà¼ºð£à¼»ââ¢ââ`);
 }
 
 async function comandoListaBrancaAdmin(message, acao) {
@@ -18756,47 +18758,47 @@ async function comandoListaBrancaAdmin(message, acao) {
     const config = obterConfiguracaoPersistente(obterConfigAdmin(message.from));
     if (acao === 'listar') {
         const lista = config.listaBranca || [];
-        await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓\n│ *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n${lista.length ? lista.map(x=>`├➤ @${String(x).split('@')[0]}`).join('\\n') : '├➤ _Nenhuma pessoa cadastrada._'}\n┗═•❃༺🟢༻❃•═┓`, {mentions:lista,quotedMessageId:obterIdMensagem(message)}); return;
+        await enviarComMencoes(message.from, `âââ¢âà¼ºð¢à¼»ââ¢ââ\nâ *ððððð ðððððð*\nââ¯\n${lista.length ? lista.map(x=>`ââ¤ @${String(x).split('@')[0]}`).join('\\n') : 'ââ¤ _Nenhuma pessoa cadastrada._'}\nâââ¢âà¼ºð¢à¼»ââ¢ââ`, {mentions:lista,quotedMessageId:obterIdMensagem(message)}); return;
     }
     const pessoa = await obterAlvoComContato(message, false); if (!pessoa) return;
     const ids = [...await obterIdsPessoa(pessoa), idDaPessoa(pessoa)].filter(Boolean);
     if (acao === 'adicionar') {
         for (const id of ids) if (!config.listaBranca.some(x=>idsIguais(x,id))) config.listaBranca.push(id);
         salvarConfigAdmin();
-        await enviarComMencoes(message.from, `🟢 @${String(idDaPessoa(pessoa)).split('@')[0]} foi adicionado à lista branca.`, {mentions:[idDaPessoa(pessoa)],quotedMessageId:obterIdMensagem(message)}); return;
+        await enviarComMencoes(message.from, `ð¢ @${String(idDaPessoa(pessoa)).split('@')[0]} foi adicionado Ã  lista branca.`, {mentions:[idDaPessoa(pessoa)],quotedMessageId:obterIdMensagem(message)}); return;
     }
     const antes=config.listaBranca.length;
     config.listaBranca=config.listaBranca.filter(x=>!ids.some(id=>idsIguais(x,id))); salvarConfigAdmin();
-    await responderCitando(message, antes!==config.listaBranca.length?'🗑️ Pessoa removida da lista branca.':'⚠️ Pessoa não estava na lista branca.');
+    await responderCitando(message, antes!==config.listaBranca.length?'ðï¸ Pessoa removida da lista branca.':'â ï¸ Pessoa nÃ£o estava na lista branca.');
 }
 
 async function comandoListaNegraAdmin(message, acao) {
     if (!(await exigirAdmin(message))) return;
     if (acao === 'listar') {
         const lista=[...blacklistMute];
-        await enviarComMencoes(message.from, `┏═•❃༺🚫༻❃•═┓\n│ *𝐋𝐈𝐒𝐓𝐀 𝐍𝐄𝐆𝐑𝐀*\n├✯\n${lista.length?lista.map(x=>`├➤ @${String(x).split('@')[0]}`).join('\\n'):'├➤ _Nenhuma pessoa cadastrada._'}\n┗═•❃༺🚫༻❃•═┓`,{mentions:lista,quotedMessageId:obterIdMensagem(message)}); return;
+        await enviarComMencoes(message.from, `âââ¢âà¼ºð«à¼»ââ¢ââ\nâ *ððððð ððððð*\nââ¯\n${lista.length?lista.map(x=>`ââ¤ @${String(x).split('@')[0]}`).join('\\n'):'ââ¤ _Nenhuma pessoa cadastrada._'}\nâââ¢âà¼ºð«à¼»ââ¢ââ`,{mentions:lista,quotedMessageId:obterIdMensagem(message)}); return;
     }
     const pessoa=await obterAlvoComContato(message,true); if(!pessoa)return;
     const ids=[...await obterIdsPessoa(pessoa),idDaPessoa(pessoa)].filter(Boolean); const antes=blacklistMute.size;
     for(const x of [...blacklistMute]) if(ids.some(id=>idsIguais(x,id))) blacklistMute.delete(x);
     salvarBlacklist();
-    await responderCitando(message,antes!==blacklistMute.size?'🗑️ Pessoa removida da lista negra.':'⚠️ Pessoa não estava na lista negra.');
+    await responderCitando(message,antes!==blacklistMute.size?'ðï¸ Pessoa removida da lista negra.':'â ï¸ Pessoa nÃ£o estava na lista negra.');
 }
 
 async function comandoMsgAdm(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
-    const texto=String(argumentos||'').trim(); if(!texto){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}msgadm mensagem*.`);return;}
+    const texto=String(argumentos||'').trim(); if(!texto){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}msgadm mensagem*.`);return;}
     try {
         const admins=await client.pupPage.evaluate(grupoId=>{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(grupoId);const p=chat?.groupMetadata?.participants;const arr=typeof p?.getModelsArray==='function'?p.getModelsArray():(p?.models||[]);return arr.filter(x=>x?.isAdmin||x?.isSuperAdmin).map(x=>x?.id?._serialized||'').filter(Boolean);},message.from);
-        await enviarComMencoes(message.from,`┏═•❃༺📢༻❃•═┓\n│ *𝐌𝐄𝐍𝐒𝐀𝐆𝐄𝐌 𝐀𝐃𝐌*\n├✯\n├➤ ${texto}\n┗═•❃༺📢༻❃•═┓`,{mentions:admins,quotedMessageId:obterIdMensagem(message)});
-    } catch(e){await responderCitando(message,`❌ Não consegui enviar a mensagem aos administradores.\n_${e.message}_`);}
+        await enviarComMencoes(message.from,`âââ¢âà¼ºð¢à¼»ââ¢ââ\nâ *ðððððððð ððð*\nââ¯\nââ¤ ${texto}\nâââ¢âà¼ºð¢à¼»ââ¢ââ`,{mentions:admins,quotedMessageId:obterIdMensagem(message)});
+    } catch(e){await responderCitando(message,`â NÃ£o consegui enviar a mensagem aos administradores.\n_${e.message}_`);}
 }
 
 async function comandoPromoverRebaixar(message, acao) {
     if (!(await exigirAdmin(message))) return;
 
     if (!message.from?.endsWith('@g.us')) {
-        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        await responderCitando(message, 'â _Esse comando sÃ³ funciona em grupos._');
         return;
     }
 
@@ -18808,7 +18810,7 @@ async function comandoPromoverRebaixar(message, acao) {
     if (idAlvo && !idsAlvo.includes(idAlvo)) idsAlvo.unshift(idAlvo);
 
     if (!idAlvo) {
-        await responderCitando(message, '❌ _Não consegui identificar a pessoa selecionada._');
+        await responderCitando(message, 'â _NÃ£o consegui identificar a pessoa selecionada._');
         return;
     }
 
@@ -18816,12 +18818,12 @@ async function comandoPromoverRebaixar(message, acao) {
     const botId = client.info?.wid?._serialized || null;
 
     if (idsAlvo.some(id => idsIguais(id, idRemetente))) {
-        await responderCitando(message, '🤨 _Você não pode alterar o próprio cargo por este comando._');
+        await responderCitando(message, 'ð¤¨ _VocÃª nÃ£o pode alterar o prÃ³prio cargo por este comando._');
         return;
     }
 
     if (botId && idsAlvo.some(id => idsIguais(id, botId))) {
-        await responderCitando(message, '🤖 _Eu não posso alterar meu próprio cargo._');
+        await responderCitando(message, 'ð¤ _Eu nÃ£o posso alterar meu prÃ³prio cargo._');
         return;
     }
 
@@ -18830,12 +18832,12 @@ async function comandoPromoverRebaixar(message, acao) {
             try {
                 const chat = await window.WWebJS.getChat(chatId, { getAsModel: false });
                 if (!chat || chat.id?.server !== 'g.us') {
-                    return { ok: false, erro: 'Grupo não encontrado no WhatsApp.' };
+                    return { ok: false, erro: 'Grupo nÃ£o encontrado no WhatsApp.' };
                 }
 
                 const participantes = chat.groupMetadata?.participants;
                 if (!participantes) {
-                    return { ok: false, erro: 'Os participantes do grupo não estão disponíveis.' };
+                    return { ok: false, erro: 'Os participantes do grupo nÃ£o estÃ£o disponÃ­veis.' };
                 }
 
                 const ids = [...new Set((participantIds || []).filter(Boolean).map(String))];
@@ -18877,7 +18879,7 @@ async function comandoPromoverRebaixar(message, acao) {
                 }
 
                 if (!participante) {
-                    return { ok: false, erro: 'Usuário não encontrado nos participantes do grupo.' };
+                    return { ok: false, erro: 'UsuÃ¡rio nÃ£o encontrado nos participantes do grupo.' };
                 }
 
                 if (acao === 'promover' && (participante.isAdmin || participante.isSuperAdmin)) {
@@ -18888,12 +18890,12 @@ async function comandoPromoverRebaixar(message, acao) {
                     return { ok: true, jaEstava: true };
                 }
 
-                // Usa exatamente a mesma API interna que o próprio bot já usa
-                // para remover participantes, apenas trocando a operação.
+                // Usa exatamente a mesma API interna que o prÃ³prio bot jÃ¡ usa
+                // para remover participantes, apenas trocando a operaÃ§Ã£o.
                 const ModifyParticipants = window.require('WAWebModifyParticipantsGroupAction');
                 const metodo = acao === 'promover' ? 'promoteParticipants' : 'demoteParticipants';
                 if (typeof ModifyParticipants?.[metodo] !== 'function') {
-                    return { ok: false, erro: `A operação ${metodo} não existe nesta versão do WhatsApp Web.` };
+                    return { ok: false, erro: `A operaÃ§Ã£o ${metodo} nÃ£o existe nesta versÃ£o do WhatsApp Web.` };
                 }
 
                 await ModifyParticipants[metodo](chat, [participante]);
@@ -18903,14 +18905,14 @@ async function comandoPromoverRebaixar(message, acao) {
             }
         }, message.from, idsAlvo, acao);
 
-        if (!resultado?.ok) throw new Error(resultado?.erro || 'Operação não concluída.');
+        if (!resultado?.ok) throw new Error(resultado?.erro || 'OperaÃ§Ã£o nÃ£o concluÃ­da.');
 
-        await reagir(message, acao === 'promover' ? '👑' : '🔻');
+        await reagir(message, acao === 'promover' ? 'ð' : 'ð»');
 
         if (resultado.jaEstava) {
             await responderAlvoComMencao(
                 message,
-                `ℹ️ @${String(idAlvo).split('@')[0]} ${acao === 'promover' ? 'já é administrador' : 'já não é administrador'}.`,
+                `â¹ï¸ @${String(idAlvo).split('@')[0]} ${acao === 'promover' ? 'jÃ¡ Ã© administrador' : 'jÃ¡ nÃ£o Ã© administrador'}.`,
                 pessoa
             );
             return;
@@ -18918,15 +18920,15 @@ async function comandoPromoverRebaixar(message, acao) {
 
         await responderAlvoComMencao(
             message,
-            `┏═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┓\n├➤ @${String(idAlvo).split('@')[0]} foi *${acao === 'promover' ? 'promovido a administrador' : 'rebaixado'}*.\n┗═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┛`,
+            `âââ¢âà¼º${acao === 'promover' ? 'ð' : 'ð»'}à¼»ââ¢ââ\nââ¤ @${String(idAlvo).split('@')[0]} foi *${acao === 'promover' ? 'promovido a administrador' : 'rebaixado'}*.\nâââ¢âà¼º${acao === 'promover' ? 'ð' : 'ð»'}à¼»ââ¢ââ`,
             pessoa
         );
     } catch (erro) {
-        console.error(`❌ Erro ao ${acao}:`, erro);
-        await reagir(message, '❌');
+        console.error(`â Erro ao ${acao}:`, erro);
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            `┏═•❃༺❌༻❃•═┓\n│ *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐏𝐎𝐒𝐒𝐈́𝐕𝐄𝐋 ${acao === 'promover' ? '𝐏𝐑𝐎𝐌𝐎𝐕𝐄𝐑' : '𝐑𝐄𝐁𝐀𝐈𝐗𝐀𝐑'}*\n├✯\n├➤ _${erro?.message || erro}_\n┗═•❃༺❌༻❃•═┛`
+            `âââ¢âà¼ºâà¼»ââ¢ââ\nâ *ððÌð ððð ðððððÌððð ${acao === 'promover' ? 'ðððððððð' : 'ðððððððð'}*\nââ¯\nââ¤ _${erro?.message || erro}_\nâââ¢âà¼ºâà¼»ââ¢ââ`
         );
     }
 }
@@ -18934,7 +18936,7 @@ async function comandoPromoverRebaixar(message, acao) {
 async function comandoMarcar(message, modo, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
     if (!message.from?.endsWith('@g.us')) {
-        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        await responderCitando(message, 'â _Esse comando sÃ³ funciona em grupos._');
         return;
     }
 
@@ -18944,7 +18946,7 @@ async function comandoMarcar(message, modo, argumentos = '') {
                 const Store = window.require('WAWebCollections');
                 const chat = Store?.Chat?.get(chatId);
                 const participantes = chat?.groupMetadata?.participants;
-                if (!participantes) return { erro: 'Participantes do grupo não encontrados.' };
+                if (!participantes) return { erro: 'Participantes do grupo nÃ£o encontrados.' };
                 const modelos = typeof participantes.getModelsArray === 'function'
                     ? participantes.getModelsArray()
                     : (Array.isArray(participantes.models) ? participantes.models : []);
@@ -18960,21 +18962,21 @@ async function comandoMarcar(message, modo, argumentos = '') {
         const botId = client.info?.wid?._serialized || '';
         const ids = [...new Set((resultado?.ids || []).filter(id => id && id !== botId))];
         if (!ids.length) {
-            await responderCitando(message, '⚠️ _Não encontrei participantes para marcar._');
+            await responderCitando(message, 'â ï¸ _NÃ£o encontrei participantes para marcar._');
             return;
         }
 
-        const corpo = String(argumentos || '').trim() || '📢 *Atenção, pessoal!*';
-        const prefixo = modo === 'hidetag' ? '' : '📢 ';
+        const corpo = String(argumentos || '').trim() || 'ð¢ *AtenÃ§Ã£o, pessoal!*';
+        const prefixo = modo === 'hidetag' ? '' : 'ð¢ ';
         const texto = `${prefixo}${corpo}\n\n${ids.map(id => `@${String(id).split('@')[0]}`).join(' ')}`;
         await enviarComMencoes(message.from, aplicarEstiloMensagem(texto), {
             mentions: ids,
             quotedMessageId: obterIdMensagem(message)
         });
     } catch (erro) {
-        console.error('❌ Erro ao marcar:', erro);
-        await reagir(message, '❌');
-        await responderCitando(message, `❌ _Não consegui marcar os participantes._\n_${erro?.message || erro}_`);
+        console.error('â Erro ao marcar:', erro);
+        await reagir(message, 'â');
+        await responderCitando(message, `â _NÃ£o consegui marcar os participantes._\n_${erro?.message || erro}_`);
     }
 }
 
@@ -18983,10 +18985,10 @@ function normalizarHorarioGrupo(valor) { const m=String(valor||'').trim().match(
 async function comandoHorarioGrupo(message, tipo, argumentos='') {
     if (!(await exigirAdmin(message))) return;
     const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from)); const valor=normalizarHorarioGrupo(argumentos);
-    if(tipo==='remover'){config.horarioAbertura=null;config.horarioFechamento=null;config.ultimoHorarioGrupo=null;salvarConfigAdmin();await responderCitando(message,'🕐 *Horários automáticos removidos.*');return;}
-    if(tipo==='status'){await responderCitando(message,`┏═•❃༺🕐༻❃•═┓\n│       *𝐇𝐎𝐑𝐀́𝐑𝐈𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n├✯\n├➤ 🔓 Abertura: *${formatarHoraConfig(config.horarioAbertura)}*\n├➤ 🔒 Fechamento: *${formatarHoraConfig(config.horarioFechamento)}*\n┗═•❃༺🕐༻❃•═┓`);return;}
-    if(!valor){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${tipo==='abertura'?'opengp':'closegp'} HH:MM*.`);return;}
-    if(tipo==='abertura')config.horarioAbertura=valor;else config.horarioFechamento=valor;salvarConfigAdmin();await responderCitando(message,`🕐 *${tipo==='abertura'?'Abertura':'Fechamento'} automática:* ${valor}`);
+    if(tipo==='remover'){config.horarioAbertura=null;config.horarioFechamento=null;config.ultimoHorarioGrupo=null;salvarConfigAdmin();await responderCitando(message,'ð *HorÃ¡rios automÃ¡ticos removidos.*');return;}
+    if(tipo==='status'){await responderCitando(message,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ððððÌððð ðð ððððð*\nââ¯\nââ¤ ð Abertura: *${formatarHoraConfig(config.horarioAbertura)}*\nââ¤ ð Fechamento: *${formatarHoraConfig(config.horarioFechamento)}*\nâââ¢âà¼ºðà¼»ââ¢ââ`);return;}
+    if(!valor){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}${tipo==='abertura'?'opengp':'closegp'} HH:MM*.`);return;}
+    if(tipo==='abertura')config.horarioAbertura=valor;else config.horarioFechamento=valor;salvarConfigAdmin();await responderCitando(message,`ð *${tipo==='abertura'?'Abertura':'Fechamento'} automÃ¡tica:* ${valor}`);
 }
 
 async function verificarHorariosGrupos() {
@@ -18996,7 +18998,7 @@ async function verificarHorariosGrupos() {
         if(config.horarioAbertura===hora) acao='abrir';
         if(config.horarioFechamento===hora) acao='fechar';
         if(!acao || config.ultimoHorarioGrupo===`${hora}:${acao}`) continue;
-        try { const chat=await client.getChatById(grupoId); if(!chat?.isGroup)continue; if(!chat.isGroup)continue; const bot=chat.participants?.find(p=>idsIguais(p.id?._serialized||String(p.id),client.info?.wid?._serialized||'')); if(bot && !bot.isAdmin)continue; if(typeof chat.setMessagesAdminsOnly==='function'){await chat.setMessagesAdminsOnly(acao==='fechar');} else continue; config.ultimoHorarioGrupo=`${hora}:${acao}`;salvarConfigAdmin();console.log(`🕐 Grupo ${grupoId}: ${acao}`); } catch(erro){console.error(`⚠️ Erro no horário do grupo ${grupoId}:`,erro.message);}
+        try { const chat=await client.getChatById(grupoId); if(!chat?.isGroup)continue; if(!chat.isGroup)continue; const bot=chat.participants?.find(p=>idsIguais(p.id?._serialized||String(p.id),client.info?.wid?._serialized||'')); if(bot && !bot.isAdmin)continue; if(typeof chat.setMessagesAdminsOnly==='function'){await chat.setMessagesAdminsOnly(acao==='fechar');} else continue; config.ultimoHorarioGrupo=`${hora}:${acao}`;salvarConfigAdmin();console.log(`ð Grupo ${grupoId}: ${acao}`); } catch(erro){console.error(`â ï¸ Erro no horÃ¡rio do grupo ${grupoId}:`,erro.message);}
     }
 }
 
@@ -19010,12 +19012,12 @@ async function comandoToggleGrupo(message, tipo, valor) {
     const config = obterConfigAdmin(message.from);
     const estado = String(valor || '').toLowerCase();
     const ativo = ['on', 'sim', 'true', '1'].includes(estado);
-    if (!['on','sim','true','1','off','nao','não','false','0'].includes(estado)) {
-        await responderCitando(message, `❓ Use *${obterPrefixoGrupo(message.from)}${tipo} on* ou *off*.`); return;
+    if (!['on','sim','true','1','off','nao','nÃ£o','false','0'].includes(estado)) {
+        await responderCitando(message, `â Use *${obterPrefixoGrupo(message.from)}${tipo} on* ou *off*.`); return;
     }
     config[tipo] = ativo; salvarConfigAdmin(); registrarLogAdmin(message, tipo, ativo ? 'on' : 'off');
-    await reagir(message, ativo ? '🟢' : '🔴');
-    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n├✯ *𝐒𝐈𝐒𝐓𝐄𝐌𝐀 𝐀𝐋𝐓𝐄𝐑𝐀𝐃𝐎*\n│\n├➤ ${tipo.toUpperCase()}: *${ativo ? '🟢 ATIVADO' : '🔴 DESATIVADO'}*\n└➤ _A configuração foi salva neste grupo._\n┗═•❃༺⚙️༻❃•═┓`);
+    await reagir(message, ativo ? 'ð¢' : 'ð´');
+    await responderCitando(message, `âââ¢âà¼ºâï¸à¼»ââ¢ââ\nââ¯ *ððððððð ðððððððð*\nâ\nââ¤ ${tipo.toUpperCase()}: *${ativo ? 'ð¢ ATIVADO' : 'ð´ DESATIVADO'}*\nââ¤ _A configuraÃ§Ã£o foi salva neste grupo._\nâââ¢âà¼ºâï¸à¼»ââ¢ââ`);
 }
 
 async function comandoAntiLink(message, argumentos = '') {
@@ -19025,28 +19027,28 @@ async function comandoAntiLink(message, argumentos = '') {
     if (sub?.toLowerCase() === 'allow' && valor) {
         const dominio = valor.toLowerCase().replace(/^https?:\/\//,'').split('/')[0];
         if (!config.linksPermitidos.includes(dominio)) config.linksPermitidos.push(dominio);
-        salvarConfigAdmin(); await responderCitando(message, `✅ *${dominio}* foi adicionado aos links permitidos.`); return;
+        salvarConfigAdmin(); await responderCitando(message, `â *${dominio}* foi adicionado aos links permitidos.`); return;
     }
     if (sub?.toLowerCase() === 'remove' && valor) {
         config.linksPermitidos = config.linksPermitidos.filter(x => x !== valor.toLowerCase());
-        salvarConfigAdmin(); await responderCitando(message, `🗑️ *${valor}* removido da lista de links permitidos.`); return;
+        salvarConfigAdmin(); await responderCitando(message, `ðï¸ *${valor}* removido da lista de links permitidos.`); return;
     }
     if (sub?.toLowerCase() === 'list') {
-        await responderCitando(message, `🔗 *𝐋𝐈𝐍𝐊𝐒 𝐏𝐄𝐑𝐌𝐈𝐓𝐈𝐃𝐎𝐒*\n\n${config.linksPermitidos.length ? config.linksPermitidos.map((x,i)=>`${i+1}. ${x}`).join('\n') : '_Nenhum domínio cadastrado._'}`); return;
+        await responderCitando(message, `ð *ððððð ðððððððððð*\n\n${config.linksPermitidos.length ? config.linksPermitidos.map((x,i)=>`${i+1}. ${x}`).join('\n') : '_Nenhum domÃ­nio cadastrado._'}`); return;
     }
-    if (['on','off','sim','não','nao'].includes(sub?.toLowerCase())) {
+    if (['on','off','sim','nÃ£o','nao'].includes(sub?.toLowerCase())) {
         config.antilink = ['on','sim'].includes(sub.toLowerCase()); salvarConfigAdmin();
-        await responderCitando(message, `🔗 *Antilink ${config.antilink ? 'ATIVADO' : 'DESATIVADO'}.*`); return;
+        await responderCitando(message, `ð *Antilink ${config.antilink ? 'ATIVADO' : 'DESATIVADO'}.*`); return;
     }
-    await responderCitando(message, `┏═•❃༺🔗༻❃•═┓\n├✯ *𝐀𝐍𝐓𝐈𝐋𝐈𝐍𝐊*\n│\n├➤ *${obterPrefixoGrupo(message.from)}antilink on/off*\n├➤ *${obterPrefixoGrupo(message.from)}antilink allow youtube.com*\n├➤ *${obterPrefixoGrupo(message.from)}antilink remove youtube.com*\n└➤ *${obterPrefixoGrupo(message.from)}antilink list*\n┗═•❃༺🔗༻❃•═┓`);
+    await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nââ¯ *ðððððððð*\nâ\nââ¤ *${obterPrefixoGrupo(message.from)}antilink on/off*\nââ¤ *${obterPrefixoGrupo(message.from)}antilink allow youtube.com*\nââ¤ *${obterPrefixoGrupo(message.from)}antilink remove youtube.com*\nââ¤ *${obterPrefixoGrupo(message.from)}antilink list*\nâââ¢âà¼ºðà¼»ââ¢ââ`);
 }
 
 async function comandoAntiFlood(message, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
     const config = obterConfigAdmin(message.from); const args = String(argumentos || '').trim().split(/\s+/);
-    if (['on','off'].includes(args[0]?.toLowerCase())) { config.antiflood = args[0].toLowerCase() === 'on'; if (args[1]) config.floodLimite = Math.max(3, Math.min(30, Number(args[1]) || config.floodLimite)); salvarConfigAdmin(); await responderCitando(message, `🚨 *Antiflood ${config.antiflood ? 'ATIVADO' : 'DESATIVADO'}.*\n├➤ Limite: *${config.floodLimite} mensagens*`); return; }
-    if (args[0] === 'limite' && args[1]) { config.floodLimite = Math.max(3, Math.min(30, Number(args[1]) || 8)); salvarConfigAdmin(); await responderCitando(message, `🚨 Limite do antiflood: *${config.floodLimite} mensagens*.`); return; }
-    await responderCitando(message, `🚨 *${obterPrefixoGrupo(message.from)}antiflood on/off [limite]*`);
+    if (['on','off'].includes(args[0]?.toLowerCase())) { config.antiflood = args[0].toLowerCase() === 'on'; if (args[1]) config.floodLimite = Math.max(3, Math.min(30, Number(args[1]) || config.floodLimite)); salvarConfigAdmin(); await responderCitando(message, `ð¨ *Antiflood ${config.antiflood ? 'ATIVADO' : 'DESATIVADO'}.*\nââ¤ Limite: *${config.floodLimite} mensagens*`); return; }
+    if (args[0] === 'limite' && args[1]) { config.floodLimite = Math.max(3, Math.min(30, Number(args[1]) || 8)); salvarConfigAdmin(); await responderCitando(message, `ð¨ Limite do antiflood: *${config.floodLimite} mensagens*.`); return; }
+    await responderCitando(message, `ð¨ *${obterPrefixoGrupo(message.from)}antiflood on/off [limite]*`);
 }
 
 async function comandoWelcomeGoodbye(message, tipo, argumentos = '') {
@@ -19054,57 +19056,57 @@ async function comandoWelcomeGoodbye(message, tipo, argumentos = '') {
     const config = obterConfigAdmin(message.from);
     const args = String(argumentos || '').trim();
     const chave = tipo === 'welcome' ? 'welcomeTexto' : 'goodbyeTexto';
-    if (!args) { await responderCitando(message, `┏═•❃༺${tipo==='welcome'?'👋':'🚪'}༻❃•═┓\n├➤ ${tipo==='welcome'?'Welcome':'Goodbye'}: *${config[tipo]?'🟢 ON':'🔴 OFF'}*\n├➤ 📝 _${config[chave]}_\n┗═•❃༺${tipo==='welcome'?'👋':'🚪'}༻❃•═┓`); return; }
-    if (['on','off'].includes(args.toLowerCase())) { config[tipo]=args.toLowerCase()==='on'; salvarConfigAdmin(); await responderCitando(message,`👋 *${tipo} ${config[tipo]?'ATIVADO':'DESATIVADO'}.*`); return; }
-    config[chave]=args; salvarConfigAdmin(); await responderCitando(message,`✅ *Mensagem de ${tipo} atualizada.*\n\n_${args}_\n\n💡 Use *@pessoa* para mencionar a pessoa.`);
+    if (!args) { await responderCitando(message, `âââ¢âà¼º${tipo==='welcome'?'ð':'ðª'}à¼»ââ¢ââ\nââ¤ ${tipo==='welcome'?'Welcome':'Goodbye'}: *${config[tipo]?'ð¢ ON':'ð´ OFF'}*\nââ¤ ð _${config[chave]}_\nâââ¢âà¼º${tipo==='welcome'?'ð':'ðª'}à¼»ââ¢ââ`); return; }
+    if (['on','off'].includes(args.toLowerCase())) { config[tipo]=args.toLowerCase()==='on'; salvarConfigAdmin(); await responderCitando(message,`ð *${tipo} ${config[tipo]?'ATIVADO':'DESATIVADO'}.*`); return; }
+    config[chave]=args; salvarConfigAdmin(); await responderCitando(message,`â *Mensagem de ${tipo} atualizada.*\n\n_${args}_\n\nð¡ Use *@pessoa* para mencionar a pessoa.`);
 }
 
 async function comandoRegras(message, argumentos = '') {
     const config = obterConfigAdmin(message.from);
-    if (!argumentos.trim()) { await responderCitando(message, config.regras ? `┏═•❃༺📜༻❃•═┓\n│ *𝐑𝐄𝐆𝐑𝐀𝐒*\n│\n${config.regras}\n┗═•❃༺📜༻❃•═┓` : '📜 _Nenhuma regra foi configurada ainda._'); return; }
+    if (!argumentos.trim()) { await responderCitando(message, config.regras ? `âââ¢âà¼ºðà¼»ââ¢ââ\nâ *ðððððð*\nâ\n${config.regras}\nâââ¢âà¼ºðà¼»ââ¢ââ` : 'ð _Nenhuma regra foi configurada ainda._'); return; }
     if (!(await exigirAdmin(message))) return;
-    config.regras = argumentos.trim(); salvarConfigAdmin(); registrarLogAdmin(message,'setregras'); await responderCitando(message, '✅ Regras do grupo atualizadas.');
+    config.regras = argumentos.trim(); salvarConfigAdmin(); registrarLogAdmin(message,'setregras'); await responderCitando(message, 'â Regras do grupo atualizadas.');
 }
 
 async function comandoSetNome(message, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
-    const nome = argumentos.trim(); if (!nome) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}setnome Novo nome*.`); return; }
-    try { const resultado = await client.pupPage.evaluate(async (id, novoNome) => { try { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo não encontrado.'}; if (typeof chat.setSubject==='function') { await chat.setSubject(novoNome); return {ok:true}; } if (chat.groupMetadata?.subject?.set) { chat.groupMetadata.subject.set(novoNome); return {ok:true}; } return {ok:false,erro:'Método de nome indisponível.'}; } catch(e){return {ok:false,erro:String(e?.message||e)}} }, message.from, nome); if (!resultado?.ok) throw new Error(resultado?.erro); registrarLogAdmin(message,'setnome',nome); await responderCitando(message, `✅ *Nome do grupo alterado.*\n\n🏷️ ${nome}`); } catch(e){ await responderCitando(message, `❌ Não consegui alterar o nome.\n_${e.message}_`); }
+    const nome = argumentos.trim(); if (!nome) { await responderCitando(message, `â Use *${obterPrefixoGrupo(message.from)}setnome Novo nome*.`); return; }
+    try { const resultado = await client.pupPage.evaluate(async (id, novoNome) => { try { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo nÃ£o encontrado.'}; if (typeof chat.setSubject==='function') { await chat.setSubject(novoNome); return {ok:true}; } if (chat.groupMetadata?.subject?.set) { chat.groupMetadata.subject.set(novoNome); return {ok:true}; } return {ok:false,erro:'MÃ©todo de nome indisponÃ­vel.'}; } catch(e){return {ok:false,erro:String(e?.message||e)}} }, message.from, nome); if (!resultado?.ok) throw new Error(resultado?.erro); registrarLogAdmin(message,'setnome',nome); await responderCitando(message, `â *Nome do grupo alterado.*\n\nð·ï¸ ${nome}`); } catch(e){ await responderCitando(message, `â NÃ£o consegui alterar o nome.\n_${e.message}_`); }
 }
 
 async function comandoDescricao(message, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
-    try { const resultado = await client.pupPage.evaluate(async id => { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo não encontrado.'}; return {ok:true,descricao:chat.groupMetadata?.description || chat.description || ''}; }, message.from); if (!resultado?.ok) throw new Error(resultado.erro); if (!argumentos.trim()) { await responderCitando(message, `┏═•❃༺📄༻❃•═┓\n├✯ *𝐃𝐄𝐒𝐂𝐑𝐈𝐂̧𝐀̃𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n${resultado.descricao || '_Sem descrição._'}\n┗═•❃༺📄༻❃•═┓`); return; } const desc=argumentos.trim(); const alterado=await client.pupPage.evaluate(async (id,descricao)=>{try{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);if(!chat)return {ok:false,erro:'Grupo não encontrado.'};if(typeof chat.setDescription==='function'){await chat.setDescription(descricao);return {ok:true};}return {ok:false,erro:'Método de descrição indisponível.'};}catch(e){return {ok:false,erro:String(e?.message||e)}}},message.from,desc); if(!alterado?.ok) throw new Error(alterado.erro); registrarLogAdmin(message,'desc'); await responderCitando(message,'✅ *Descrição do grupo atualizada.*'); } catch(e){ await responderCitando(message,`❌ Não consegui alterar a descrição.\n_${e.message}_`); }
+    try { const resultado = await client.pupPage.evaluate(async id => { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo nÃ£o encontrado.'}; return {ok:true,descricao:chat.groupMetadata?.description || chat.description || ''}; }, message.from); if (!resultado?.ok) throw new Error(resultado.erro); if (!argumentos.trim()) { await responderCitando(message, `âââ¢âà¼ºðà¼»ââ¢ââ\nââ¯ *ðððððððÌ§ðÌð ðð ððððð*\nâ\n${resultado.descricao || '_Sem descriÃ§Ã£o._'}\nâââ¢âà¼ºðà¼»ââ¢ââ`); return; } const desc=argumentos.trim(); const alterado=await client.pupPage.evaluate(async (id,descricao)=>{try{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);if(!chat)return {ok:false,erro:'Grupo nÃ£o encontrado.'};if(typeof chat.setDescription==='function'){await chat.setDescription(descricao);return {ok:true};}return {ok:false,erro:'MÃ©todo de descriÃ§Ã£o indisponÃ­vel.'};}catch(e){return {ok:false,erro:String(e?.message||e)}}},message.from,desc); if(!alterado?.ok) throw new Error(alterado.erro); registrarLogAdmin(message,'desc'); await responderCitando(message,'â *DescriÃ§Ã£o do grupo atualizada.*'); } catch(e){ await responderCitando(message,`â NÃ£o consegui alterar a descriÃ§Ã£o.\n_${e.message}_`); }
 }
 
 async function comandoSetDescricao(message, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
     const desc = argumentos.trim();
-    if (!desc) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}setdesc Nova descrição*.`); return; }
+    if (!desc) { await responderCitando(message, `â Use *${obterPrefixoGrupo(message.from)}setdesc Nova descriÃ§Ã£o*.`); return; }
     try {
         const resultado = await client.pupPage.evaluate(async (id, descricao) => {
             try {
                 const Store = window.require('WAWebCollections');
                 const chat = Store?.Chat?.get(id);
-                if (!chat) return { ok: false, erro: 'Grupo não encontrado.' };
+                if (!chat) return { ok: false, erro: 'Grupo nÃ£o encontrado.' };
                 if (typeof chat.setDescription === 'function') { await chat.setDescription(descricao); return { ok: true }; }
-                return { ok: false, erro: 'Método de descrição indisponível.' };
+                return { ok: false, erro: 'MÃ©todo de descriÃ§Ã£o indisponÃ­vel.' };
             } catch (e) { return { ok: false, erro: String(e?.message || e) }; }
         }, message.from, desc);
         if (!resultado?.ok) throw new Error(resultado.erro);
-        await responderCitando(message, '✅ *Descrição do grupo atualizada.*');
-    } catch (e) { await responderCitando(message, `❌ Não consegui alterar a descrição.\n_${e.message}_`); }
+        await responderCitando(message, 'â *DescriÃ§Ã£o do grupo atualizada.*');
+    } catch (e) { await responderCitando(message, `â NÃ£o consegui alterar a descriÃ§Ã£o.\n_${e.message}_`); }
 }
 
 async function comandoSetFoto(message) {
     if (!(await exigirAdmin(message))) return;
-    try { let alvo=message; if (message.hasQuotedMsg) alvo=await message.getQuotedMessage(); if (!alvo?.hasMedia) { await responderCitando(message,`🖼️ Responda a uma imagem com *${obterPrefixoGrupo(message.from)}setfoto*.`); return; } const media=await alvo.downloadMedia(); if (!media) throw new Error('Não consegui baixar a imagem.'); await client.setProfilePicture(message.from, media); registrarLogAdmin(message,'setfoto'); await responderCitando(message,'✅ *Foto do grupo atualizada.*'); } catch(e){ await responderCitando(message,`❌ Não consegui alterar a foto do grupo.\n_${e.message}_`); }
+    try { let alvo=message; if (message.hasQuotedMsg) alvo=await message.getQuotedMessage(); if (!alvo?.hasMedia) { await responderCitando(message,`ð¼ï¸ Responda a uma imagem com *${obterPrefixoGrupo(message.from)}setfoto*.`); return; } const media=await alvo.downloadMedia(); if (!media) throw new Error('NÃ£o consegui baixar a imagem.'); await client.setProfilePicture(message.from, media); registrarLogAdmin(message,'setfoto'); await responderCitando(message,'â *Foto do grupo atualizada.*'); } catch(e){ await responderCitando(message,`â NÃ£o consegui alterar a foto do grupo.\n_${e.message}_`); }
 }
 
 async function comandoStaff(message) {
     if (!(await exigirAdmin(message))) return;
-    if (!message.from.endsWith('@g.us')) { await responderCitando(message,'❌ Esse comando só funciona em grupos.'); return; }
-    try { const dados=await client.pupPage.evaluate(id=>{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);const p=chat?.groupMetadata?.participants;if(!p)return null;const arr=typeof p.getModelsArray==='function'?p.getModelsArray():(p.models||[]);return arr.filter(x=>x.isAdmin||x.isSuperAdmin).map(x=>({id:x.id?._serialized||'',owner:!!x.isSuperAdmin}));},message.from); if(!dados) throw new Error('Não consegui obter a equipe.'); const linhas=dados.map((x,i)=>`${x.owner?'👑':'🛡️'} *${i+1}.* @${x.id.split('@')[0]}`).join('\n'); await enviarComMencoes(message.from,`┏═•❃༺👑༻❃•═┓\n│ *𝐒𝐓𝐀𝐅𝐅 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n${linhas || '_Nenhum administrador encontrado._'}\n┗═•❃༺👑༻❃•═┓`,{mentions:dados.map(x=>x.id)}); } catch(e){ await responderCitando(message,`❌ Não consegui consultar a equipe.\n_${e.message}_`); }
+    if (!message.from.endsWith('@g.us')) { await responderCitando(message,'â Esse comando sÃ³ funciona em grupos.'); return; }
+    try { const dados=await client.pupPage.evaluate(id=>{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);const p=chat?.groupMetadata?.participants;if(!p)return null;const arr=typeof p.getModelsArray==='function'?p.getModelsArray():(p.models||[]);return arr.filter(x=>x.isAdmin||x.isSuperAdmin).map(x=>({id:x.id?._serialized||'',owner:!!x.isSuperAdmin}));},message.from); if(!dados) throw new Error('NÃ£o consegui obter a equipe.'); const linhas=dados.map((x,i)=>`${x.owner?'ð':'ð¡ï¸'} *${i+1}.* @${x.id.split('@')[0]}`).join('\n'); await enviarComMencoes(message.from,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ *ððððð ðð ððððð*\nâ\n${linhas || '_Nenhum administrador encontrado._'}\nâââ¢âà¼ºðà¼»ââ¢ââ`,{mentions:dados.map(x=>x.id)}); } catch(e){ await responderCitando(message,`â NÃ£o consegui consultar a equipe.\n_${e.message}_`); }
 }
 
 async function obterPessoaAlvoAdmin(message, argumentos = '', usarRemetenteComoPadrao = false) {
@@ -19128,12 +19130,12 @@ async function comandoDarXP(message, argumentos, remover = false) {
     const numeros = String(argumentos || '').match(/\b\d+\b/g) || [];
     const numeroAlvo = String(argumentos || '').match(/\b\d{8,15}\b/)?.[0];
     const qtd = Number(numeroAlvo ? (numeros.find(n => n !== numeroAlvo) ?? '') : (numeros[0] ?? ''));
-    if (!alvo || !Number.isFinite(qtd) || qtd <= 0) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}${remover ? 'removerxp' : 'darxp'} @pessoa 100*.`); return; }
+    if (!alvo || !Number.isFinite(qtd) || qtd <= 0) { await responderCitando(message, `â Use *${obterPrefixoGrupo(message.from)}${remover ? 'removerxp' : 'darxp'} @pessoa 100*.`); return; }
     const atual = garantirDadosXP(message.from, alvo);
     atual.xp = Math.max(0, atual.xp + (remover ? -qtd : qtd));
     atual.nivel = calcularNivel(atual.xp);
     salvarXP();
-    await responderCitando(message, `⭐ *${remover ? 'XP REMOVIDO' : 'XP ADICIONADO'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover ? '-' : '+'}${qtd} XP`);
+    await responderCitando(message, `â­ *${remover ? 'XP REMOVIDO' : 'XP ADICIONADO'}*\n\nð¤ @${String(alvo).split('@')[0]}\nâ¤ ${remover ? '-' : '+'}${qtd} XP`);
 }
 
 async function comandoDarCoins(message, argumentos, remover = false) {
@@ -19141,41 +19143,41 @@ async function comandoDarCoins(message, argumentos, remover = false) {
     const alvo=await obterPessoaAlvoAdmin(message,argumentos,true);
     const numeros = String(argumentos || '').match(/\b\d+\b/g) || [];
     const numeroAlvo = String(argumentos || '').match(/\b\d{8,15}\b/)?.[0];
-    const qtd = Number(numeroAlvo ? (numeros.find(n => n !== numeroAlvo) ?? '') : (numeros[0] ?? '')); if(!alvo||!Number.isFinite(qtd)||qtd<=0){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${remover?'removercoins':'darcoins'} @pessoa 100*.`);return;} const atual=moedasUsuarios.get(alvo)||{saldo:0}; atual.saldo=Math.max(0,atual.saldo+(remover?-qtd:qtd)); moedasUsuarios.set(alvo,atual); salvarMoedas(); await responderCitando(message,`💰 *${remover?'MOEDAS REMOVIDAS':'MOEDAS ADICIONADAS'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover?'-':''}${qtd}`); }
+    const qtd = Number(numeroAlvo ? (numeros.find(n => n !== numeroAlvo) ?? '') : (numeros[0] ?? '')); if(!alvo||!Number.isFinite(qtd)||qtd<=0){await responderCitando(message,`â Use *${obterPrefixoGrupo(message.from)}${remover?'removercoins':'darcoins'} @pessoa 100*.`);return;} const atual=moedasUsuarios.get(alvo)||{saldo:0}; atual.saldo=Math.max(0,atual.saldo+(remover?-qtd:qtd)); moedasUsuarios.set(alvo,atual); salvarMoedas(); await responderCitando(message,`ð° *${remover?'MOEDAS REMOVIDAS':'MOEDAS ADICIONADAS'}*\n\nð¤ @${String(alvo).split('@')[0]}\nâ¤ ${remover?'-':''}${qtd}`); }
 
 async function comandoResetXP(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
     const alvo=await obterPessoaAlvoAdmin(message,argumentos);
     if (!alvo) {
-        await responderCitando(message,`❌ Para resetar o XP, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}resetxp @pessoa*.`);
+        await responderCitando(message,`â Para resetar o XP, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}resetxp @pessoa*.`);
         return;
     }
     const grupo=dadosXP.get(message.from);
     if(grupo) grupo.delete(alvo);
     salvarXP();
-    await responderCitando(message,`♻️ XP de @${String(alvo).split('@')[0]} resetado.`);
+    await responderCitando(message,`â»ï¸ XP de @${String(alvo).split('@')[0]} resetado.`);
 }
 async function comandoResetEco(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
     const alvo=await obterPessoaAlvoAdmin(message,argumentos);
     if(!alvo){
-        await responderCitando(message,`❌ Para resetar a economia, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}reseteco @pessoa*.`);
+        await responderCitando(message,`â Para resetar a economia, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}reseteco @pessoa*.`);
         return;
     }
     moedasUsuarios.delete(alvo);
     salvarMoedas();
-    await responderCitando(message,`♻️ Economia de @${String(alvo).split('@')[0]} resetada.`);
+    await responderCitando(message,`â»ï¸ Economia de @${String(alvo).split('@')[0]} resetada.`);
 }
 
 async function comandoSorteio(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
-    const partes=String(argumentos||'').trim().split(/\s+/); const dur=parseDuracao(partes.shift()); if(!dur){await responderCitando(message,`🎁 Use *${obterPrefixoGrupo(message.from)}sorteio 10m prêmio*.`);return;} if(sorteiosGrupos.has(message.from)){await responderCitando(message,'⚠️ Já existe um sorteio ativo.');return;} const premio=partes.join(' ')||'Prêmio surpresa'; const dados={premio,participantes:new Set(),fim:Date.now()+dur}; sorteiosGrupos.set(message.from,dados); await responderCitando(message,`┏═•❃༺🎁༻❃•═┓\n│ *𝐒𝐎𝐑𝐓𝐄𝐈𝐎 𝐀𝐁𝐄𝐑𝐓𝐎!*\n│\n├➤ 🎁 Prêmio: *${premio}*\n├➤ ⏳ Duração: *${Math.round(dur/60000)||1} min*\n├➤ 🎟️ Participe com *${obterPrefixoGrupo(message.from)}participar*\n┗═•❃༺🎁༻❃•═┓`); dados.timer=setTimeout(async()=>{const atual=sorteiosGrupos.get(message.from);if(!atual)return;const lista=[...atual.participantes];sorteiosGrupos.delete(message.from);if(!lista.length){await client.sendMessage(message.from,'🎁 Sorteio encerrado sem participantes.');return;}const vencedor=lista[crypto.randomInt(lista.length)];await enviarComMencoes(message.from,`🏆 *SORTEIO ENCERRADO!*\n\n🎁 Prêmio: *${premio}*\n👑 Vencedor: @${String(vencedor).split('@')[0]}`,{mentions:[vencedor]});},dur); }
-async function comandoParticiparSorteio(message){const s=sorteiosGrupos.get(message.from);if(!s){await responderCitando(message,'❌ Não há sorteio ativo.');return;}const id=obterIdRemetente(message);if(id)s.participantes.add(id);await responderCitando(message,'🎟️ *Você está participando do sorteio!*');}
-async function comandoCancelarSorteio(message){if(!(await exigirAdmin(message)))return;const s=sorteiosGrupos.get(message.from);if(!s){await responderCitando(message,'❌ Não há sorteio ativo.');return;}clearTimeout(s.timer);sorteiosGrupos.delete(message.from);await responderCitando(message,'🛑 *Sorteio cancelado pelo administrador.*');}
+    const partes=String(argumentos||'').trim().split(/\s+/); const dur=parseDuracao(partes.shift()); if(!dur){await responderCitando(message,`ð Use *${obterPrefixoGrupo(message.from)}sorteio 10m prÃªmio*.`);return;} if(sorteiosGrupos.has(message.from)){await responderCitando(message,'â ï¸ JÃ¡ existe um sorteio ativo.');return;} const premio=partes.join(' ')||'PrÃªmio surpresa'; const dados={premio,participantes:new Set(),fim:Date.now()+dur}; sorteiosGrupos.set(message.from,dados); await responderCitando(message,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ *ððððððð ðððððð!*\nâ\nââ¤ ð PrÃªmio: *${premio}*\nââ¤ â³ DuraÃ§Ã£o: *${Math.round(dur/60000)||1} min*\nââ¤ ðï¸ Participe com *${obterPrefixoGrupo(message.from)}participar*\nâââ¢âà¼ºðà¼»ââ¢ââ`); dados.timer=setTimeout(async()=>{const atual=sorteiosGrupos.get(message.from);if(!atual)return;const lista=[...atual.participantes];sorteiosGrupos.delete(message.from);if(!lista.length){await client.sendMessage(message.from,'ð Sorteio encerrado sem participantes.');return;}const vencedor=lista[crypto.randomInt(lista.length)];await enviarComMencoes(message.from,`ð *SORTEIO ENCERRADO!*\n\nð PrÃªmio: *${premio}*\nð Vencedor: @${String(vencedor).split('@')[0]}`,{mentions:[vencedor]});},dur); }
+async function comandoParticiparSorteio(message){const s=sorteiosGrupos.get(message.from);if(!s){await responderCitando(message,'â NÃ£o hÃ¡ sorteio ativo.');return;}const id=obterIdRemetente(message);if(id)s.participantes.add(id);await responderCitando(message,'ðï¸ *VocÃª estÃ¡ participando do sorteio!*');}
+async function comandoCancelarSorteio(message){if(!(await exigirAdmin(message)))return;const s=sorteiosGrupos.get(message.from);if(!s){await responderCitando(message,'â NÃ£o hÃ¡ sorteio ativo.');return;}clearTimeout(s.timer);sorteiosGrupos.delete(message.from);await responderCitando(message,'ð *Sorteio cancelado pelo administrador.*');}
 
-async function comandoLimpar(message, argumentos='') { if (!(await exigirAdmin(message))) return; const qtd=Math.max(1,Math.min(50,Number(argumentos)||10)); try { if(message.hasQuotedMsg){const q=await message.getQuotedMessage();await q.delete(true);await responderCitando(message,'🧹 Mensagem apagada.');return;} const chat=await message.getChat(); const msgs=await chat.fetchMessages({limit:qtd+1}); let apagadas=0; for(const m of msgs){if(m.id?._serialized===message.id?._serialized)continue;try{await m.delete(true);apagadas++;}catch{}} await responderCitando(message,`🧹 *${apagadas} mensagem(ns) apagada(s).*`);}catch(e){await responderCitando(message,`❌ Não consegui limpar as mensagens.\n_${e.message}_`);} }
+async function comandoLimpar(message, argumentos='') { if (!(await exigirAdmin(message))) return; const qtd=Math.max(1,Math.min(50,Number(argumentos)||10)); try { if(message.hasQuotedMsg){const q=await message.getQuotedMessage();await q.delete(true);await responderCitando(message,'ð§¹ Mensagem apagada.');return;} const chat=await message.getChat(); const msgs=await chat.fetchMessages({limit:qtd+1}); let apagadas=0; for(const m of msgs){if(m.id?._serialized===message.id?._serialized)continue;try{await m.delete(true);apagadas++;}catch{}} await responderCitando(message,`ð§¹ *${apagadas} mensagem(ns) apagada(s).*`);}catch(e){await responderCitando(message,`â NÃ£o consegui limpar as mensagens.\n_${e.message}_`);} }
 
-async function comandoLogs(message) { if(!(await exigirAdmin(message)))return; const c=obterConfigAdmin(message.from); const logs=logsAdminGrupos.get(message.from)||[]; if(!c.logs){await responderCitando(message,'📋 _Os logs estão desativados. Use ;logs on._');return;} const texto=logs.slice(0,15).map(x=>`• ${new Date(x.data).toLocaleString('pt-BR')} | ${x.acao} | @${x.autor.split('@')[0]} ${x.detalhes?'| '+x.detalhes:''}`).join('\n'); await enviarComMencoes(message.from,`┏═•❃༺📋༻❃•═┓\n│ *𝐋𝐎𝐆𝐒 𝐀𝐃𝐌𝐈𝐍*\n│\n${texto||'_Nenhuma ação registrada._'}\n┗═•❃༺📋༻❃•═┓`,{mentions:logs.slice(0,15).map(x=>x.autor)}); }
+async function comandoLogs(message) { if(!(await exigirAdmin(message)))return; const c=obterConfigAdmin(message.from); const logs=logsAdminGrupos.get(message.from)||[]; if(!c.logs){await responderCitando(message,'ð _Os logs estÃ£o desativados. Use ;logs on._');return;} const texto=logs.slice(0,15).map(x=>`â¢ ${new Date(x.data).toLocaleString('pt-BR')} | ${x.acao} | @${x.autor.split('@')[0]} ${x.detalhes?'| '+x.detalhes:''}`).join('\n'); await enviarComMencoes(message.from,`âââ¢âà¼ºðà¼»ââ¢ââ\nâ *ðððð ððððð*\nâ\n${texto||'_Nenhuma aÃ§Ã£o registrada._'}\nâââ¢âà¼ºðà¼»ââ¢ââ`,{mentions:logs.slice(0,15).map(x=>x.autor)}); }
 
 let agenteIA = null;
 
@@ -19204,7 +19206,7 @@ async function obterContextoIA(message) {
             alvos.mencionado = idDaPessoa(mencoes[0]);
         }
     } catch (erro) {
-        console.log('⚠️ Não foi possível obter menção para a IA:', erro?.message || erro);
+        console.log('â ï¸ NÃ£o foi possÃ­vel obter menÃ§Ã£o para a IA:', erro?.message || erro);
     }
 
     if (message.hasQuotedMsg) {
@@ -19212,7 +19214,7 @@ async function obterContextoIA(message) {
             const citado = await message.getQuotedMessage();
             alvos.respondido = citado?.author || citado?.from || null;
         } catch (erro) {
-            console.log('⚠️ Não foi possível obter mensagem respondida para a IA:', erro?.message || erro);
+            console.log('â ï¸ NÃ£o foi possÃ­vel obter mensagem respondida para a IA:', erro?.message || erro);
         }
     }
 
@@ -19228,16 +19230,16 @@ async function comandoIA(message, argumentos = '') {
     if (!pergunta) {
         await responderCitando(
             message,
-            `🤖 _Digite o que você quer perguntar._\n\nExemplo: *${obterPrefixoGrupo(message.from)}ia quanto eu tenho de moedas?*`
+            `ð¤ _Digite o que vocÃª quer perguntar._\n\nExemplo: *${obterPrefixoGrupo(message.from)}ia quanto eu tenho de moedas?*`
         );
         return;
     }
 
 if (!process.env.OPENAI_API_KEY) {
-    await reagir(message, '🔑');
+    await reagir(message, 'ð');
     await responderCitando(
         message,
-        '🔑 _A IA ainda não está configurada neste computador._\n\nDefina a variável de ambiente *OPENAI_API_KEY* e reinicie o bot.'
+        'ð _A IA ainda nÃ£o estÃ¡ configurada neste computador._\n\nDefina a variÃ¡vel de ambiente *OPENAI_API_KEY* e reinicie o bot.'
     );
     return;
 }
@@ -19250,17 +19252,94 @@ if (!process.env.OPENAI_API_KEY) {
             throw new Error(resultado?.mensagem || 'Resposta vazia da IA.');
         }
 
-        await reagir(message, '🤖');
+        await reagir(message, 'ð¤');
         await responderCitando(message, resultado.texto);
     } catch (erro) {
-        console.error('❌ Erro no comando IA:', erro);
-        await reagir(message, '❌');
+        console.error('â Erro no comando IA:', erro);
+        await reagir(message, 'â');
         await responderCitando(
             message,
-            '❌ _Não consegui processar sua pergunta agora. Tente novamente em alguns instantes._'
+            'â _NÃ£o consegui processar sua pergunta agora. Tente novamente em alguns instantes._'
         );
     }
 }
+
+function detectarViewOnce(mensagem) {
+    const raw = mensagem?.rawData || mensagem?._data || {};
+    const media = raw.mediaData || raw.media || {};
+    return Boolean(mensagem?.isViewOnce || mensagem?.isViewOnceMessage || raw.isViewOnce || raw.isViewOnceMessage || raw.viewOnce || raw.viewOnceMessage || media.isViewOnce || media.viewOnce);
+}
+
+async function obterMensagemAlvoViewOnce(message) {
+    if (message?.hasQuotedMsg) {
+        try { return await message.getQuotedMessage(); } catch {}
+    }
+    return detectarViewOnce(message) ? message : null;
+}
+
+async function comandoRevelarViewOnce(message) {
+    if (!(await exigirAdmin(message))) return;
+    const alvo = await obterMensagemAlvoViewOnce(message);
+    if (!alvo || !detectarViewOnce(alvo)) {
+        await reagir(message, '👁️');
+        await responderCitando(message, `┏═•❃༺👁️༻❃•═┓\n├✯ *𝐑𝐄𝐕𝐄𝐋𝐀𝐑 𝐕𝐈𝐄𝐖-𝐎𝐍𝐂𝐄*\n│\n├➤ Responda a uma imagem ou vídeo de visualização única.\n┗═•❃༺👁️༻❃•═┛`);
+        return;
+    }
+    try {
+        const midia = await baixarMidiaWhatsAppCompativel(alvo);
+        if (!midia?.data) throw new Error('Mídia não disponível.');
+        const legenda = String(alvo.body || '').trim();
+        await client.sendMessage(message.from, midia, { caption: legenda ? `👁️ ${legenda}` : undefined });
+        await reagir(message, '✅');
+        await responderCitando(message, '👁️ *Visualização única recuperada e reenviada.*');
+    } catch (erro) {
+        console.error('⚠️ Erro ao revelar view-once:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ *Não foi possível recuperar a mídia.*\n\n_${formatarErroDownload(erro)}_`);
+    }
+}
+
+async function comandoAutoresposta(message, argumentos) {
+    if (!(await exigirAdmin(message))) return;
+    const config = obterConfigAdmin(message.from);
+    if (!Array.isArray(config.respostasAutomaticas)) config.respostasAutomaticas = [];
+    const args = String(argumentos || '').trim();
+    const partes = args.split(/\s+/).filter(Boolean);
+    const acao = (partes.shift() || '').toLowerCase();
+    if (['on','ativar','ativado','sim'].includes(acao)) { config.autoresposta=true; salvarConfigAdmin(); await responderCitando(message,'🤖 *Autoresposta ativada.*'); return; }
+    if (['off','desativar','desativado','nao','não'].includes(acao)) { config.autoresposta=false; salvarConfigAdmin(); await responderCitando(message,'🤖 *Autoresposta desativada.*'); return; }
+    if (['add','adicionar'].includes(acao)) {
+        const conteudo=args.replace(/^\S+\s*/,''); const sep=conteudo.indexOf('|');
+        if(sep<1){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}autoresposta add gatilho | resposta*.`);return;}
+        const gatilho=conteudo.slice(0,sep).trim(), resposta=conteudo.slice(sep+1).trim();
+        if(!gatilho||!resposta){await responderCitando(message,'❌ O gatilho e a resposta precisam ser preenchidos.');return;}
+        const existente=config.respostasAutomaticas.find(x=>textoNormalizado(x.gatilho)===textoNormalizado(gatilho));
+        if(existente) existente.resposta=resposta; else config.respostasAutomaticas.push({gatilho,resposta});
+        config.autoresposta=true; salvarConfigAdmin(); await responderCitando(message,`🤖 *Autoresposta salva.*\n\nGatilho: *${gatilho}*\nResposta: _${resposta}_`); return;
+    }
+    if (['del','remover'].includes(acao)) {
+        const gatilho=args.replace(/^\S+\s*/,'').trim(); const antes=config.respostasAutomaticas.length;
+        config.respostasAutomaticas=config.respostasAutomaticas.filter(x=>textoNormalizado(x.gatilho)!==textoNormalizado(gatilho)); salvarConfigAdmin();
+        await responderCitando(message,antes!==config.respostasAutomaticas.length?'🗑️ *Autoresposta removida.*':'❌ _Gatilho não encontrado._'); return;
+    }
+    if (['list','lista','listar'].includes(acao)) {
+        const corpo=config.respostasAutomaticas.length?config.respostasAutomaticas.map((x,i)=>`├➤ *${i+1}.* ${x.gatilho} → _${x.resposta}_`).join('\n'):'├➤ _Nenhuma resposta cadastrada._';
+        await responderCitando(message,`┏═•❃༺🤖༻❃•═┓\n│ *𝐀𝐔𝐓𝐎𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀𝐒*\n├✯\n${corpo}\n├✯\n├➤ Estado: *${config.autoresposta?'ATIVO':'INATIVO'}*\n┗═•❃༺🤖༻❃•═┓`); return;
+    }
+    await responderCitando(message,`🤖 *𝐀𝐔𝐓𝐎𝐑𝐄𝐒𝐏𝐎𝐒𝐓𝐀*\n\n• ${obterPrefixoGrupo(message.from)}autoresposta on/off\n• ${obterPrefixoGrupo(message.from)}autoresposta add gatilho | resposta\n• ${obterPrefixoGrupo(message.from)}autoresposta del gatilho\n• ${obterPrefixoGrupo(message.from)}autoresposta list`);
+}
+
+async function processarAutoresposta(message) {
+    if(!message?.from?.endsWith('@g.us')) return false;
+    const config=obterConfigAdmin(message.from);
+    if(!config.autoresposta||!Array.isArray(config.respostasAutomaticas)||!config.respostasAutomaticas.length)return false;
+    const texto=textoNormalizado(message.body||'').trim();
+    if(!texto||texto.startsWith(obterPrefixoGrupo(message.from)))return false;
+    const regra=config.respostasAutomaticas.find(x=>{const gatilho=textoNormalizado(x.gatilho||'').trim();return gatilho&&(texto===gatilho||texto.includes(gatilho));});
+    if(!regra)return false;
+    await responderCitando(message,String(regra.resposta)); return true;
+}
+
 
 async function processarComando(
     message,
@@ -19268,10 +19347,10 @@ async function processarComando(
     argumentos
 ) {
 
-    // 🔒 MODO SOMENTE ADM
-    // O próprio ;soadm fica liberado para que um administrador
+    // ð MODO SOMENTE ADM
+    // O prÃ³prio ;soadm fica liberado para que um administrador
     // possa alternar o modo. Todos os demais comandos passam
-    // pela verificação global quando o modo está ativo.
+    // pela verificaÃ§Ã£o global quando o modo estÃ¡ ativo.
     if (
         message?.from?.endsWith('@g.us') &&
         soAdmGrupos.has(message.from) &&
@@ -19280,10 +19359,10 @@ async function processarComando(
         const admin = await usuarioEhAdminDoGrupo(message);
 
         if (!admin) {
-            await reagir(message, '🔒');
+            await reagir(message, 'ð');
             await responderCitando(
                 message,
-                '🔒 _Este grupo está no modo somente ADM. Apenas administradores podem usar os comandos._'
+                'ð _Este grupo estÃ¡ no modo somente ADM. Apenas administradores podem usar os comandos._'
             );
             return;
         }
@@ -19293,14 +19372,14 @@ async function processarComando(
         const config = obterConfigAdmin(message.from);
         const admin = await usuarioEhAdminDoGrupo(message);
         if (!admin && config.cmds === false && !['cmds','config','prefixo'].includes(comando)) {
-            await responderCitando(message, '🔒 _Os comandos estão desativados neste grupo pelos administradores._');
+            await responderCitando(message, 'ð _Os comandos estÃ£o desativados neste grupo pelos administradores._');
             return;
         }
         if (!admin && ['minerar','mina','loja','shop','comprar','buy','inventario','inv','doar','donate','sortearm','rankingdinheiro','rankingmoedas','ricos','slots','slot','saldo','carteira','roubar'].includes(comando) && !config.economia) {
-            await responderCitando(message, '💰 _O sistema de economia está desativado neste grupo._'); return;
+            await responderCitando(message, 'ð° _O sistema de economia estÃ¡ desativado neste grupo._'); return;
         }
         if (!admin && ['dado','moeda','sn','ppt','adivinha','chute','chuterpg','quiz','pokemon','ppp','passar','batata','batataquente','hotpotato','rr','roletarussa','roleta','forca','revforca','stop'].includes(comando) && !config.jogos) {
-            await responderCitando(message, '🎮 _Os jogos estão desativados neste grupo._'); return;
+            await responderCitando(message, 'ð® _Os jogos estÃ£o desativados neste grupo._'); return;
         }
     }
 
@@ -19310,8 +19389,8 @@ async function processarComando(
         if (restritos.includes(String(comando || '').toLowerCase())) {
             const admin = await usuarioEhAdminDoGrupo(message);
             if (!admin) {
-                await reagir(message, '🔐');
-                await responderCitando(message, `🔐 _O comando_ *${obterPrefixoGrupo(message.from)}${comando}* _é exclusivo para administradores deste grupo._`);
+                await reagir(message, 'ð');
+                await responderCitando(message, `ð _O comando_ *${obterPrefixoGrupo(message.from)}${comando}* _Ã© exclusivo para administradores deste grupo._`);
                 return;
             }
         }
@@ -19620,7 +19699,7 @@ case 'sobre':
             break;
 
         case 'abracar':
-        case 'abraçar':
+        case 'abraÃ§ar':
             await abracar(message);
             break;
 
@@ -19732,22 +19811,22 @@ case 'listaviso':
            break;
         
             case 'aceitar':
-    // 💔 Primeiro verifica se existe um divórcio aguardando confirmação
+    // ð Primeiro verifica se existe um divÃ³rcio aguardando confirmaÃ§Ã£o
     if (await aceitarDivorcio(message)) {
         break;
     }
 
-    // 💍 Caso contrário, trata como proposta de casamento
+    // ð Caso contrÃ¡rio, trata como proposta de casamento
     await aceitarCasamento(message);
     break;
 
 case 'recusar':
-    // 💔 Primeiro verifica se existe um divórcio aguardando confirmação
+    // ð Primeiro verifica se existe um divÃ³rcio aguardando confirmaÃ§Ã£o
     if (await recusarDivorcio(message)) {
         break;
     }
 
-    // 💍 Caso contrário, trata como proposta de casamento
+    // ð Caso contrÃ¡rio, trata como proposta de casamento
     await recusarCasamento(message);
     break;
         
@@ -19839,11 +19918,11 @@ case 'recusar':
         await comandoRankVariado(message, 'rankgay');
         break;
     case 'rankhetero':
-    case 'rankhétero':
+    case 'rankhÃ©tero':
         await comandoRankVariado(message, 'rankhetero');
         break;
     case 'ranklesbico':
-    case 'ranklésbico':
+    case 'ranklÃ©sbico':
         await comandoRankVariado(message, 'ranklesbico');
         break;
     case 'rankinteligente':
@@ -19876,7 +19955,7 @@ case 'filhosranking':
 
 
         // ============================================================
-        // MÍDIA
+        // MÃDIA
         // ============================================================
 
         case 'fig':
@@ -19943,7 +20022,7 @@ case 'filhosranking':
 
 
         // ============================================================
-        // 🧰 NOVAS UTILIDADES E DIVERSÃO
+        // ð§° NOVAS UTILIDADES E DIVERSÃO
         // ============================================================
 
         case 'uptime':
@@ -20040,7 +20119,7 @@ case 'filhosranking':
         case 'ver_adv': case 'veradv': await comandoAdvertencia(message, 'ver_adv', argumentos); break;
         case 'limpar_adv': case 'limparadv': await comandoAdvertencia(message, 'limpar_adv', argumentos); break;
         case 'anotar': await comandoAnotacao(message, 'anotar', argumentos); break;
-        case 'anotações': case 'anotacoes': await comandoAnotacao(message, 'anotações', argumentos); break;
+        case 'anotaÃ§Ãµes': case 'anotacoes': await comandoAnotacao(message, 'anotaÃ§Ãµes', argumentos); break;
         case 'rmnota': await comandoAnotacao(message, 'rmnota', argumentos); break;
         case 'promover': await comandoPromoverRebaixar(message, 'promover'); break;
         case 'rebaixar': case 'rebaixaradm': await comandoPromoverRebaixar(message, 'rebaixar'); break;
@@ -20069,6 +20148,8 @@ case 'filhosranking':
         case 'sorteio2': await comandoSorteioAvancado(message, 'sorteio2', argumentos); break;
         case 'sorteiogold': await comandoSorteioAvancado(message, 'sorteiogold', argumentos); break;
         case 'anagrama': await comandoAnagramaAdmin(message, argumentos); break;
+        case 'autoresposta': case 'auto-resposta': await comandoAutoresposta(message, argumentos); break;
+        case 'x9viewonce': case 'revelar': case 'revelarviewonce': await comandoRevelarViewOnce(message); break;
         case 'config':
         case 'conf':
             await comandoConfigAdmin(message, argumentos); break;
@@ -20140,8 +20221,8 @@ case 'filhosranking':
             await comandoLogs(message); break;
         case 'prefixo':
             if (!(await exigirAdmin(message))) break;
-            if (!argumentos.trim()) { await responderCitando(message, `🔣 Prefixo atual: *${obterPrefixoGrupo(message.from)}*\nUse *${obterPrefixoGrupo(message.from)}prefixo !* para alterar.`); break; }
-            { const novo=argumentos.trim().split(/\s+/)[0]; if(!/^[!#$%&*+?./:_=-]{1,3}$/.test(novo)){await responderCitando(message,'❌ Prefixo inválido. Escolha 1 a 3 caracteres sem letras/números.');break;} const c=obterConfigAdmin(message.from); c.prefixo=novo; salvarConfigAdmin(); await responderCitando(message,`✅ Prefixo alterado para *${novo}*.`); }
+            if (!argumentos.trim()) { await responderCitando(message, `ð£ Prefixo atual: *${obterPrefixoGrupo(message.from)}*\nUse *${obterPrefixoGrupo(message.from)}prefixo !* para alterar.`); break; }
+            { const novo=argumentos.trim().split(/\s+/)[0]; if(!/^[!#$%&*+?./:_=-]{1,3}$/.test(novo)){await responderCitando(message,'â Prefixo invÃ¡lido. Escolha 1 a 3 caracteres sem letras/nÃºmeros.');break;} const c=obterConfigAdmin(message.from); c.prefixo=novo; salvarConfigAdmin(); await responderCitando(message,`â Prefixo alterado para *${novo}*.`); }
             break;
 
         // ============================================================
@@ -20152,25 +20233,25 @@ case 'filhosranking':
 
             await reagir(
                 message,
-                '❌'
+                'â'
             );
 
             await responderCitando(
                 message,
-                `┏═•❃༺✿༻❃•═┓
-├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐍𝐀̃𝐎 𝐄𝐍𝐂𝐎𝐍𝐓𝐑𝐀𝐃𝐎*
-│
-├➤ _O comando_
-│   *${PREFIXO}${comando}*
-│   _não existe._
-│
-├➤ *𝐃𝐈𝐆𝐈𝐓𝐄:*
-│   📋 *${PREFIXO}menu*
-│
-├➤ _Ou veja todos os comandos:_
-│   📜 *${PREFIXO}comandos*
-│
-┗═•❃༺✿༻❃•═┛`
+                `âââ¢âà¼ºâ¿à¼»ââ¢ââ
+ââ¯ *ððððððð ððÌð ðððððððððð*
+â
+ââ¤ _O comando_
+â   *${PREFIXO}${comando}*
+â   _nÃ£o existe._
+â
+ââ¤ *ðððððð:*
+â   ð *${PREFIXO}menu*
+â
+ââ¤ _Ou veja todos os comandos:_
+â   ð *${PREFIXO}comandos*
+â
+âââ¢âà¼ºâ¿à¼»ââ¢ââ`
             );
 
             break;
@@ -20187,30 +20268,30 @@ client.on(
 
         try {
 
-            // Ignorar mensagens do próprio bot
+            // Ignorar mensagens do prÃ³prio bot
             if (message.fromMe) {
                 return;
             }
 
 // ============================================================
-// APAGAR MENSAGENS DE QUEM ESTÁ MUTADO
+// APAGAR MENSAGENS DE QUEM ESTÃ MUTADO
 // ============================================================
 
 const idRemetente =
     obterIdRemetente(message);
 
 
-// Verificar se o remetente está na blacklist
+// Verificar se o remetente estÃ¡ na blacklist
 let naBlacklist = false;
 
 if (idRemetente) {
 
-    // Verificação direta
+    // VerificaÃ§Ã£o direta
     if (blacklistMute.has(idRemetente)) {
         naBlacklist = true;
     }
 
-    // Verificação pelo número, para funcionar
+    // VerificaÃ§Ã£o pelo nÃºmero, para funcionar
     // mesmo quando o WhatsApp usar LID
     if (!naBlacklist) {
 
@@ -20236,7 +20317,7 @@ if (idRemetente) {
 }
 
 // ============================================================
-// 👥 REGISTRAR PARTICIPANTE DO GRUPO
+// ð¥ REGISTRAR PARTICIPANTE DO GRUPO
 // ============================================================
 
 if (
@@ -20268,7 +20349,7 @@ if (
         idRemetente
     );
 
-    // Só salva quando uma pessoa nova é adicionada
+    // SÃ³ salva quando uma pessoa nova Ã© adicionada
     if (
         participantes.size >
         tamanhoAntes
@@ -20325,7 +20406,7 @@ if (
 }
 
 // ============================================================
-// 🛡️ PROTEÇÕES AUTOMÁTICAS DO GRUPO
+// ð¡ï¸ PROTEÃÃES AUTOMÃTICAS DO GRUPO
 // ============================================================
 
 if (message.from.endsWith('@g.us') && idRemetente) {
@@ -20341,7 +20422,7 @@ if (message.from.endsWith('@g.us') && idRemetente) {
         });
         if (bloqueado) {
             try { await message.delete(true); } catch {}
-            await enviarComMencoes(message.from, `┏═•❃༺🔗༻❃•═┓\n├✯ *𝐋𝐈𝐍𝐊 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐎*\n│\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ _Links não permitidos são bloqueados neste grupo._\n┗═•❃༺🔗༻❃•═┓`, { mentions: [idRemetente] });
+            await enviarComMencoes(message.from, `âââ¢âà¼ºðà¼»ââ¢ââ\nââ¯ *ðððð ððððððððð*\nâ\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ _Links nÃ£o permitidos sÃ£o bloqueados neste grupo._\nâââ¢âà¼ºðà¼»ââ¢ââ`, { mentions: [idRemetente] });
             return;
         }
     }
@@ -20358,18 +20439,18 @@ if (message.from.endsWith('@g.us') && idRemetente) {
             const listaMute = mutados.get(message.from) || new Set();
             listaMute.add(idRemetente); mutados.set(message.from, listaMute); salvarMutados();
             try { await message.delete(true); } catch {}
-            await enviarComMencoes(message.from, `┏═•❃༺🚨༻❃•═┓\n├✯ *𝐀𝐍𝐓𝐈𝐅𝐋𝐎𝐎𝐃*\n│\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ 🔇 _Você foi silenciado por flood._\n┗═•❃༺🚨༻❃•═┓`, { mentions: [idRemetente] });
+            await enviarComMencoes(message.from, `âââ¢âà¼ºð¨à¼»ââ¢ââ\nââ¯ *ððððððððð*\nâ\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ ð _VocÃª foi silenciado por flood._\nâââ¢âà¼ºð¨à¼»ââ¢ââ`, { mentions: [idRemetente] });
             return;
         }
     }
-    // 🧹 Filtros configuráveis adicionais
+    // ð§¹ Filtros configurÃ¡veis adicionais
     if (await aplicarProtecoesAvancadas(message, configProtecao, idRemetente, autorAdmin)) {
         return;
     }
 }
 
 // ============================================================
-// 🧹 FILTROS AVANÇADOS DO GRUPO
+// ð§¹ FILTROS AVANÃADOS DO GRUPO
 // ============================================================
 
 function usuarioNaListaBranca(config, id) {
@@ -20385,16 +20466,16 @@ async function banirPorIdAutomatico(grupoId, idPessoa) {
     try {
         await client.pupPage.evaluate(async (chatId, participantId) => {
             const chat = await window.WWebJS.getChat(chatId, { getAsModel: false });
-            if (!chat || chat.id?.server !== 'g.us') throw new Error('Grupo não encontrado.');
+            if (!chat || chat.id?.server !== 'g.us') throw new Error('Grupo nÃ£o encontrado.');
             const { lid, phone } = await window.WWebJS.enforceLidAndPnRetrieval(participantId);
             const participante = chat.groupMetadata.participants.get(lid?._serialized) || chat.groupMetadata.participants.get(phone?._serialized);
-            if (!participante) throw new Error('Participante não encontrado.');
-            if (participante.isAdmin || participante.isSuperAdmin) throw new Error('Administrador não pode ser removido automaticamente.');
+            if (!participante) throw new Error('Participante nÃ£o encontrado.');
+            if (participante.isAdmin || participante.isSuperAdmin) throw new Error('Administrador nÃ£o pode ser removido automaticamente.');
             await window.require('WAWebModifyParticipantsGroupAction').removeParticipants(chat, [participante]);
         }, grupoId, idPessoa);
         return true;
     } catch (erro) {
-        console.error('⚠️ Falha no autoban:', erro.message);
+        console.error('â ï¸ Falha no autoban:', erro.message);
         return false;
     }
 
@@ -20407,13 +20488,13 @@ async function aplicarProtecoesAvancadas(message, config, idRemetente, autorAdmi
 
     if (config.antiMention && Array.isArray(message.mentionedIds) && message.mentionedIds.length > 0) {
         try { await message.delete(true); } catch {}
-        await enviarComMencoes(message.from, `┏═•❃༺👥༻❃•═┓\n│       *𝐀𝐍𝐓𝐈-𝐌𝐄𝐍𝐂̧𝐀̃𝐎*\n├✯\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ _Marcações estão bloqueadas neste grupo._\n┗═•❃༺👥༻❃•═┓`, { mentions: [idRemetente] });
+        await enviarComMencoes(message.from, `âââ¢âà¼ºð¥à¼»ââ¢ââ\nâ       *ðððð-ððððÌ§ðÌð*\nââ¯\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ _MarcaÃ§Ãµes estÃ£o bloqueadas neste grupo._\nâââ¢âà¼ºð¥à¼»ââ¢ââ`, { mentions: [idRemetente] });
         return true;
     }
 
     if (config.limitexto && corpo.length > Number(config.limiteTexto || 1000)) {
         try { await message.delete(true); } catch {}
-        await enviarComMencoes(message.from, `┏═•❃༺📏༻❃•═┓\n│       *𝐓𝐄𝐗𝐓𝐎 𝐌𝐔𝐈𝐓𝐎 𝐋𝐎𝐍𝐆𝐎*\n├✯\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ 📏 Limite: *${config.limiteTexto} caracteres*\n┗═•❃༺📏༻❃•═┓`, { mentions: [idRemetente] });
+        await enviarComMencoes(message.from, `âââ¢âà¼ºðà¼»ââ¢ââ\nâ       *ððððð ððððð ððððð*\nââ¯\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ ð Limite: *${config.limiteTexto} caracteres*\nâââ¢âà¼ºðà¼»ââ¢ââ`, { mentions: [idRemetente] });
         return true;
     }
 
@@ -20425,10 +20506,10 @@ async function aplicarProtecoesAvancadas(message, config, idRemetente, autorAdmi
         });
         if (palavraBloqueada) {
             try { await message.delete(true); } catch {}
-            await enviarComMencoes(message.from, `┏═•❃༺🤬༻❃•═┓\n│       *𝐏𝐀𝐋𝐀𝐕𝐑𝐀 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀*\n├✯\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ 🚫 _Esta palavra não é permitida neste grupo._\n┗═•❃༺🤬༻❃•═┓`, { mentions: [idRemetente] });
+            await enviarComMencoes(message.from, `âââ¢âà¼ºð¤¬à¼»ââ¢ââ\nâ       *ððððððð ððððððððð*\nââ¯\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ ð« _Esta palavra nÃ£o Ã© permitida neste grupo._\nâââ¢âà¼ºð¤¬à¼»ââ¢ââ`, { mentions: [idRemetente] });
             if (config.autoBan) {
                 const removido = await banirPorIdAutomatico(message.from, idRemetente);
-                if (removido) await enviarComMencoes(message.from, `┏═•❃༺🔨༻❃•═┓\n│          *𝐀𝐔𝐓𝐎𝐁𝐀𝐍*\n├✯\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ 🚫 _Usuário removido por violação do filtro._\n┗═•❃༺🔨༻❃•═┓`, { mentions: [idRemetente] });
+                if (removido) await enviarComMencoes(message.from, `âââ¢âà¼ºð¨à¼»ââ¢ââ\nâ          *ððððððð*\nââ¯\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ ð« _UsuÃ¡rio removido por violaÃ§Ã£o do filtro._\nâââ¢âà¼ºð¨à¼»ââ¢ââ`, { mentions: [idRemetente] });
             }
             return true;
         }
@@ -20436,11 +20517,11 @@ async function aplicarProtecoesAvancadas(message, config, idRemetente, autorAdmi
 
     if (message.hasMedia) {
         const tipo = String(message.type || '').toLowerCase();
-        const filtros = { image: ['antiImg','🖼️','𝐈𝐌𝐀𝐆𝐄𝐌'], video: ['antiVideo','🎥','𝐕𝐈́𝐃𝐄𝐎'], audio: ['antiAudio','🎵','𝐀́𝐔𝐃𝐈𝐎'], document: ['antiDoc','📄','𝐃𝐎𝐂𝐔𝐌𝐄𝐍𝐓𝐎'], sticker: ['antiSticker','🧩','𝐅𝐈𝐆𝐔𝐑𝐈𝐍𝐇𝐀'], product: ['antiCatalogo','🛍️','𝐂𝐀𝐓𝐀́𝐋𝐎𝐆𝐎'] };
+        const filtros = { image: ['antiImg','ð¼ï¸','ðððððð'], video: ['antiVideo','ð¥','ððÌððð'], audio: ['antiAudio','ðµ','ðÌðððð'], document: ['antiDoc','ð','ððððððððð'], sticker: ['antiSticker','ð§©','ððððððððð'], product: ['antiCatalogo','ðï¸','ððððÌðððð'] };
         const filtro = filtros[tipo];
         if (filtro && config[filtro[0]]) {
             try { await message.delete(true); } catch {}
-            await enviarComMencoes(message.from, `┏═•❃༺${filtro[1]}༻❃•═┓\n│       *${filtro[2]} 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐎*\n├✯\n├➤ 👤 @${String(idRemetente).split('@')[0]}\n├➤ _Este tipo de mídia está bloqueado neste grupo._\n┗═•❃༺${filtro[1]}༻❃•═┓`, { mentions: [idRemetente] });
+            await enviarComMencoes(message.from, `âââ¢âà¼º${filtro[1]}à¼»ââ¢ââ\nâ       *${filtro[2]} ððððððððð*\nââ¯\nââ¤ ð¤ @${String(idRemetente).split('@')[0]}\nââ¤ _Este tipo de mÃ­dia estÃ¡ bloqueado neste grupo._\nâââ¢âà¼º${filtro[1]}à¼»ââ¢ââ`, { mentions: [idRemetente] });
             return true;
         }
     }
@@ -20448,7 +20529,7 @@ async function aplicarProtecoesAvancadas(message, config, idRemetente, autorAdmi
 }
 
 // ============================================================
-// ✨ XP POR MENSAGEM
+// â¨ XP POR MENSAGEM
 // ============================================================
 
 if (
@@ -20471,7 +20552,7 @@ if (
         salvarXP();
 
         // ====================================================
-        // 🎖️ VERIFICAR CONQUISTAS
+        // ðï¸ VERIFICAR CONQUISTAS
         // ====================================================
 
         const novasConquistas =
@@ -20481,7 +20562,7 @@ if (
             );
 
         // ====================================================
-        // 🎖️ AVISAR SOBRE NOVAS CONQUISTAS
+        // ðï¸ AVISAR SOBRE NOVAS CONQUISTAS
         // ====================================================
 
         if (
@@ -20512,18 +20593,18 @@ if (
                     await enviarComMencoes(
                         message.from,
 
-                        `┏═•❃༺🎖️༻❃•═┓
-│
-│  *𝐍𝐎𝐕𝐀 𝐂𝐎𝐍𝐐𝐔𝐈𝐒𝐓𝐀!*
-│
-├➤ 👤 ${mencaoUsuario}
-│
-├➤ ${conquista.emoji} *${conquista.nome}*
-│
-├➤ _${conquista.descricao}_
-│
-┗═•❃༺🎖️༻❃•═┓
-✨ _Continue participando para desbloquear mais conquistas!_`,
+                        `âââ¢âà¼ºðï¸à¼»ââ¢ââ
+â
+â  *ðððð ððððððððð!*
+â
+ââ¤ ð¤ ${mencaoUsuario}
+â
+ââ¤ ${conquista.emoji} *${conquista.nome}*
+â
+ââ¤ _${conquista.descricao}_
+â
+âââ¢âà¼ºðï¸à¼»ââ¢ââ
+â¨ _Continue participando para desbloquear mais conquistas!_`,
 
                         {
                             mentions: [
@@ -20535,7 +20616,7 @@ if (
                 } catch (erro) {
 
                     console.error(
-                        '⚠️ Erro ao enviar mensagem de conquista:',
+                        'â ï¸ Erro ao enviar mensagem de conquista:',
                         erro
                     );
 
@@ -20544,7 +20625,7 @@ if (
         }
 
         // ====================================================
-        // ⭐ AVISO DE SUBIDA DE NÍVEL
+        // â­ AVISO DE SUBIDA DE NÃVEL
         // ====================================================
 
         if (
@@ -20560,21 +20641,21 @@ if (
 
                 await enviarComMencoes(
                     message.from,
-                    `┏═•❃༺⭐༻❃•═┓
-│   *🎉 𝐍𝐈́𝐕𝐄𝐋 𝐀𝐔𝐌𝐄𝐍𝐓𝐎𝐔!*
-├✯
-├➤ 👤 ${mencaoUsuario}
-│   _está ficando cada vez mais forte!_
-│
-├➤ ⭐ *𝐍𝐎𝐕𝐎 𝐍𝐈́𝐕𝐄𝐋*
-│   ➜ *Nível ${resultadoXP.nivel}*
-│
-├➤ ✨ *𝐗𝐏 𝐀𝐓𝐔𝐀𝐋*
-│   ➜ *${resultadoXP.xp} XP*
-│
-┗═•❃༺⭐༻❃•═┛
+                    `âââ¢âà¼ºâ­à¼»ââ¢ââ
+â   *ð ððÌððð ðððððððð!*
+ââ¯
+ââ¤ ð¤ ${mencaoUsuario}
+â   _estÃ¡ ficando cada vez mais forte!_
+â
+ââ¤ â­ *ðððð ððÌððð*
+â   â *NÃ­vel ${resultadoXP.nivel}*
+â
+ââ¤ â¨ *ðð ððððð*
+â   â *${resultadoXP.xp} XP*
+â
+âââ¢âà¼ºâ­à¼»ââ¢ââ
 
-🎊 _Continue participando para alcançar o próximo nível!_`,
+ð _Continue participando para alcanÃ§ar o prÃ³ximo nÃ­vel!_`,
 
                     {
                         mentions: [
@@ -20586,7 +20667,7 @@ if (
             } catch (erro) {
 
                 console.error(
-                    '⚠️ Erro ao enviar mensagem de nível:',
+                    'â ï¸ Erro ao enviar mensagem de nÃ­vel:',
                     erro
                 );
 
@@ -20661,7 +20742,7 @@ if (oiAutoAtivo.get(message.from) === true) {
                 ));
 
                 // Para aqui somente porque
-                // o OI AUTO já respondeu
+                // o OI AUTO jÃ¡ respondeu
                 return;
             }
         }
@@ -20669,21 +20750,21 @@ if (oiAutoAtivo.get(message.from) === true) {
     } catch (erro) {
 
         console.error(
-            '❌ Erro no OI AUTO:',
+            'â Erro no OI AUTO:',
             erro
         );
     }
 }
 
 
-// MODERAÇÃO
+// MODERAÃÃO
 if (
     mutadoNoGrupo ||
     naBlacklist
 ) {
 
     console.log(
-        '🔇 USUÁRIO MUTADO! APAGANDO MENSAGEM...'
+        'ð USUÃRIO MUTADO! APAGANDO MENSAGEM...'
     );
 
     try {
@@ -20691,13 +20772,13 @@ if (
         await message.delete(true);
 
         console.log(
-            '🗑️ MENSAGEM APAGADA!'
+            'ðï¸ MENSAGEM APAGADA!'
         );
 
     } catch (erro) {
 
         console.log(
-            '❌ ERRO AO APAGAR:',
+            'â ERRO AO APAGAR:',
             erro.message
         );
     }
@@ -20706,7 +20787,7 @@ if (
 }
             
 // ============================================================
-// 😂 CONFIRMAÇÃO PARA LIMPAR PIADAS
+// ð CONFIRMAÃÃO PARA LIMPAR PIADAS
 // ============================================================
 
 const chatId =
@@ -20742,22 +20823,22 @@ if (
 
         await reagir(
             message,
-            '🗑️'
+            'ðï¸'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐏𝐈𝐀𝐃𝐀𝐒 𝐀𝐏𝐀𝐆𝐀𝐃𝐀𝐒!*
-│
-├➤ Todas as piadas foram
-│   removidas com sucesso.
-│
-│  📚 Total atual:
-│   *0 piadas*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ðððððð ðððððððð!*
+â
+ââ¤ Todas as piadas foram
+â   removidas com sucesso.
+â
+â  ð Total atual:
+â   *0 piadas*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -20765,7 +20846,7 @@ if (
 
     if (
         respostaLimpar === 'nao' ||
-        respostaLimpar === 'não'
+        respostaLimpar === 'nÃ£o'
     ) {
 
         confirmacoesLimparPiadas.delete(
@@ -20774,22 +20855,22 @@ if (
 
         await reagir(
             message,
-            '❌'
+            'â'
         );
 
         await responderCitando(
             message,
-            `┏═•❃༺😂༻❃•═┓
-│
-│  *𝐀𝐂̧𝐀̃𝐎 𝐂𝐀𝐍𝐂𝐄𝐋𝐀𝐃𝐀*
-│
-│  As piadas continuam
-│  intactas. 😎
-│
-│  📚 Total:
-│   *${piadas.length} piada${piadas.length === 1 ? '' : 's'}*
-│
-┗═•❃༺😂༻❃•═┛`
+            `âââ¢âà¼ºðà¼»ââ¢ââ
+â
+â  *ððÌ§ðÌð ððððððððð*
+â
+â  As piadas continuam
+â  intactas. ð
+â
+â  ð Total:
+â   *${piadas.length} piada${piadas.length === 1 ? '' : 's'}*
+â
+âââ¢âà¼ºðà¼»ââ¢ââ`
         );
 
         return;
@@ -20804,7 +20885,7 @@ if (selecaoAvisoProcessada) {
 }
 
 // ============================================================
-// 👶 RESPOSTA DE PROPOSTA DE ADOÇÃO
+// ð¶ RESPOSTA DE PROPOSTA DE ADOÃÃO
 // ============================================================
 
 const respostaAdocao =
@@ -20831,7 +20912,7 @@ if (respostaAdocao === 'nao') {
 }
 
 // ============================================================
-// 💤 SISTEMA AFK
+// ð¤ SISTEMA AFK
 // ============================================================
 
 if (
@@ -20843,7 +20924,7 @@ if (
 
 
     // ========================================================
-    // 👋 VERIFICAR SE O REMETENTE ESTAVA AFK
+    // ð VERIFICAR SE O REMETENTE ESTAVA AFK
     // ========================================================
 
     if (
@@ -20893,7 +20974,7 @@ if (
 
 
     // ========================================================
-    // 🔔 VERIFICAR MENÇÕES
+    // ð VERIFICAR MENÃÃES
     // ========================================================
 
     const mencionados =
@@ -20927,15 +21008,15 @@ if (
 
             await responderCitando(
                 message,
-                `╭━━━〔 💤 𝐔𝐒𝐔𝐀́𝐑𝐈𝐎 𝐀𝐅𝐊 〕━━━╮
-│
-│ 👤 @${String(idMencionado).split('@')[0]}
-│
-│ 📝 *Motivo:* _${dadosAFK.motivo}_
-│ ⏱️ *Ausente há:* ${formatarTempoAFKCurto(dadosAFK.inicio)}
-│
-╰━━━━━━━━━━━━━━━━━━━━╯
-💤 _Este usuário está temporariamente ausente._`
+                `â­âââã ð¤ ððððÌððð ððð ãââââ®
+â
+â ð¤ @${String(idMencionado).split('@')[0]}
+â
+â ð *Motivo:* _${dadosAFK.motivo}_
+â â±ï¸ *Ausente hÃ¡:* ${formatarTempoAFKCurto(dadosAFK.inicio)}
+â
+â°âââââââââââââââââââââ¯
+ð¤ _Este usuÃ¡rio estÃ¡ temporariamente ausente._`
             , { mentions: [idMencionado] }
             );
 
@@ -20945,7 +21026,7 @@ if (
 
 
     // ========================================================
-    // ↩️ VERIFICAR RESPOSTA
+    // â©ï¸ VERIFICAR RESPOSTA
     // ========================================================
 
     if (
@@ -20988,15 +21069,15 @@ if (
 
                     await responderCitando(
                         message,
-                        `╭━━━〔 💤 𝐔𝐒𝐔𝐀́𝐑𝐈𝐎 𝐀𝐅𝐊 〕━━━╮
-│
-│ 👤 @${String(idAutorResposta).split('@')[0]}
-│
-│ 📝 *Motivo:* _${dadosAFK.motivo}_
-│ ⏱️ *Ausente há:* ${formatarTempoAFKCurto(dadosAFK.inicio)}
-│
-╰━━━━━━━━━━━━━━━━━━━━╯
-💤 _Este usuário está temporariamente ausente._`
+                        `â­âââã ð¤ ððððÌððð ððð ãââââ®
+â
+â ð¤ @${String(idAutorResposta).split('@')[0]}
+â
+â ð *Motivo:* _${dadosAFK.motivo}_
+â â±ï¸ *Ausente hÃ¡:* ${formatarTempoAFKCurto(dadosAFK.inicio)}
+â
+â°âââââââââââââââââââââ¯
+ð¤ _Este usuÃ¡rio estÃ¡ temporariamente ausente._`
                     , { mentions: [idAutorResposta] }
                     );
 
@@ -21007,7 +21088,7 @@ if (
         } catch (erro) {
 
             console.log(
-                '⚠️ Erro ao verificar resposta AFK:',
+                'â ï¸ Erro ao verificar resposta AFK:',
                 erro.message
             );
 
@@ -21017,7 +21098,10 @@ if (
 
 }
 
-// Ignorar mensagens normais
+// 🤖 AUTORESPONDER
+            try { await processarAutoresposta(message); } catch (erroAuto) { console.error('⚠️ Erro na autoresposta:', erroAuto.message); }
+
+            // Ignorar mensagens normais
             const prefixoMensagem = obterPrefixoGrupo(message.from);
             const configPrefixo = obterConfigAdmin(message.from);
             const corpoMensagem = message.body.trim();
@@ -21041,7 +21125,7 @@ if (
             if (!texto) {
                 await reagir(
                     message,
-                    '❌'
+                    'â'
                 );
 
                 return;
@@ -21067,7 +21151,7 @@ if (
         } catch (erro) {
 
             console.error(
-                '❌ ERRO NO PROCESSAMENTO:',
+                'â ERRO NO PROCESSAMENTO:',
                 erro
             );
 
@@ -21075,18 +21159,18 @@ if (
 
                 await reagir(
                     message,
-                    '❌'
+                    'â'
                 );
 
                 await responderCitando(
                     message,
-                    '❌ _Ocorreu um erro ao executar esse comando._'
+                    'â _Ocorreu um erro ao executar esse comando._'
                 );
 
             } catch (erroResposta) {
 
                 console.error(
-                    '❌ Não foi possível enviar a mensagem de erro:',
+                    'â NÃ£o foi possÃ­vel enviar a mensagem de erro:',
                     erroResposta
                 );
             }
@@ -21102,7 +21186,7 @@ async function verificarAvisos() {
 
     const chaveExecucao = `${data}_${hora}`;
 
-    // Evita verificar a mesma hora várias vezes
+    // Evita verificar a mesma hora vÃ¡rias vezes
     if (ultimaVerificacaoAvisos === chaveExecucao) {
         return;
     }
@@ -21119,11 +21203,11 @@ async function verificarAvisos() {
                 try {
                 await client.sendMessage(
     grupoId,
-    `╭─〔 🔔 *𝐀𝐕𝐈𝐒𝐎* 〕
-│
-│ │ *${aviso.mensagem}*
-│
-╰────────────────`
+    `â­âã ð *ððððð* ã
+â
+â â *${aviso.mensagem}*
+â
+â°ââââââââââââââââ`
 );;
 
                     aviso.ultimoEnvio = data;
@@ -21131,12 +21215,12 @@ async function verificarAvisos() {
                     salvarAvisos();
 
                     console.log(
-                        `🔔 Aviso enviado para ${grupoId}: ${aviso.mensagem}`
+                        `ð Aviso enviado para ${grupoId}: ${aviso.mensagem}`
                     );
 
                 } catch (erro) {
                     console.error(
-                        `❌ Erro ao enviar aviso para ${grupoId}:`,
+                        `â Erro ao enviar aviso para ${grupoId}:`,
                         erro
                     );
                 }
@@ -21160,7 +21244,7 @@ client.on('group_join', async notification => {
                 .replace(/@membros/gi, String(membros));
             await enviarComMencoes(notification.chatId, aplicarEstiloMensagem(textoBase), { mentions: [id] });
         }
-    } catch (erro) { console.error('⚠️ Erro no welcome:', erro); }
+    } catch (erro) { console.error('â ï¸ Erro no welcome:', erro); }
 });
 
 client.on('group_leave', async notification => {
@@ -21175,19 +21259,19 @@ client.on('group_leave', async notification => {
             .replace(/@grupo/gi, chat?.name || 'este grupo')
             .replace(/@membros/gi, String(chat?.participants?.length || 0));
         await enviarComMencoes(notification.chatId, aplicarEstiloMensagem(textoBase), { mentions: [id] });
-    } catch (erro) { console.error('⚠️ Erro no goodbye:', erro); }
+    } catch (erro) { console.error('â ï¸ Erro no goodbye:', erro); }
 });
 
 client.on('ready', () => {
-    console.log('🔔 Sistema de avisos iniciado!');
+    console.log('ð Sistema de avisos iniciado!');
 
     verificarAvisos().catch(erro => {
-        console.error('❌ Erro na verificação inicial dos avisos:', erro);
+        console.error('â Erro na verificaÃ§Ã£o inicial dos avisos:', erro);
     });
 
     setInterval(() => {
         verificarAvisos().catch(erro => {
-            console.error('❌ Erro na verificação dos avisos:', erro);
+            console.error('â Erro na verificaÃ§Ã£o dos avisos:', erro);
         });
     }, 15000);
 });
@@ -21197,11 +21281,11 @@ setInterval(() => {
     const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Sao_Paulo'});
     if (agora === ultimoTickHorario) return;
     ultimoTickHorario = agora;
-    verificarHorariosGrupos().catch(erro => console.error('⚠️ Erro no agendamento de grupos:', erro.message));
+    verificarHorariosGrupos().catch(erro => console.error('â ï¸ Erro no agendamento de grupos:', erro.message));
 }, 30000);
 
 // ============================================================
-// INICIALIZAÇÃO
+// INICIALIZAÃÃO
 // ============================================================
 
 console.log(
