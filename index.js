@@ -9067,14 +9067,10 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         const margem = 32;
         const larguraUtil = tamanho - (margem * 2);
         const alturaUtil = tamanho - (margem * 2);
-        const escalaX = 1;
-        // O gerador original usa textFit para encontrar o maior tamanho
-        // que cabe dentro da caixa. Aqui reproduzimos essa ideia no canvas:
-        // testamos os tamanhos por busca binária, usando largura + altura.
         const fonteMinima = 20;
-        const fonteMaxima = opcoes.fonteMaxima || 333;
-        const pesoFonte = opcoes.pesoFonte || 900;
-        const desfoque = opcoes.desfoque ?? 7;
+        const fonteMaxima = opcoes.fonteMaxima || 200;
+        const pesoFonte = opcoes.pesoFonte || 300;
+        const desfoque = opcoes.desfoque ?? 3;
         const fundo = opcoes.fundo || '#ffffff';
         const corTexto = opcoes.corTexto || '#000000';
         const fonteForcada = opcoes.fonte;
@@ -9086,23 +9082,12 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
 
         const ctx = canvas.getContext('2d');
         const normalizarFonte = tamanhoFonte =>
-            `${pesoFonte} ${tamanhoFonte}px \"Archivo Narrow\", \"Arial Narrow\", \"Liberation Sans Narrow\", Arial, Liberation Sans, sans-serif`;
+            `${pesoFonte} ${tamanhoFonte}px "Arial Narrow", "Liberation Sans Narrow", Arial, Liberation Sans, sans-serif`;
 
-        // O gerador de referência usa Archivo Narrow carregada pelo Google Fonts.
-        // Reproduzimos isso dentro da página do WhatsApp antes de medir o texto,
-        // para que a largura usada na quebra seja a mesma da renderização final.
         try {
-            const idFonte = '__justbot_archivo_narrow';
-            if (!document.getElementById(idFonte)) {
-                const linkFonte = document.createElement('link');
-                linkFonte.id = idFonte;
-                linkFonte.rel = 'stylesheet';
-                linkFonte.href = 'https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@100;200;300;400;500;600;700;800;900&display=swap';
-                document.head.appendChild(linkFonte);
-            }
             await document.fonts.load(normalizarFonte(100));
         } catch (_) {
-            // Se o download da fonte falhar, usa os fallbacks locais.
+            // Fallback do sistema caso a fonte condensada não esteja disponível.
         }
 
         function pareceEmoji(cluster) {
@@ -9155,7 +9140,7 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
             return Array.from(textoLinha);
         }
 
-        async function prepararTokens(textoLinha, tamanhoFonte) {
+        async function prepararTokens(textoLinha) {
             const tokens = [];
             for (const cluster of segmentar(textoLinha)) {
                 if (pareceEmoji(cluster)) {
@@ -9173,11 +9158,11 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         function medirToken(token, tamanhoFonte) {
             if (token.tipo === 'emoji') return tamanhoFonte * 1.08;
             ctx.font = normalizarFonte(tamanhoFonte);
-            return ctx.measureText(token.valor).width * escalaX;
+            return ctx.measureText(token.valor).width;
         }
 
         async function medirLinha(textoLinha, tamanhoFonte) {
-            const tokens = await prepararTokens(textoLinha, tamanhoFonte);
+            const tokens = await prepararTokens(textoLinha);
             return {
                 largura: tokens.reduce((total, token) => total + medirToken(token, tamanhoFonte), 0),
                 tokens
@@ -9236,9 +9221,6 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
             fonte = fonteForcada;
             linhas = await quebrar(texto, fonte);
         } else {
-            // Equivalente ao comportamento do textFit do gerador HTML:
-            // poucas palavras conseguem uma fonte maior; conforme o texto
-            // ocupa mais linhas/largura, o maior tamanho possível diminui.
             let baixo = fonteMinima;
             let alto = fonteMaxima;
             let melhorFonte = fonteMinima;
@@ -9270,7 +9252,6 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
 
         ctx.save();
         ctx.translate(margem, margem);
-        ctx.scale(escalaX, 1);
         ctx.font = normalizarFonte(fonte);
         ctx.fillStyle = corTexto;
         ctx.textBaseline = 'top';
@@ -9284,7 +9265,7 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
 
             for (const token of tokens) {
                 if (token.tipo === 'emoji') {
-                    const tamanhoEmoji = fonte * 1.08 / escalaX;
+                    const tamanhoEmoji = fonte * 1.08;
                     ctx.drawImage(token.imagem, x, y + (fonte * 0.01), tamanhoEmoji, tamanhoEmoji);
                     x += tamanhoEmoji;
                 } else {
@@ -9303,7 +9284,6 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
             fonte,
             linhas,
             alturaLinha,
-            escalaX,
             margem
         };
     }, { texto: String(texto || ''), opcoes });
@@ -9315,7 +9295,6 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         layout: resultado
     };
 }
-
 async function gerarBrat1(message, argumento) {
     const texto = (argumento || '').trim();
 
@@ -9332,8 +9311,8 @@ async function gerarBrat1(message, argumento) {
         const { buffer } = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
-            desfoque: 7,
-            pesoFonte: 900
+            desfoque: 3,
+            pesoFonte: 300
         });
 
         const figurinha = new MessageMedia(
@@ -9383,7 +9362,7 @@ async function gerarBrat2(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 0,
-            pesoFonte: 900
+            pesoFonte: 300
         });
 
         const frames = [[]];
@@ -9405,7 +9384,7 @@ async function gerarBrat2(message, argumento) {
                     fundo: '#ffffff',
                     corTexto: '#000000',
                     desfoque: 0,
-                    pesoFonte: 900,
+                    pesoFonte: 500,
                     fonte: layoutCompleto.layout.fonte
                 });
                 bufferRgba = await sharp(vazio.buffer)
@@ -9416,8 +9395,8 @@ async function gerarBrat2(message, argumento) {
                 const frame = await renderizarBratNoNavegador(textoFrame, {
                     fundo: '#ffffff',
                     corTexto: '#000000',
-                    desfoque: i === 0 ? 0 : 7,
-                    pesoFonte: 900,
+                    desfoque: i === 0 ? 0 : 3,
+                    pesoFonte: 300,
                     fonte: layoutCompleto.layout.fonte
                 });
                 bufferRgba = await sharp(frame.buffer)
@@ -9434,8 +9413,8 @@ async function gerarBrat2(message, argumento) {
         const final = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
-            desfoque: 7,
-            pesoFonte: 900,
+            desfoque: 3,
+            pesoFonte: 300,
             fonte: layoutCompleto.layout.fonte
         });
         const bufferFinal = await sharp(final.buffer)
