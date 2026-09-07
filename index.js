@@ -9069,7 +9069,7 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         const alturaUtil = tamanho - (margem * 2);
         const escalaX = 0.69;
         const fonteMinima = 20;
-        const fonteMaxima = opcoes.fonteMaxima || 300;
+        const fonteMaxima = opcoes.fonteMaxima || 270;
         const pesoFonte = opcoes.pesoFonte || 400;
         const desfoque = opcoes.desfoque ?? 8;
         const fundo = opcoes.fundo || '#ffffff';
@@ -9292,7 +9292,7 @@ async function gerarBrat1(message, argumento) {
         const { buffer } = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
-            desfoque: 4.5,
+            desfoque: 7,
             pesoFonte: 400
         });
 
@@ -9376,7 +9376,7 @@ async function gerarBrat2(message, argumento) {
                 const frame = await renderizarBratNoNavegador(textoFrame, {
                     fundo: '#ffffff',
                     corTexto: '#000000',
-                    desfoque: i === 0 ? 0 : 4.5,
+                    desfoque: i === 0 ? 0 : 7,
                     pesoFonte: 400,
                     fonte: layoutCompleto.layout.fonte
                 });
@@ -9394,7 +9394,7 @@ async function gerarBrat2(message, argumento) {
         const final = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
-            desfoque: 4.5,
+            desfoque: 7,
             pesoFonte: 400,
             fonte: layoutCompleto.layout.fonte
         });
