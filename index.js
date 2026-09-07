@@ -207,7 +207,12 @@ function obterConfigAdmin(grupoId) {
             regras: '',
             prefixo: ';',
             multiprefix: false,
-            logs: false
+            logs: false,
+            advertencias: {},
+            anotacoes: [],
+            horarioAbertura: null,
+            horarioFechamento: null,
+            ultimoHorarioGrupo: null
         });
     }
     return configuracoesAdminGrupos.get(grupoId);
@@ -18372,6 +18377,227 @@ async function comandoNota(message) {
 
 
 // ============================================================
+// 🛡️ ADMINISTRAÇÃO AVANÇADA
+// ============================================================
+
+function obterConfiguracaoPersistente(config) {
+    if (!config.advertencias || typeof config.advertencias !== 'object' || Array.isArray(config.advertencias)) config.advertencias = {};
+    if (!Array.isArray(config.anotacoes)) config.anotacoes = [];
+    if (!('horarioAbertura' in config)) config.horarioAbertura = null;
+    if (!('horarioFechamento' in config)) config.horarioFechamento = null;
+    if (!('ultimoHorarioGrupo' in config)) config.ultimoHorarioGrupo = null;
+    return config;
+}
+
+function formatarHoraConfig(hora) {
+    return hora || 'não configurado';
+}
+
+async function comandoConfigAdmin(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
+    const grupo = message.from;
+    const config = obterConfiguracaoPersistente(obterConfigAdmin(grupo));
+    const args = String(argumentos || '').trim();
+    const prefixo = obterPrefixoGrupo(grupo);
+    const estado = v => v ? '🟢' : '🔴';
+
+    if (!args) {
+        await reagir(message, '⚙️');
+        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
+│       *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎*
+├✯
+│
+├➤ 🛡️ Moderação: *${[config.antilink,config.antiflood,config.antiMention,config.antiPalavra,config.autoBan,config.limitexto].filter(Boolean).length}/6* ${estado([config.antilink,config.antiflood,config.antiMention,config.antiPalavra,config.autoBan,config.limitexto].some(Boolean))}
+├➤ 🖼️ Mídia: *${[config.antiImg,config.antiVideo,config.antiAudio,config.antiDoc,config.antiSticker,config.antiCatalogo].filter(Boolean).length}/6* ${estado([config.antiImg,config.antiVideo,config.antiAudio,config.antiDoc,config.antiSticker,config.antiCatalogo].some(Boolean))}
+├➤ 👋 Entrada/saída: *${config.welcome || config.goodbye ? 'ATIVO' : 'OFF'}* ${estado(config.welcome || config.goodbye)}
+├➤ 🎮 Sistemas: *${[config.jogos,config.economia,config.xp].filter(Boolean).length}/3* ${estado(config.jogos || config.economia || config.xp)}
+├➤ 🕐 Horários: *${config.horarioAbertura || config.horarioFechamento ? 'CONFIGURADOS' : 'OFF'}* ${estado(config.horarioAbertura || config.horarioFechamento)}
+├➤ 🔣 Prefixo: *${prefixo}*
+│
+├✯ *𝐕𝐄𝐑 𝐃𝐄𝐓𝐀𝐋𝐇𝐄𝐒*
+├➤ ${prefixo}config moderacao
+├➤ ${prefixo}config midia
+├➤ ${prefixo}config entrada
+├➤ ${prefixo}config grupo
+├➤ ${prefixo}config sistemas
+├➤ ${prefixo}config listas
+│
+┗═•❃༺⚙️༻❃•═┓`);
+        return;
+    }
+
+    let chave = args.toLowerCase();
+    const secoes = {
+        moderacao: `┏═•❃༺🛡️༻❃•═┓
+│       *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
+├✯
+├➤ 🔗 Antilink: *${estado(config.antilink)}*
+├➤ 🚨 Antiflood: *${estado(config.antiflood)}* • ${config.floodLimite}/10s
+├➤ 👥 Anti-menção: *${estado(config.antiMention)}*
+├➤ 🤬 Antipalavra: *${estado(config.antiPalavra)}*
+├➤ 🔨 Autoban: *${estado(config.autoBan)}*
+├➤ 📏 Limite texto: *${estado(config.limitexto)}* • ${config.limiteTexto}
+┗═•❃༺🛡️༻❃•═┓`,
+        mod: null,
+        midia: `┏═•❃༺🖼️༻❃•═┓
+│       *𝐅𝐈𝐋𝐓𝐑𝐎𝐒 𝐃𝐄 𝐌𝐈́𝐃𝐈𝐀*
+├✯
+├➤ 🖼️ Imagem: *${estado(config.antiImg)}*
+├➤ 🎥 Vídeo: *${estado(config.antiVideo)}*
+├➤ 🎵 Áudio: *${estado(config.antiAudio)}*
+├➤ 📄 Documento: *${estado(config.antiDoc)}*
+├➤ 🧩 Figurinha: *${estado(config.antiSticker)}*
+├➤ 🛍️ Catálogo: *${estado(config.antiCatalogo)}*
+┗═•❃༺🖼️༻❃•═┓`,
+        entrada: `┏═•❃༺👋༻❃•═┓
+│       *𝐄𝐍𝐓𝐑𝐀𝐃𝐀 / 𝐒𝐀𝐈́𝐃𝐀*
+├✯
+├➤ 👋 Welcome: *${estado(config.welcome)}*
+├➤ 🚪 Goodbye: *${estado(config.goodbye)}*
+├➤ 📝 Welcome: _${String(config.welcomeTexto || '').slice(0,80)}_
+├➤ 📝 Goodbye: _${String(config.goodbyeTexto || '').slice(0,80)}_
+┗═•❃༺👋༻❃•═┓`,
+        grupo: `┏═•❃༺🏠༻❃•═┓
+│       *𝐆𝐑𝐔𝐏𝐎*
+├✯
+├➤ 🔣 Prefixo: *${prefixo}*
+├➤ 🔣 Multiprefix: *${estado(config.multiprefix)}*
+├➤ 📜 Regras: *${config.regras ? '🟢' : '🔴'}*
+├➤ 📝 Logs: *${estado(config.logs)}*
+├➤ 🔓 Abertura: *${formatarHoraConfig(config.horarioAbertura)}*
+├➤ 🔒 Fechamento: *${formatarHoraConfig(config.horarioFechamento)}*
+┗═•❃༺🏠༻❃•═┓`,
+        sistemas: `┏═•❃༺🎮༻❃•═┓
+│       *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒*
+├✯
+├➤ 🎮 Jogos: *${estado(config.jogos)}*
+├➤ 💰 Economia: *${estado(config.economia)}*
+├➤ ⭐ XP: *${estado(config.xp)}*
+┗═•❃༺🎮༻❃•═┓`,
+        listas: `┏═•❃༺📋༻❃•═┓
+│       *𝐋𝐈𝐒𝐓𝐀𝐒*
+├✯
+├➤ 🟢 Lista branca: *${Array.isArray(config.listaBranca) ? config.listaBranca.length : 0}*
+├➤ 🤬 Palavras bloqueadas: *${Array.isArray(config.palavrasProibidas) ? config.palavrasProibidas.length : 0}*
+├➤ ⚠️ Advertências registradas: *${Object.values(config.advertencias || {}).reduce((n,v)=>n+(v?.length||0),0)}*
+├➤ 📝 Anotações: *${config.anotacoes.length}*
+┗═•❃༺📋༻❃•═┓`
+    };
+    if (chave === 'mod') chave = 'moderacao';
+    if (secoes[chave]) { await responderCitando(message, secoes[chave]); return; }
+
+    const partes = args.split(/\s+/);
+    const alvo = String(partes.shift() || '').toLowerCase();
+    const valor = partes.join(' ').trim();
+    const bool = v => ['on','sim','true','1','ativar','ativado'].includes(String(v).toLowerCase()) ? true : ['off','nao','não','false','0','desativar','desativado'].includes(String(v).toLowerCase()) ? false : null;
+    const mapa = {antilink:'antilink',antiflood:'antiflood',antimencao:'antiMention',antipalavra:'antiPalavra',autoban:'autoBan',antiimg:'antiImg',antivideo:'antiVideo',antiaudio:'antiAudio',antidoc:'antiDoc',antisticker:'antiSticker',anticatalogo:'antiCatalogo',limitexto:'limitexto',multiprefix:'multiprefix',jogos:'jogos',economia:'economia',xp:'xp',cmds:'cmds',logs:'logs'};
+    if (mapa[alvo]) {
+        const b=bool(valor);
+        if (b !== null) { config[mapa[alvo]]=b; salvarConfigAdmin(); await reagir(message,b?'🟢':'🔴'); await responderCitando(message,`┏═•❃༺⚙️༻❃•═┓\n├➤ *${alvo}*: ${b?'🟢 ATIVADO':'🔴 DESATIVADO'}\n┗═•❃༺⚙️༻❃•═┓`); return; }
+    }
+    if (alvo === 'antiflood' && /^limite\s+/i.test(valor)) { const n=Number(valor.replace(/^limite\s+/i,'')); if(Number.isInteger(n)&&n>=3&&n<=30){config.floodLimite=n;salvarConfigAdmin();await responderCitando(message,`🚨 *Limite do antiflood:* ${n} mensagens / 10s`);return;} }
+    if (alvo === 'limitexto' && /^limite\s+/i.test(valor)) { const n=Number(valor.replace(/^limite\s+/i,'')); if(Number.isInteger(n)&&n>=100&&n<=10000){config.limiteTexto=n;salvarConfigAdmin();await responderCitando(message,`📏 *Limite de texto:* ${n} caracteres`);return;} }
+    if (alvo === 'palavra') {
+        const op=String(partes.shift()||'').toLowerCase(); const palavra=partes.join(' ').trim().toLowerCase();
+        if(op==='add'&&palavra){if(!config.palavrasProibidas.includes(palavra))config.palavrasProibidas.push(palavra);config.antiPalavra=true;salvarConfigAdmin();await responderCitando(message,`🤬 Palavra *${palavra}* adicionada e filtro ativado.`);return;}
+        if(op==='remove'&&palavra){config.palavrasProibidas=config.palavrasProibidas.filter(x=>x!==palavra);salvarConfigAdmin();await responderCitando(message,`🗑️ Palavra *${palavra}* removida.`);return;}
+        if(op==='list'){await responderCitando(message,`┏═•❃༺🤬༻❃•═┓\n│ *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n${config.palavrasProibidas.length?config.palavrasProibidas.map((x,i)=>`├➤ ${i+1}. ${x}`).join('\n'):'├➤ _Nenhuma._'}\n┗═•❃༺🤬༻❃•═┓`);return;}
+    }
+    if (alvo === 'whitelist') {
+        const op=String(partes.shift()||'').toLowerCase();
+        const pessoa=await obterAlvoComContato(message,false); const id=pessoa?idDaPessoa(pessoa):null;
+        if(op==='add'&&id){if(!config.listaBranca.includes(id))config.listaBranca.push(id);salvarConfigAdmin();await responderCitando(message,`🟢 @${id.split('@')[0]} foi adicionado à lista branca.`,{mentions:[id]});return;}
+        if(op==='remove'&&id){config.listaBranca=config.listaBranca.filter(x=>x!==id);salvarConfigAdmin();await responderCitando(message,`🗑️ @${id.split('@')[0]} foi removido da lista branca.`,{mentions:[id]});return;}
+        if(op==='list'){await enviarComMencoes(message.from,`┏═•❃༺🟢༻❃•═┓\n│ *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n${config.listaBranca.length?config.listaBranca.map(id=>`├➤ @${String(id).split('@')[0]}`).join('\n'):'├➤ _Nenhuma pessoa cadastrada._'}\n┗═•❃༺🟢༻❃•═┓`,{mentions:config.listaBranca,quotedMessageId:obterIdMensagem(message)});return;}
+    }
+    await responderCitando(message,`❌ _Configuração não encontrada._\n\nUse *${prefixo}config* para ver as categorias.`);
+}
+
+async function comandoAdvertencia(message, acao, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from));
+    const args=String(argumentos||'').trim();
+    if (acao==='adverter') {
+        const pessoa=await obterAlvoComContato(message,true); if(!pessoa)return;
+        const id=idDaPessoa(pessoa); const motivo=args||'Sem motivo informado';
+        if(!id)return;
+        if(!config.advertencias[id])config.advertencias[id]=[];
+        config.advertencias[id].push({motivo,admin:obterIdRemetente(message),data:new Date().toISOString()});
+        salvarConfigAdmin(); registrarLogAdmin(message,'adverter',id);
+        await enviarComMencoes(message.from,`┏═•❃༺⚠️༻❃•═┓\n│      *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀*\n├✯\n├➤ 👤 @${id.split('@')[0]}\n├➤ 🔢 Total: *${config.advertencias[id].length}*\n├➤ 📝 Motivo: _${motivo}_\n┗═•❃༺⚠️༻❃•═┓`,{mentions:[id],quotedMessageId:obterIdMensagem(message)});return;
+    }
+    if(acao==='ver_adv'){
+        const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);const lista=config.advertencias[id]||[];
+        await responderCitando(message,`┏═•❃༺⚠️༻❃•═┓\n│      *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n├✯\n├➤ 👤 @${id.split('@')[0]}\n├➤ 🔢 Total: *${lista.length}*\n${lista.length?lista.map((x,i)=>`├➤ ${i+1}. _${x.motivo}_ • ${new Date(x.data).toLocaleDateString('pt-BR')}`).join('\n'):'├➤ _Nenhuma advertência._'}\n┗═•❃༺⚠️༻❃•═┓`,{mentions:[id]});return;
+    }
+    if(acao==='rm_adv'){
+        const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);const n=Number(args)||1;const lista=config.advertencias[id]||[];lista.splice(0,Math.min(n,lista.length));if(!lista.length)delete config.advertencias[id];salvarConfigAdmin();await responderCitando(message,`🗑️ *${n} advertência(s)* removida(s) de @${id.split('@')[0]}.`,{mentions:[id]});return;
+    }
+    if(acao==='limpar_adv'){
+        config.advertencias={};salvarConfigAdmin();await responderCitando(message,'🧹 *Todas as advertências deste grupo foram apagadas.*');return;
+    }
+    const entradas=Object.entries(config.advertencias);
+    await enviarComMencoes(message.from,`┏═•❃༺📋༻❃•═┓\n│      *𝐋𝐈𝐒𝐓𝐀 𝐃𝐄 𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n├✯\n${entradas.length?entradas.map(([id,l])=>`├➤ @${id.split('@')[0]} • *${l.length}*`).join('\n'):'├➤ _Nenhuma advertência registrada._'}\n┗═•❃༺📋༻❃•═┓`,{mentions:entradas.map(x=>x[0]),quotedMessageId:obterIdMensagem(message)});
+}
+
+async function comandoAnotacao(message, acao, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from)); const args=String(argumentos||'').trim();
+    if(acao==='anotar'){
+        if(!args){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}anotar título | texto*.`);return;}
+        const [titulo,...rest]=args.split('|');const texto=rest.join('|').trim()||titulo.trim();config.anotacoes.push({id:Date.now(),titulo:titulo.trim(),texto,autor:obterIdRemetente(message),data:new Date().toISOString()});salvarConfigAdmin();await responderCitando(message,`📝 *Anotação salva:* ${titulo.trim()}`);return;
+    }
+    if(acao==='rmnota'){const id=Number(args);const antes=config.anotacoes.length;config.anotacoes=config.anotacoes.filter(n=>n.id!==id);salvarConfigAdmin();await responderCitando(message,antes!==config.anotacoes.length?'🗑️ *Anotação removida.*':'❌ _ID de anotação não encontrado._');return;}
+    await responderCitando(message,`┏═•❃༺📝༻❃•═┓\n│       *𝐀𝐍𝐎𝐓𝐀𝐂̧𝐎̃𝐄𝐒*\n├✯\n${config.anotacoes.length?config.anotacoes.map((n,i)=>`├➤ *${i+1}.* ${n.titulo}\n│   🆔 ${n.id}\n│   _${n.texto}_`).join('\n'): '├➤ _Nenhuma anotação._'}\n┗═•❃༺📝༻❃•═┓`);
+}
+
+async function comandoPromoverRebaixar(message, acao) {
+    if (!(await exigirAdmin(message))) return;
+    const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);if(!id)return;
+    try { const chat=await message.getChat(); if(acao==='promover') await chat.promoteParticipants([id]); else await chat.demoteParticipants([id]); await responderCitando(message,`┏═•❃༺${acao==='promover'?'👑':'🔻'}༻❃•═┓\n├➤ @${id.split('@')[0]} foi *${acao==='promover'?'promovido a administrador':'rebaixado'}*.\n┗═•❃༺${acao==='promover'?'👑':'🔻'}༻❃•═┓`,{mentions:[id]}); } catch(erro){console.error(`❌ Erro ao ${acao}:`,erro);await responderCitando(message,`❌ _Não foi possível ${acao==='promover'?'promover':'rebaixar'} essa pessoa._`);}
+}
+
+async function comandoMarcar(message, modo, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    try {
+        const chat = await message.getChat();
+        const botId = client.info?.wid?._serialized || '';
+        const ids = (chat.participants || [])
+            .map(p => p.id?._serialized || (p.id?.user ? `${p.id.user}@c.us` : String(p.id || '')))
+            .filter(Boolean)
+            .filter((id, i, a) => a.indexOf(id) === i && id !== botId);
+        const corpo = argumentos.trim() || '📢 *Atenção, pessoal!*';
+        const texto = `${modo === 'hidetag' ? '​' : '📢 '}${corpo}\n\n${ids.map(id => `@${String(id).split('@')[0]}`).join(' ')}`;
+        await enviarComMencoes(message.from, aplicarEstiloMensagem(texto), { mentions: ids, quotedMessageId: obterIdMensagem(message) });
+    } catch (erro) {
+        console.error('❌ Erro ao marcar:', erro);
+        await responderCitando(message,'❌ _Não consegui marcar os participantes._');
+    }
+}
+
+function normalizarHorarioGrupo(valor) { const m=String(valor||'').trim().match(/^(\d{1,2}):(\d{2})$/); if(!m)return null; const h=Number(m[1]),min=Number(m[2]); return h>=0&&h<=23&&min>=0&&min<=59?`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`:null; }
+
+async function comandoHorarioGrupo(message, tipo, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const config=obterConfiguracaoPersistente(obterConfigAdmin(message.from)); const valor=normalizarHorarioGrupo(argumentos);
+    if(tipo==='remover'){config.horarioAbertura=null;config.horarioFechamento=null;config.ultimoHorarioGrupo=null;salvarConfigAdmin();await responderCitando(message,'🕐 *Horários automáticos removidos.*');return;}
+    if(tipo==='status'){await responderCitando(message,`┏═•❃༺🕐༻❃•═┓\n│       *𝐇𝐎𝐑𝐀́𝐑𝐈𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n├✯\n├➤ 🔓 Abertura: *${formatarHoraConfig(config.horarioAbertura)}*\n├➤ 🔒 Fechamento: *${formatarHoraConfig(config.horarioFechamento)}*\n┗═•❃༺🕐༻❃•═┓`);return;}
+    if(!valor){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${tipo==='abertura'?'opengp':'closegp'} HH:MM*.`);return;}
+    if(tipo==='abertura')config.horarioAbertura=valor;else config.horarioFechamento=valor;salvarConfigAdmin();await responderCitando(message,`🕐 *${tipo==='abertura'?'Abertura':'Fechamento'} automática:* ${valor}`);
+}
+
+async function verificarHorariosGrupos() {
+    const agora=new Date(); const hora=agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Sao_Paulo'});
+    for(const [grupoId,configBase] of configuracoesAdminGrupos.entries()){
+        const config=obterConfiguracaoPersistente(configBase); let acao=null;
+        if(config.horarioAbertura===hora) acao='abrir';
+        if(config.horarioFechamento===hora) acao='fechar';
+        if(!acao || config.ultimoHorarioGrupo===`${hora}:${acao}`) continue;
+        try { const chat=await client.getChatById(grupoId); if(!chat?.isGroup)continue; if(!chat.isGroup)continue; const bot=chat.participants?.find(p=>idsIguais(p.id?._serialized||String(p.id),client.info?.wid?._serialized||'')); if(bot && !bot.isAdmin)continue; if(typeof chat.setMessagesAdminsOnly==='function'){await chat.setMessagesAdminsOnly(acao==='fechar');} else continue; config.ultimoHorarioGrupo=`${hora}:${acao}`;salvarConfigAdmin();console.log(`🕐 Grupo ${grupoId}: ${acao}`); } catch(erro){console.error(`⚠️ Erro no horário do grupo ${grupoId}:`,erro.message);}
+    }
+}
+
+// ============================================================
 // PROCESSADOR DE COMANDOS
 // ============================================================
 
@@ -18641,10 +18867,12 @@ async function comandoAntiFlood(message, argumentos = '') {
 
 async function comandoWelcomeGoodbye(message, tipo, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
-    const config = obterConfigAdmin(message.from); const args = String(argumentos || '').trim();
-    if (!args) { await responderCitando(message, `👋 ${tipo === 'welcome' ? 'Welcome' : 'Goodbye'}: *${config[tipo] ? 'ON' : 'OFF'}*\n📝 ${config[tipo === 'welcome' ? 'welcomeTexto' : 'goodbyeTexto']}`); return; }
-    if (['on','off'].includes(args.toLowerCase())) { config[tipo] = args.toLowerCase() === 'on'; salvarConfigAdmin(); await responderCitando(message, `👋 *${tipo} ${config[tipo] ? 'ATIVADO' : 'DESATIVADO'}.*`); return; }
-    const chave = tipo === 'welcome' ? 'welcomeTexto' : 'goodbyeTexto'; config[chave] = args.replace(/@pessoa/gi, '@pessoa'); salvarConfigAdmin(); await responderCitando(message, `✅ Mensagem de ${tipo} atualizada.\n\n${config[chave]}`);
+    const config = obterConfigAdmin(message.from);
+    const args = String(argumentos || '').trim();
+    const chave = tipo === 'welcome' ? 'welcomeTexto' : 'goodbyeTexto';
+    if (!args) { await responderCitando(message, `┏═•❃༺${tipo==='welcome'?'👋':'🚪'}༻❃•═┓\n├➤ ${tipo==='welcome'?'Welcome':'Goodbye'}: *${config[tipo]?'🟢 ON':'🔴 OFF'}*\n├➤ 📝 _${config[chave]}_\n┗═•❃༺${tipo==='welcome'?'👋':'🚪'}༻❃•═┓`); return; }
+    if (['on','off'].includes(args.toLowerCase())) { config[tipo]=args.toLowerCase()==='on'; salvarConfigAdmin(); await responderCitando(message,`👋 *${tipo} ${config[tipo]?'ATIVADO':'DESATIVADO'}.*`); return; }
+    config[chave]=args; salvarConfigAdmin(); await responderCitando(message,`✅ *Mensagem de ${tipo} atualizada.*\n\n_${args}_\n\n💡 Use *@pessoa* para mencionar a pessoa.`);
 }
 
 async function comandoRegras(message, argumentos = '') {
@@ -19608,6 +19836,22 @@ case 'filhosranking':
             await mostrarRanking(message);
             break;
 
+        case 'adverter': await comandoAdvertencia(message, 'adverter', argumentos); break;
+        case 'rm_adv': case 'rmadv': await comandoAdvertencia(message, 'rm_adv', argumentos); break;
+        case 'lista_adv': case 'listaadv': await comandoAdvertencia(message, 'lista_adv', argumentos); break;
+        case 'ver_adv': case 'veradv': await comandoAdvertencia(message, 'ver_adv', argumentos); break;
+        case 'limpar_adv': case 'limparadv': await comandoAdvertencia(message, 'limpar_adv', argumentos); break;
+        case 'anotar': await comandoAnotacao(message, 'anotar', argumentos); break;
+        case 'anotações': case 'anotacoes': await comandoAnotacao(message, 'anotações', argumentos); break;
+        case 'rmnota': await comandoAnotacao(message, 'rmnota', argumentos); break;
+        case 'promover': await comandoPromoverRebaixar(message, 'promover'); break;
+        case 'rebaixar': case 'rebaixaradm': await comandoPromoverRebaixar(message, 'rebaixar'); break;
+        case 'marcar': case 'marcar2': case 'marcarwa': await comandoMarcar(message, comando, argumentos); break;
+        case 'hidetag': await comandoMarcar(message, 'hidetag', argumentos); break;
+        case 'opengp': await comandoHorarioGrupo(message, 'abertura', argumentos); break;
+        case 'closegp': await comandoHorarioGrupo(message, 'fechamento', argumentos); break;
+        case 'rm_opengp': case 'rmopengp': await comandoHorarioGrupo(message, 'remover', argumentos); break;
+        case 'time-status': case 'timestatus': await comandoHorarioGrupo(message, 'status', argumentos); break;
         case 'config':
         case 'conf':
             await comandoConfigAdmin(message, argumentos); break;
@@ -20688,10 +20932,16 @@ client.on('group_join', async notification => {
     try {
         const config = obterConfigAdmin(notification.chatId);
         if (!config?.welcome) return;
+        const chat = await client.getChatById(notification.chatId);
         const ids = notification.recipientIds || [];
+        const nomeGrupo = chat?.name || 'este grupo';
+        const membros = chat?.participants?.length || 0;
         for (const id of ids) {
-            const texto = config.welcomeTexto.replace(/@pessoa/gi, `@${String(id).split('@')[0]}`);
-            await enviarComMencoes(notification.chatId, texto, { mentions: [id] });
+            const textoBase = String(config.welcomeTexto || '')
+                .replace(/@pessoa/gi, `@${String(id).split('@')[0]}`)
+                .replace(/@grupo/gi, nomeGrupo)
+                .replace(/@membros/gi, String(membros));
+            await enviarComMencoes(notification.chatId, aplicarEstiloMensagem(textoBase), { mentions: [id] });
         }
     } catch (erro) { console.error('⚠️ Erro no welcome:', erro); }
 });
@@ -20700,10 +20950,14 @@ client.on('group_leave', async notification => {
     try {
         const config = obterConfigAdmin(notification.chatId);
         if (!config?.goodbye) return;
+        const chat = await client.getChatById(notification.chatId);
         const id = notification.recipientId || notification.author;
         if (!id) return;
-        const texto = config.goodbyeTexto.replace(/@pessoa/gi, `@${String(id).split('@')[0]}`);
-        await enviarComMencoes(notification.chatId, texto, { mentions: [id] });
+        const textoBase = String(config.goodbyeTexto || '')
+            .replace(/@pessoa/gi, `@${String(id).split('@')[0]}`)
+            .replace(/@grupo/gi, chat?.name || 'este grupo')
+            .replace(/@membros/gi, String(chat?.participants?.length || 0));
+        await enviarComMencoes(notification.chatId, aplicarEstiloMensagem(textoBase), { mentions: [id] });
     } catch (erro) { console.error('⚠️ Erro no goodbye:', erro); }
 });
 
@@ -20720,6 +20974,14 @@ client.on('ready', () => {
         });
     }, 15000);
 });
+
+let ultimoTickHorario = null;
+setInterval(() => {
+    const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Sao_Paulo'});
+    if (agora === ultimoTickHorario) return;
+    ultimoTickHorario = agora;
+    verificarHorariosGrupos().catch(erro => console.error('⚠️ Erro no agendamento de grupos:', erro.message));
+}, 30000);
 
 // ============================================================
 // INICIALIZAÇÃO
