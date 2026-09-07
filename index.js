@@ -9051,399 +9051,179 @@ _Emoji Kitchen. Tente outra dupla._`
 // BRAT
 // ============================================================
 
-function escaparXmlBrat(texto) {
-    return String(texto)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;');
-}
+// Renderizador BRAT baseado no mesmo princípio do gerador web:
+// texto real medido pelo Chromium, alinhamento no canto superior esquerdo,
+// Arial comum comprimida horizontalmente e blur aplicado no canvas.
+async function renderizarBratNoNavegador(texto, opcoes = {}) {
+    const pagina = client.pupPage;
 
-function quebrarTextoBrat(texto, caracteresPorLinha) {
-    const palavras = texto
-        .trim()
-        .split(/\s+/);
+    if (!pagina) {
+        throw new Error('Página do navegador do WhatsApp ainda não está disponível.');
+    }
 
-    const linhas = [];
-    let linhaAtual = '';
+    const resultado = await pagina.evaluate(({ texto, opcoes }) => {
+        const canvas = document.createElement('canvas');
+        const tamanho = 1000;
+        const margem = 32;
+        const larguraUtil = tamanho - (margem * 2);
+        const alturaUtil = tamanho - (margem * 2);
+        const escalaX = 0.69;
+        const fonteMinima = 20;
+        const fonteMaxima = opcoes.fonteMaxima || 300;
+        const pesoFonte = opcoes.pesoFonte || 400;
+        const desfoque = opcoes.desfoque ?? 4;
+        const fundo = opcoes.fundo || '#ffffff';
+        const corTexto = opcoes.corTexto || '#000000';
+        const fonteForcada = opcoes.fonte;
+        const lineHeightFator = 0.9;
 
-    for (const palavra of palavras) {
+        canvas.width = tamanho;
+        canvas.height = tamanho;
 
-        const tentativa =
-            linhaAtual
-                ? `${linhaAtual} ${palavra}`
-                : palavra;
+        const ctx = canvas.getContext('2d');
+        const normalizarFonte = (tamanhoFonte) =>
+            `${pesoFonte} ${tamanhoFonte}px Arial, Liberation Sans, sans-serif`;
 
-        if (
-            tentativa.length >
-            caracteresPorLinha
-        ) {
-            if (linhaAtual) {
-                linhas.push(linhaAtual);
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+
+        function medir(textoLinha, tamanhoFonte) {
+            ctx.font = normalizarFonte(tamanhoFonte);
+            return ctx.measureText(textoLinha).width * escalaX;
+        }
+
+        function quebrar(textoLinha, tamanhoFonte) {
+            const palavras = textoLinha.trim().split(/\s+/).filter(Boolean);
+            if (!palavras.length) return [''];
+
+            const linhas = [];
+            let linhaAtual = '';
+
+            for (const palavra of palavras) {
+                const tentativa = linhaAtual
+                    ? `${linhaAtual} ${palavra}`
+                    : palavra;
+
+                if (medir(tentativa, tamanhoFonte) <= larguraUtil) {
+                    linhaAtual = tentativa;
+                    continue;
+                }
+
+                if (linhaAtual) {
+                    linhas.push(linhaAtual);
+                    linhaAtual = '';
+                }
+
+                if (medir(palavra, tamanhoFonte) <= larguraUtil) {
+                    linhaAtual = palavra;
+                    continue;
+                }
+
+                let parte = '';
+                for (const caractere of palavra) {
+                    const tentativaCaractere = parte + caractere;
+                    if (medir(tentativaCaractere, tamanhoFonte) <= larguraUtil) {
+                        parte = tentativaCaractere;
+                    } else {
+                        if (parte) linhas.push(parte);
+                        parte = caractere;
+                    }
+                }
+                linhaAtual = parte;
             }
 
-            linhaAtual = palavra;
+            if (linhaAtual) linhas.push(linhaAtual);
+            return linhas.length ? linhas : [''];
+        }
 
+        let fonte = fonteForcada || fonteMaxima;
+        let linhas = quebrar(texto, fonte);
+
+        if (!fonteForcada) {
+            while (fonte > fonteMinima) {
+                const altura = linhas.length * fonte * lineHeightFator;
+                if (altura <= alturaUtil) break;
+                fonte -= 2;
+                linhas = quebrar(texto, fonte);
+            }
         } else {
-            linhaAtual = tentativa;
-        }
-    }
-
-    if (linhaAtual) {
-        linhas.push(linhaAtual);
-    }
-
-    return linhas;
-}
-
-
-// Calcula automaticamente o tamanho da fonte
-// para aproveitar melhor a imagem.
-
-function calcularLayoutBrat(texto) {
-    const tamanho = 1000;
-
-    // A referência visual da versão deluxe não centraliza o bloco inteiro.
-    // O texto começa perto do canto superior esquerdo e ocupa a maior parte
-    // da área, com uma composição propositalmente simples/"mal alinhada".
-    const margemEsquerda = 58;
-    const margemDireita = 58;
-    const margemSuperior = 68;
-    const margemInferior = 58;
-    const larguraUtil =
-        tamanho - margemEsquerda - margemDireita;
-    const alturaUtil =
-        tamanho - margemSuperior - margemInferior;
-
-    // A arte é baseada em Arial comum comprimida horizontalmente, não em
-    // Arial Narrow. O achatamento é aplicado na largura, mantendo a altura.
-    const fonteMaxima = 300;
-    const fonteMinima = 52;
-    const escalaX = 0.69;
-    const pesoFonte = 400;
-    const alturaLinhaFator = 0.86;
-
-    const palavras = texto
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
-
-    function larguraEstimada(valor, fonte, letterSpacing) {
-        if (!valor) {
-            return 0;
+            linhas = quebrar(texto, fonte);
         }
 
-        // Métrica aproximada de Arial antes do achatamento horizontal.
-        // A decisão final de largura continua sendo feita pelo textLength.
-        const caracteres = valor.length;
-        const larguraBase = caracteres * fonte * 0.54;
-        const espacamento =
-            Math.max(0, caracteres - 1) * letterSpacing;
+        const alturaLinha = fonte * lineHeightFator;
 
-        return (larguraBase * escalaX) + espacamento;
-    }
+        ctx.fillStyle = fundo;
+        ctx.fillRect(0, 0, tamanho, tamanho);
 
-    function montarLinhas(fonte, letterSpacing) {
-        if (!palavras.length) {
-            return [''];
+        // A compressão horizontal acontece depois da medição, como no visual
+        // característico do BRAT, evitando que o texto seja recentralizado.
+        ctx.save();
+        ctx.translate(margem, margem);
+        ctx.scale(escalaX, 1);
+        ctx.font = normalizarFonte(fonte);
+        ctx.fillStyle = corTexto;
+        ctx.filter = `blur(${desfoque}px)`;
+
+        const x = 0;
+        let y = 0;
+        for (const linha of linhas) {
+            ctx.fillText(linha, x, y);
+            y += alturaLinha;
         }
+        ctx.restore();
 
-        const linhas = [];
-        let linhaAtual = '';
-
-        for (const palavra of palavras) {
-            const tentativa = linhaAtual
-                ? `${linhaAtual} ${palavra}`
-                : palavra;
-
-            if (
-                !linhaAtual ||
-                larguraEstimada(
-                    tentativa,
-                    fonte,
-                    letterSpacing
-                ) <= larguraUtil
-            ) {
-                linhaAtual = tentativa;
-                continue;
-            }
-
-            linhas.push(linhaAtual);
-            linhaAtual = palavra;
-        }
-
-        if (linhaAtual) {
-            linhas.push(linhaAtual);
-        }
-
-        return linhas;
-    }
-
-    // O gerador de referência procura o maior tamanho que cabe na caixa.
-    // Aqui usamos busca binária para evitar que o texto fique artificialmente
-    // pequeno por causa de passos fixos.
-    let baixo = fonteMinima;
-    let alto = fonteMaxima;
-    let melhor = fonteMinima;
-    let melhorLinhas = montarLinhas(
-        fonteMinima,
-        -1.0
-    );
-
-    while (baixo <= alto) {
-        const fonte = Math.floor((baixo + alto) / 2);
-        const proporcao =
-            (fonte - fonteMinima) /
-            (fonteMaxima - fonteMinima);
-
-        const letterSpacing =
-            -0.5 - (proporcao * 1.2);
-
-        const linhas = montarLinhas(
+        return {
+            dataUrl: canvas.toDataURL('image/png'),
             fonte,
-            letterSpacing
-        );
+            linhas,
+            alturaLinha,
+            escalaX,
+            margem
+        };
+    }, { texto: String(texto || ''), opcoes });
 
-        const alturaLinha =
-            fonte * alturaLinhaFator;
-        const alturaTotal =
-            linhas.length * alturaLinha;
-
-        if (alturaTotal <= alturaUtil) {
-            melhor = fonte;
-            melhorLinhas = linhas;
-            baixo = fonte + 1;
-        } else {
-            alto = fonte - 1;
-        }
-    }
-
-    const proporcao =
-        (melhor - fonteMinima) /
-        (fonteMaxima - fonteMinima);
-
-    const letterSpacing =
-        -0.5 - (proporcao * 1.2);
+    const base64 = resultado.dataUrl.replace(/^data:image\/png;base64,/, '');
 
     return {
-        fonte: melhor,
-        linhas: melhorLinhas,
-        alturaLinha: melhor * alturaLinhaFator,
-        letterSpacing,
-        margemEsquerda,
-        margemDireita,
-        margemSuperior,
-        margemInferior,
-        larguraUtil,
-        alturaUtil,
-        escalaX,
-        pesoFonte
+        buffer: Buffer.from(base64, 'base64'),
+        layout: resultado
     };
 }
 
-function construirSvgBrat(
-    layout,
-    opcoes = {}
-) {
-    const tamanho = 1000;
-    const fundo = opcoes.fundo ?? '#ffffff';
-    const corTexto = opcoes.corTexto ?? '#000000';
-    const desfoque = opcoes.desfoque ?? 2.0;
-
-    const {
-        fonte,
-        linhas,
-        alturaLinha,
-        letterSpacing,
-        pesoFonte = 400,
-        margemEsquerda = 58,
-        margemSuperior = 68,
-        larguraUtil = 884
-    } = layout;
-
-    const yInicial =
-        margemSuperior +
-        (fonte * 0.76);
-
-    const linhasSvg = linhas
-        .map((linha, indice) => {
-            const y =
-                yInicial +
-                indice * alturaLinha;
-
-            // O texto fica alinhado à esquerda. A compressão é feita no
-            // comprimento dos glifos, preservando a altura original da fonte.
-            const larguraNaturalEstimada =
-                Math.max(
-                    1,
-                    linha.length * fonte * 0.54
-                );
-
-            const larguraComprimida =
-                larguraNaturalEstimada * (0.69 / 0.54);
-
-            const larguraDesejada =
-                Math.min(
-                    larguraUtil,
-                    Math.max(
-                        70,
-                        larguraComprimida
-                    )
-                );
-
-            return `
-<tspan
-    x="${margemEsquerda}"
-    y="${y}"
-    textLength="${larguraDesejada.toFixed(2)}"
-    lengthAdjust="spacingAndGlyphs"
->${escaparXmlBrat(linha)}</tspan>`;
-        })
-        .join('');
-
-    return `
-<svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="${tamanho}"
-    height="${tamanho}"
-    viewBox="0 0 ${tamanho} ${tamanho}"
->
-    <defs>
-        <filter
-            id="bratBlur"
-            x="-20%"
-            y="-20%"
-            width="140%"
-            height="140%"
-        >
-            <feGaussianBlur
-                stdDeviation="${desfoque}"
-            />
-        </filter>
-    </defs>
-
-    <rect
-        x="0"
-        y="0"
-        width="100%"
-        height="100%"
-        fill="${fundo}"
-    />
-
-    <text
-        x="0"
-        y="0"
-        font-family="Arial, Liberation Sans, sans-serif"
-        font-size="${fonte}"
-        font-weight="${pesoFonte}"
-        text-anchor="start"
-        letter-spacing="${letterSpacing}"
-        fill="${corTexto}"
-        filter="url(#bratBlur)"
-    >
-        ${linhasSvg}
-    </text>
-</svg>`;
-}
-
-
-
-// ============================================================
-// BRAT 1
-// ============================================================
-
-
-async function gerarBrat1(
-    message,
-    argumento
-) {
-
-    const texto =
-    (argumento || '')
-        .trim()
-        .toLowerCase();
+async function gerarBrat1(message, argumento) {
+    const texto = (argumento || '').trim().toLowerCase();
 
     if (!texto) {
-
-        await reagir(
-            message,
-            '❌'
-        );
-
+        await reagir(message, '❌');
         await responderCitando(
             message,
-            `❌ *𝐓𝐄𝐗𝐓𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*
-
-_Exemplo:_
-
-*${PREFIXO}brat1 ola a todos*`
+            `❌ *𝐓𝐄𝐗𝐓𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*\n\n_Exemplo:_\n\n*${PREFIXO}brat1 ola a todos*`
         );
-
         return;
     }
 
     try {
+        const { buffer } = await renderizarBratNoNavegador(texto, {
+            fundo: '#ffffff',
+            corTexto: '#000000',
+            desfoque: 4,
+            pesoFonte: 400
+        });
 
-        const layout =
-            calcularLayoutBrat(
-                texto
-            );
-
-        const svg =
-            construirSvgBrat(
-                layout,
-                {
-                    desfoque: 2.0,
-                    escalaX: layout.escalaX,
-                    fundo: '#ffffff'
-                }
-            );
-
-        const buffer =
-            await sharp(
-                Buffer.from(svg)
-            )
-                .resize(500, 500, { fit: 'fill' })
-                .resize(1000, 1000, { fit: 'fill' })
-                .png({
-                    compressionLevel: 9,
-                    quality: 65
-                })
-                .toBuffer();
-
-        const figurinha =
-            new MessageMedia(
-                'image/png',
-                buffer.toString('base64'),
-                'brat.png'
-            );
-
-        await client.sendMessage(
-            message.from,
-            figurinha,
-            {
-                sendMediaAsSticker: true
-            }
+        const figurinha = new MessageMedia(
+            'image/png',
+            buffer.toString('base64'),
+            'brat.png'
         );
 
-        await reagir(
-            message,
-            '✅'
-        );
+        await client.sendMessage(message.from, figurinha, {
+            sendMediaAsSticker: true
+        });
 
+        await reagir(message, '✅');
     } catch (erro) {
-
-        console.error(
-            '❌ Erro ao gerar brat1:',
-            erro
-        );
-
-        await reagir(
-            message,
-            '❌'
-        );
-
+        console.error('❌ Erro ao gerar brat1:', erro);
+        await reagir(message, '❌');
         await responderCitando(
             message,
             '❌ _Não foi possível gerar a figurinha brat._'
@@ -9451,21 +9231,13 @@ _Exemplo:_
     }
 }
 
-
 // ============================================================
 // BRAT 2
 // ANIMAÇÃO PALAVRA POR PALAVRA
 // ============================================================
 
-async function gerarBrat2(
-    message,
-    argumento
-) {
-
-    const texto =
-        (argumento || '')
-            .trim()
-            .toLowerCase();
+async function gerarBrat2(message, argumento) {
+    const texto = (argumento || '').trim().toLowerCase();
 
     if (!texto) {
         await reagir(message, '❌');
@@ -9477,154 +9249,94 @@ async function gerarBrat2(
     }
 
     try {
-        const palavras =
-            texto
-                .split(/\s+/)
-                .filter(Boolean);
+        const palavras = texto.split(/\s+/).filter(Boolean);
 
-        const layoutCompleto =
-            calcularLayoutBrat(texto);
-
-        const caracteresPorLinha =
-            Math.max(
-                4,
-                Math.floor(
-                    layoutCompleto.larguraUtil /
-                    Math.max(
-                        1,
-                        layoutCompleto.fonte * 0.55 * layoutCompleto.escalaX
-                    )
-                )
-            );
+        // Calcula o tamanho uma única vez usando o texto completo. Assim,
+        // os frames não ficam mudando de escala conforme as palavras entram.
+        const layoutCompleto = await renderizarBratNoNavegador(texto, {
+            fundo: '#ffffff',
+            corTexto: '#000000',
+            desfoque: 0,
+            pesoFonte: 400
+        });
 
         const frames = [[]];
-
         for (let i = 1; i <= palavras.length; i++) {
-            frames.push(
-                palavras.slice(0, i)
-            );
+            frames.push(palavras.slice(0, i));
         }
 
-        const encoder =
-            new GIFEncoder(1000, 1000);
-
+        const encoder = new GIFEncoder(1000, 1000);
         encoder.start();
         encoder.setRepeat(0);
         encoder.setQuality(5);
 
         for (let i = 0; i < frames.length; i++) {
+            const textoFrame = frames[i].join(' ');
+            let bufferRgba;
 
-            const palavrasVisiveis = frames[i];
-            let linhas;
-
-            if (palavrasVisiveis.length === 0) {
-                linhas = [' '];
-            } else {
-                linhas = quebrarTextoBrat(
-                    palavrasVisiveis.join(' '),
-                    caracteresPorLinha
-                );
-            }
-
-            const layoutFrame = {
-                fonte: layoutCompleto.fonte,
-                linhas,
-                alturaLinha: layoutCompleto.alturaLinha,
-                letterSpacing: layoutCompleto.letterSpacing,
-                margemEsquerda: layoutCompleto.margemEsquerda,
-                margemDireita: layoutCompleto.margemDireita,
-                margemSuperior: layoutCompleto.margemSuperior,
-                margemInferior: layoutCompleto.margemInferior,
-                larguraUtil: layoutCompleto.larguraUtil,
-                alturaUtil: layoutCompleto.alturaUtil,
-                escalaX: layoutCompleto.escalaX,
-                pesoFonte: layoutCompleto.pesoFonte
-            };
-
-            const svg =
-                construirSvgBrat(
-                    layoutFrame,
-                    {
-                        desfoque: i === 0 ? 0 : 2.0,
-                        escalaX: layoutCompleto.escalaX,
-                        fundo: '#ffffff',
-                        deslocamentoX: 0,
-                        deslocamentoY: 0
-                    }
-                );
-
-            const bufferRgba =
-                await sharp(
-                    Buffer.from(svg)
-                )
-                    .resize(500, 500, { fit: 'fill' })
-                    .resize(1000, 1000, { fit: 'fill' })
+            if (!textoFrame) {
+                const vazio = await renderizarBratNoNavegador(' ', {
+                    fundo: '#ffffff',
+                    corTexto: '#000000',
+                    desfoque: 0,
+                    pesoFonte: 400,
+                    fonte: layoutCompleto.layout.fonte
+                });
+                bufferRgba = await sharp(vazio.buffer)
                     .ensureAlpha()
                     .raw()
                     .toBuffer();
+            } else {
+                const frame = await renderizarBratNoNavegador(textoFrame, {
+                    fundo: '#ffffff',
+                    corTexto: '#000000',
+                    desfoque: i === 0 ? 0 : 4,
+                    pesoFonte: 400,
+                    fonte: layoutCompleto.layout.fonte
+                });
+                bufferRgba = await sharp(frame.buffer)
+                    .ensureAlpha()
+                    .raw()
+                    .toBuffer();
+            }
 
-            encoder.setDelay(
-                i === 0 ? 250 : 400
-            );
-
+            encoder.setDelay(i === 0 ? 250 : 400);
             encoder.addFrame(bufferRgba);
         }
 
-        const svgFinal =
-            construirSvgBrat(
-                layoutCompleto,
-                {
-                    desfoque: 2.0,
-                    escalaX: layoutCompleto.escalaX,
-                    fundo: '#ffffff',
-                    deslocamentoX: 0,
-                    deslocamentoY: 0
-                }
-            );
-
-        const bufferFinal =
-            await sharp(
-                Buffer.from(svgFinal)
-            )
-                .resize(500, 500, { fit: 'fill' })
-                .resize(1000, 1000, { fit: 'fill' })
-                .ensureAlpha()
-                .raw()
-                .toBuffer();
-
         encoder.setDelay(1800);
+        const final = await renderizarBratNoNavegador(texto, {
+            fundo: '#ffffff',
+            corTexto: '#000000',
+            desfoque: 4,
+            pesoFonte: 400,
+            fonte: layoutCompleto.layout.fonte
+        });
+        const bufferFinal = await sharp(final.buffer)
+            .ensureAlpha()
+            .raw()
+            .toBuffer();
         encoder.addFrame(bufferFinal);
         encoder.finish();
 
-        const bufferGif =
-            encoder.out.getData();
-
-        const figurinhaAnimada =
-            new MessageMedia(
-                'image/gif',
-                bufferGif.toString('base64'),
-                'brat.gif'
-            );
-
-        await client.sendMessage(
-            message.from,
-            figurinhaAnimada,
-            { sendMediaAsSticker: true }
+        const bufferGif = encoder.out.getData();
+        const figurinhaAnimada = new MessageMedia(
+            'image/gif',
+            bufferGif.toString('base64'),
+            'brat.gif'
         );
+
+        await client.sendMessage(message.from, figurinhaAnimada, {
+            sendMediaAsSticker: true
+        });
 
         await reagir(message, '✅');
-
     } catch (erro) {
-        console.error(
-            '❌ Erro ao gerar brat2:',
-            erro
-        );
-
+        console.error('❌ Erro ao gerar brat2:', erro);
         await reagir(message, '❌');
-
         await responderCitando(
             message,
-            `❌ _Não foi possível gerar a figurinha animada brat._`
+            '❌ _Não foi possível gerar a figurinha animada brat._'
         );
     }
 }
