@@ -9086,7 +9086,18 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
 
         const ctx = canvas.getContext('2d');
         const normalizarFonte = tamanhoFonte =>
-            `${pesoFonte} ${tamanhoFonte}px Arial, Liberation Sans, sans-serif`;
+            `${pesoFonte} ${tamanhoFonte}px \"Arial Narrow\", \"Liberation Sans Narrow\", Arial, Liberation Sans, sans-serif`;
+
+        // O BRAT original usa uma tipografia condensada. Carregamos a fonte
+        // antes das medições para que a quebra de linha use a mesma métrica
+        // que será usada no desenho. Isso evita casos como "TESTE BEM LEGAL"
+        // virando uma palavra por linha quando ainda caberiam duas.
+        try {
+            await document.fonts.load(normalizarFonte(100));
+        } catch (_) {
+            // Se a fonte condensada não estiver disponível, o fallback acima
+            // continua funcionando normalmente.
+        }
 
         function pareceEmoji(cluster) {
             if (/^[0-9#*]\uFE0F?\u20E3$/.test(cluster)) return true;
