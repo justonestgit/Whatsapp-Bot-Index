@@ -5513,9 +5513,9 @@ async function menuModeracao(message) {
 │  🎁 *𝐄𝐕𝐄𝐍𝐓𝐎𝐒*
 │
 ├➤ 🎁 *${PREFIXO}sorteio 10m prêmio*
-├➤ 🛑 *${PREFIXO}cancelarsorteio*
+├➤ 🎟️ *${PREFIXO}sorteio2 10m prêmio 2*\n├➤ 🪙 *${PREFIXO}sorteiogold 10m prêmio*\n├➤ 🛑 *${PREFIXO}cancelarsorteio*
 ├➤ 🧹 *${PREFIXO}limpar 10*
-├➤ 📋 *${PREFIXO}logs on/off*
+├➤ 🤝 *${PREFIXO}add_parceria nome | contato/link*\n├➤ 🤝 *${PREFIXO}del_parceria ID*\n├➤ 🤝 *${PREFIXO}parceria*\n├➤ 🤝 *${PREFIXO}modoparceria on/off*\n│\n│  ⚠️ *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n│\n├➤ *${PREFIXO}adverter @pessoa motivo*\n├➤ *${PREFIXO}rm_adv @pessoa [quantidade]*\n├➤ *${PREFIXO}lista_adv*\n├➤ *${PREFIXO}ver_adv @pessoa*\n├➤ *${PREFIXO}limpar_adv*\n│\n│  📝 *𝐀𝐍𝐎𝐓𝐀𝐂̧𝐎̃𝐄𝐒*\n│\n├➤ *${PREFIXO}anotar título | texto*\n├➤ *${PREFIXO}anotações*\n├➤ *${PREFIXO}rmnota ID*\n│\n│  📋 *𝐋𝐈𝐒𝐓𝐀𝐒*\n│\n├➤ *${PREFIXO}listabranca @pessoa*\n├➤ *${PREFIXO}rmlistabranca @pessoa*\n├➤ *${PREFIXO}listanegra*\n├➤ *${PREFIXO}tirardalista @pessoa*\n├➤ *${PREFIXO}add_palavra palavra*\n├➤ *${PREFIXO}rm_palavra palavra*\n├➤ *${PREFIXO}lista_palavras*\n├➤ 📋 *${PREFIXO}logs on/off*
 │
 │  ⭐ *𝐌𝐀𝐍𝐔𝐓𝐄𝐍𝐂̧𝐀̃𝐎*
 │
@@ -5524,7 +5524,7 @@ async function menuModeracao(message) {
 ├➤ ♻️ *${PREFIXO}resetxp @pessoa*
 ├➤ 💰 *${PREFIXO}darcoins @pessoa 100*
 ├➤ 💰 *${PREFIXO}removercoins @pessoa 100*
-├➤ ♻️ *${PREFIXO}reseteco @pessoa*
+├➤ ♻️ *${PREFIXO}reseteco @pessoa*\n├➤ 🔤 *${PREFIXO}anagrama palavra*
 │
 ├✯
 │
