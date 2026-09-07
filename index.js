@@ -9072,8 +9072,8 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         // que cabe dentro da caixa. Aqui reproduzimos essa ideia no canvas:
         // testamos os tamanhos por busca binária, usando largura + altura.
         const fonteMinima = 20;
-        const fonteMaxima = opcoes.fonteMaxima || 500;
-        const pesoFonte = opcoes.pesoFonte || 400;
+        const fonteMaxima = opcoes.fonteMaxima || 475;
+        const pesoFonte = opcoes.pesoFonte || 500;
         const desfoque = opcoes.desfoque ?? 7;
         const fundo = opcoes.fundo || '#ffffff';
         const corTexto = opcoes.corTexto || '#000000';
@@ -9316,7 +9316,7 @@ async function gerarBrat1(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 7,
-            pesoFonte: 400
+            pesoFonte: 500
         });
 
         const figurinha = new MessageMedia(
@@ -9366,7 +9366,7 @@ async function gerarBrat2(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 0,
-            pesoFonte: 400
+            pesoFonte: 500
         });
 
         const frames = [[]];
@@ -9388,7 +9388,7 @@ async function gerarBrat2(message, argumento) {
                     fundo: '#ffffff',
                     corTexto: '#000000',
                     desfoque: 0,
-                    pesoFonte: 400,
+                    pesoFonte: 500,
                     fonte: layoutCompleto.layout.fonte
                 });
                 bufferRgba = await sharp(vazio.buffer)
@@ -9400,7 +9400,7 @@ async function gerarBrat2(message, argumento) {
                     fundo: '#ffffff',
                     corTexto: '#000000',
                     desfoque: i === 0 ? 0 : 7,
-                    pesoFonte: 400,
+                    pesoFonte: 500,
                     fonte: layoutCompleto.layout.fonte
                 });
                 bufferRgba = await sharp(frame.buffer)
@@ -9418,7 +9418,7 @@ async function gerarBrat2(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 7,
-            pesoFonte: 400,
+            pesoFonte: 500,
             fonte: layoutCompleto.layout.fonte
         });
         const bufferFinal = await sharp(final.buffer)
