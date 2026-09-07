@@ -161,6 +161,9 @@ function criarAgenteIA(dependencias) {
                 model: MODELO_PADRAO,
                 input,
                 tools: DEFINICOES_TOOLS,
+                generation_config: {
+                    thinking_level: 'low'
+                },
                 ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {})
             });
 
