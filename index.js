@@ -9068,10 +9068,13 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         const larguraUtil = tamanho - (margem * 2);
         const alturaUtil = tamanho - (margem * 2);
         const escalaX = 0.69;
+        // O gerador original usa textFit para encontrar o maior tamanho
+        // que cabe dentro da caixa. Aqui reproduzimos essa ideia no canvas:
+        // testamos os tamanhos por busca binária, usando largura + altura.
         const fonteMinima = 20;
-        const fonteMaxima = opcoes.fonteMaxima || 270;
+        const fonteMaxima = opcoes.fonteMaxima || 500;
         const pesoFonte = opcoes.pesoFonte || 400;
-        const desfoque = opcoes.desfoque ?? 8;
+        const desfoque = opcoes.desfoque ?? 7;
         const fundo = opcoes.fundo || '#ffffff';
         const corTexto = opcoes.corTexto || '#000000';
         const fonteForcada = opcoes.fonte;
@@ -9209,18 +9212,38 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
             return linhas.length ? linhas : [''];
         }
 
-        let fonte = fonteForcada || fonteMaxima;
-        let linhas = await quebrar(texto, fonte);
+        let fonte;
+        let linhas;
 
-        if (!fonteForcada) {
-            while (fonte > fonteMinima) {
-                const altura = linhas.length * fonte * lineHeightFator;
-                if (altura <= alturaUtil) break;
-                fonte -= 2;
-                linhas = await quebrar(texto, fonte);
-            }
-        } else {
+        if (fonteForcada) {
+            fonte = fonteForcada;
             linhas = await quebrar(texto, fonte);
+        } else {
+            // Equivalente ao comportamento do textFit do gerador HTML:
+            // poucas palavras conseguem uma fonte maior; conforme o texto
+            // ocupa mais linhas/largura, o maior tamanho possível diminui.
+            let baixo = fonteMinima;
+            let alto = fonteMaxima;
+            let melhorFonte = fonteMinima;
+            let melhoresLinhas = await quebrar(texto, melhorFonte);
+
+            while (baixo <= alto) {
+                const candidata = Math.floor((baixo + alto) / 2);
+                const linhasCandidatas = await quebrar(texto, candidata);
+                const alturaCandidata = linhasCandidatas.length * candidata * lineHeightFator;
+                const cabeNaCaixa = alturaCandidata <= alturaUtil;
+
+                if (cabeNaCaixa) {
+                    melhorFonte = candidata;
+                    melhoresLinhas = linhasCandidatas;
+                    baixo = candidata + 1;
+                } else {
+                    alto = candidata - 1;
+                }
+            }
+
+            fonte = melhorFonte;
+            linhas = melhoresLinhas;
         }
 
         const alturaLinha = fonte * lineHeightFator;
