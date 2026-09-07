@@ -18559,7 +18559,32 @@ async function comandoDarXP(message, argumentos, remover = false) {
 
 async function comandoDarCoins(message, argumentos, remover = false) {
     if (!(await exigirAdmin(message))) return;
-    const alvo=await obterPessoaAlvoAdmin(message,argumentos,true); const qtd=Number(String(argumentos||'').match(/\b(\d+)\b/)?.[1]); if(!alvo||!Number.isFinite(qtd)||qtd<=0){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${remover?'removercoins':'darcoins'} @pessoa 100*.`);return;} const atual=moedasUsuarios.get(alvo)||{saldo:0}; atual.saldo=Math.max(0,atual.saldo+(remover?-qtd:qtd)); moedasUsuarios.set(alvo,atual); salvarMoedas(); await responderCitando(message,`💰 *${remover?'MOEDAS REMOVIDAS':'MOEDAS ADICIONADAS'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover?'-':''}${qtd}`); }
+
+    const alvo = await obterPessoaAlvoAdmin(message, argumentos, true);
+    const qtd = Number(String(argumentos || '').match(/\b(\d+)\b/)?.[1]);
+
+    if (!alvo || !Number.isFinite(qtd) || qtd <= 0) {
+        await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}${remover ? 'removercoins' : 'darcoins'} @pessoa 100*.`);
+        return;
+    }
+
+    // O WhatsApp pode entregar o remetente como LID (@lid), enquanto a
+    // economia pode estar registrada pelo JID do telefone (@c.us).
+    // Resolver a identidade antes de acessar a carteira evita criar uma
+    // segunda carteira vazia para a mesma pessoa.
+    const idEconomia = await resolverIdEconomia(alvo);
+    if (!idEconomia) {
+        await responderCitando(message, '❌ Não consegui identificar a carteira dessa pessoa.');
+        return;
+    }
+
+    const atual = garantirCarteira(idEconomia);
+    atual.saldo = Math.max(0, atual.saldo + (remover ? -qtd : qtd));
+    registrarTransacao(remover ? 'admin_removercoins' : 'admin_darcoins', null, idEconomia, qtd, `Comando administrativo ${remover ? 'removercoins' : 'darcoins'}`);
+    salvarMoedas();
+
+    await responderCitando(message, `💰 *${remover ? 'MOEDAS REMOVIDAS' : 'MOEDAS ADICIONADAS'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover ? '-' : '+'}${qtd}`);
+}
 
 async function comandoResetXP(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
@@ -18580,7 +18605,13 @@ async function comandoResetEco(message, argumentos='') {
         await responderCitando(message,`❌ Para resetar a economia, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}reseteco @pessoa*.`);
         return;
     }
-    moedasUsuarios.delete(alvo);
+    const idEconomia = await resolverIdEconomia(alvo);
+    if (!idEconomia) {
+        await responderCitando(message, '❌ Não consegui identificar a carteira dessa pessoa.');
+        return;
+    }
+    moedasUsuarios.delete(idEconomia);
+    economiaIdentidades.delete(alvo);
     salvarMoedas();
     await responderCitando(message,`♻️ Economia de @${String(alvo).split('@')[0]} resetada.`);
 }
