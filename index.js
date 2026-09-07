@@ -9067,18 +9067,18 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
         const margem = 32;
         const larguraUtil = tamanho - (margem * 2);
         const alturaUtil = tamanho - (margem * 2);
-        const escalaX = 0.69;
+        const escalaX = 1;
         // O gerador original usa textFit para encontrar o maior tamanho
         // que cabe dentro da caixa. Aqui reproduzimos essa ideia no canvas:
         // testamos os tamanhos por busca binária, usando largura + altura.
         const fonteMinima = 20;
-        const fonteMaxima = opcoes.fonteMaxima || 475;
-        const pesoFonte = opcoes.pesoFonte || 500;
+        const fonteMaxima = opcoes.fonteMaxima || 333;
+        const pesoFonte = opcoes.pesoFonte || 900;
         const desfoque = opcoes.desfoque ?? 7;
         const fundo = opcoes.fundo || '#ffffff';
         const corTexto = opcoes.corTexto || '#000000';
         const fonteForcada = opcoes.fonte;
-        const lineHeightFator = 0.9;
+        const lineHeightFator = 0.85;
         const cacheEmoji = new Map();
 
         canvas.width = tamanho;
@@ -9086,17 +9086,23 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
 
         const ctx = canvas.getContext('2d');
         const normalizarFonte = tamanhoFonte =>
-            `${pesoFonte} ${tamanhoFonte}px \"Arial Narrow\", \"Liberation Sans Narrow\", Arial, Liberation Sans, sans-serif`;
+            `${pesoFonte} ${tamanhoFonte}px \"Archivo Narrow\", \"Arial Narrow\", \"Liberation Sans Narrow\", Arial, Liberation Sans, sans-serif`;
 
-        // O BRAT original usa uma tipografia condensada. Carregamos a fonte
-        // antes das medições para que a quebra de linha use a mesma métrica
-        // que será usada no desenho. Isso evita casos como "TESTE BEM LEGAL"
-        // virando uma palavra por linha quando ainda caberiam duas.
+        // O gerador de referência usa Archivo Narrow carregada pelo Google Fonts.
+        // Reproduzimos isso dentro da página do WhatsApp antes de medir o texto,
+        // para que a largura usada na quebra seja a mesma da renderização final.
         try {
+            const idFonte = '__justbot_archivo_narrow';
+            if (!document.getElementById(idFonte)) {
+                const linkFonte = document.createElement('link');
+                linkFonte.id = idFonte;
+                linkFonte.rel = 'stylesheet';
+                linkFonte.href = 'https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@100;200;300;400;500;600;700;800;900&display=swap';
+                document.head.appendChild(linkFonte);
+            }
             await document.fonts.load(normalizarFonte(100));
         } catch (_) {
-            // Se a fonte condensada não estiver disponível, o fallback acima
-            // continua funcionando normalmente.
+            // Se o download da fonte falhar, usa os fallbacks locais.
         }
 
         function pareceEmoji(cluster) {
@@ -9327,7 +9333,7 @@ async function gerarBrat1(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 7,
-            pesoFonte: 500
+            pesoFonte: 900
         });
 
         const figurinha = new MessageMedia(
@@ -9377,7 +9383,7 @@ async function gerarBrat2(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 0,
-            pesoFonte: 500
+            pesoFonte: 900
         });
 
         const frames = [[]];
@@ -9399,7 +9405,7 @@ async function gerarBrat2(message, argumento) {
                     fundo: '#ffffff',
                     corTexto: '#000000',
                     desfoque: 0,
-                    pesoFonte: 500,
+                    pesoFonte: 900,
                     fonte: layoutCompleto.layout.fonte
                 });
                 bufferRgba = await sharp(vazio.buffer)
@@ -9411,7 +9417,7 @@ async function gerarBrat2(message, argumento) {
                     fundo: '#ffffff',
                     corTexto: '#000000',
                     desfoque: i === 0 ? 0 : 7,
-                    pesoFonte: 500,
+                    pesoFonte: 900,
                     fonte: layoutCompleto.layout.fonte
                 });
                 bufferRgba = await sharp(frame.buffer)
@@ -9429,7 +9435,7 @@ async function gerarBrat2(message, argumento) {
             fundo: '#ffffff',
             corTexto: '#000000',
             desfoque: 7,
-            pesoFonte: 500,
+            pesoFonte: 900,
             fonte: layoutCompleto.layout.fonte
         });
         const bufferFinal = await sharp(final.buffer)
