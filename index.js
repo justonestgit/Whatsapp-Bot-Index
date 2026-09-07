@@ -18533,6 +18533,9 @@ async function comandoPromoverRebaixar(message, acao) {
         return;
     }
 
+    const idsAlvo = [...await obterIdsPessoa(pessoa)];
+    if (!idsAlvo.includes(idAlvo)) idsAlvo.push(idAlvo);
+
     const idRemetente = obterIdRemetente(message);
     const botId = client.info?.wid?._serialized || '';
 
@@ -18547,7 +18550,7 @@ async function comandoPromoverRebaixar(message, acao) {
     }
 
     try {
-        const resultado = await client.pupPage.evaluate(async (chatId, alvoId, acao) => {
+        const resultado = await client.pupPage.evaluate(async (chatId, idsAlvo, acao) => {
             try {
                 const Store = window.require('WAWebCollections');
                 const chat = Store?.Chat?.get(chatId);
@@ -18559,10 +18562,31 @@ async function comandoPromoverRebaixar(message, acao) {
                     : (Array.isArray(participantes?.models) ? participantes.models : []);
 
                 const normalizar = id => id?._serialized || id?.toString?.() || '';
-                const participante = modelos.find(p => normalizar(p?.id) === alvoId);
-                if (!participante) return { ok: false, erro: 'Usuário não encontrado nos participantes do grupo.' };
+                const candidatos = new Set((idsAlvo || []).filter(Boolean).map(String));
+                const somenteNumero = id => String(id || '').split('@')[0].replace(/\D/g, '');
 
-                const idReal = normalizar(participante.id) || alvoId;
+                const participante = modelos.find(p => {
+                    const id = normalizar(p?.id);
+                    if (!id) return false;
+                    if (candidatos.has(id)) return true;
+                    const numeroId = somenteNumero(id);
+                    return numeroId && [...candidatos].some(c => {
+                        const numeroC = somenteNumero(c);
+                        return numeroC && numeroC === numeroId &&
+                            (!String(c).includes('@') || String(c).endsWith('@c.us')) &&
+                            (!id.includes('@') || id.endsWith('@c.us'));
+                    });
+                });
+
+                if (!participante) {
+                    return {
+                        ok: false,
+                        erro: 'Usuário não encontrado nos participantes do grupo.',
+                        idsRecebidos: [...candidatos]
+                    };
+                }
+
+                const idReal = normalizar(participante.id);
                 if (acao === 'promover' && (participante.isAdmin || participante.isSuperAdmin)) {
                     return { ok: true, jaEstava: true };
                 }
@@ -18574,14 +18598,13 @@ async function comandoPromoverRebaixar(message, acao) {
                     ? ['promoteParticipants', 'promoteParticipant']
                     : ['demoteParticipants', 'demoteParticipant'];
 
-                const alvos = [idReal];
                 for (const objeto of [chat, chat.groupMetadata]) {
                     if (!objeto) continue;
                     for (const nome of metodos) {
                         if (typeof objeto[nome] !== 'function') continue;
                         try {
                             const retorno = nome.endsWith('Participants')
-                                ? await objeto[nome](alvos)
+                                ? await objeto[nome]([idReal])
                                 : await objeto[nome](idReal);
                             return { ok: true, retorno: retorno ?? null };
                         } catch (erro) {
@@ -18594,7 +18617,7 @@ async function comandoPromoverRebaixar(message, acao) {
             } catch (erro) {
                 return { ok: false, erro: String(erro?.message || erro) };
             }
-        }, message.from, idAlvo, acao);
+        }, message.from, idsAlvo, acao);
 
         if (!resultado?.ok) throw new Error(resultado?.erro || 'Operação não concluída.');
 
@@ -18608,7 +18631,7 @@ async function comandoPromoverRebaixar(message, acao) {
         }
 
         await responderAlvoComMencao(message,
-            `┏═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┓\n├➤ @${String(idAlvo).split('@')[0]} foi *${acao === 'promover' ? 'promovido a administrador' : 'rebaixado'}*.\n┗═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┓`,
+            `┏═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┓\n├➤ @${String(idAlvo).split('@')[0]} foi *${acao === 'promover' ? 'promovido a administrador' : 'rebaixado'}*.\n┗═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┛`,
             pessoa
         );
     } catch (erro) {
