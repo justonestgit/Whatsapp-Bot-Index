@@ -9107,33 +9107,74 @@ function calcularLayoutBrat(texto) {
     const larguraUtil = tamanho - (margem * 2);
     const alturaUtil = tamanho - (margem * 2);
 
-    let fonte = 280;
+    // Referência visual do Brat Generator:
+    // verde #8ACE00 + Arial Narrow/condensada + peso médio + blur sutil.
+    // Textos curtos ocupam bastante área; textos longos reduzem
+    // progressivamente para continuar dentro do quadrado.
+    const fonteMaxima = 280;
+    const fonteMinima = 62;
+    const escalaX = 0.92;
 
-    while (fonte >= 70) {
-        const letterSpacing = -2.2 - (((fonte - 70) / 210) * 1.0);
-        const larguraMediaLetra = fonte * 0.43;
-        const palavras = texto.trim().split(/\s+/).filter(Boolean);
+    const palavras = texto
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    function medirTexto(textoMedido, fonte, letterSpacing) {
+        if (!textoMedido) {
+            return 0;
+        }
+
+        const caracteres = textoMedido.length;
+        const larguraMediaLetra = fonte * 0.43 * escalaX;
+
+        return (
+            caracteres * larguraMediaLetra
+        ) + (
+            Math.max(0, caracteres - 1) * letterSpacing
+        );
+    }
+
+    function montarLinhas(fonte, letterSpacing) {
         const linhas = [];
         let linhaAtual = '';
 
-        function medirTexto(textoMedido) {
-            if (!textoMedido) return 0;
-            const caracteres = textoMedido.length;
-            return (caracteres * larguraMediaLetra) +
-                (Math.max(0, caracteres - 1) * letterSpacing);
-        }
-
         for (const palavra of palavras) {
-            const tentativa = linhaAtual ? `${linhaAtual} ${palavra}` : palavra;
-            if (!linhaAtual || medirTexto(tentativa) <= larguraUtil) {
+            const tentativa = linhaAtual
+                ? `${linhaAtual} ${palavra}`
+                : palavra;
+
+            if (
+                !linhaAtual ||
+                medirTexto(tentativa, fonte, letterSpacing) <= larguraUtil
+            ) {
                 linhaAtual = tentativa;
-            } else {
-                linhas.push(linhaAtual);
-                linhaAtual = palavra;
+                continue;
             }
+
+            linhas.push(linhaAtual);
+            linhaAtual = palavra;
         }
 
-        if (linhaAtual) linhas.push(linhaAtual);
+        if (linhaAtual) {
+            linhas.push(linhaAtual);
+        }
+
+        return linhas;
+    }
+
+    for (let fonte = fonteMaxima; fonte >= fonteMinima; fonte -= 2) {
+        const proporcao =
+            (fonte - fonteMinima) /
+            (fonteMaxima - fonteMinima);
+
+        const letterSpacing =
+            -1.2 - (proporcao * 0.9);
+
+        const linhas = montarLinhas(
+            fonte,
+            letterSpacing
+        );
 
         const alturaLinha = fonte * 0.88;
         const alturaTotal = linhas.length * alturaLinha;
@@ -9149,50 +9190,31 @@ function calcularLayoutBrat(texto) {
                 margemSuperior: margem,
                 margemInferior: margem,
                 larguraUtil,
-                alturaUtil
+                alturaUtil,
+                escalaX
             };
         }
-
-        fonte -= 4;
     }
 
-    const fonteFinal = 70;
-    const letterSpacing = -3.2;
-    const larguraMediaLetra = fonteFinal * 0.43;
-    const palavras = texto.trim().split(/\s+/).filter(Boolean);
-    const linhas = [];
-    let linhaAtual = '';
-
-    function medirTextoFinal(textoMedido) {
-        if (!textoMedido) return 0;
-        const caracteres = textoMedido.length;
-        return (caracteres * larguraMediaLetra) +
-            (Math.max(0, caracteres - 1) * letterSpacing);
-    }
-
-    for (const palavra of palavras) {
-        const tentativa = linhaAtual ? `${linhaAtual} ${palavra}` : palavra;
-        if (!linhaAtual || medirTextoFinal(tentativa) <= larguraUtil) {
-            linhaAtual = tentativa;
-        } else {
-            linhas.push(linhaAtual);
-            linhaAtual = palavra;
-        }
-    }
-
-    if (linhaAtual) linhas.push(linhaAtual);
+    const fonte = fonteMinima;
+    const letterSpacing = -1.2;
+    const linhas = montarLinhas(
+        fonte,
+        letterSpacing
+    );
 
     return {
-        fonte: fonteFinal,
+        fonte,
         linhas,
-        alturaLinha: fonteFinal * 0.88,
+        alturaLinha: fonte * 0.88,
         letterSpacing,
         margemEsquerda: margem,
         margemDireita: margem,
         margemSuperior: margem,
         margemInferior: margem,
         larguraUtil,
-        alturaUtil
+        alturaUtil,
+        escalaX
     };
 }
 
@@ -9200,10 +9222,9 @@ function construirSvgBrat(
     layout,
     opcoes = {}
 ) {
-
     const tamanho = 1000;
-    const desfoque = opcoes.desfoque ?? 2.2;
-    const escalaX = opcoes.escalaX ?? 1.0;
+    const desfoque = opcoes.desfoque ?? 2.0;
+    const escalaX = opcoes.escalaX ?? layout.escalaX ?? 0.92;
     const deslocamentoX = opcoes.deslocamentoX ?? 0;
     const deslocamentoY = opcoes.deslocamentoY ?? 0;
 
@@ -9211,31 +9232,29 @@ function construirSvgBrat(
         fonte,
         linhas,
         alturaLinha,
-        letterSpacing,
-        margemEsquerda,
-        margemSuperior = 68
+        letterSpacing
     } = layout;
 
+    // Centralização óptica do bloco inteiro.
     const alturaTotal = linhas.length * alturaLinha;
     const yInicial =
         ((tamanho - alturaTotal) / 2) +
         (alturaLinha * 0.78) +
         deslocamentoY;
 
-    const linhasSvg =
-        linhas
-            .map((linha, indice) => {
-                const y =
-                    yInicial +
-                    indice * alturaLinha;
+    const linhasSvg = linhas
+        .map((linha, indice) => {
+            const y =
+                yInicial +
+                indice * alturaLinha;
 
-                return `
+            return `
 <tspan
     x="500"
     y="${y}"
 >${escaparXmlBrat(linha)}</tspan>`;
-            })
-            .join('');
+        })
+        .join('');
 
     return `
 <svg
@@ -9263,7 +9282,7 @@ function construirSvgBrat(
         y="0"
         width="100%"
         height="100%"
-        fill="#ffffff"
+        fill="#8ACE00"
     />
 
     <g
@@ -9274,7 +9293,7 @@ function construirSvgBrat(
             y="0"
             font-family="Arial Narrow, Liberation Sans Narrow, Arial, Helvetica, sans-serif"
             font-size="${fonte}"
-            font-weight="400"
+            font-weight="500"
             font-stretch="condensed"
             text-anchor="middle"
             letter-spacing="${letterSpacing}"
@@ -9333,8 +9352,8 @@ _Exemplo:_
             construirSvgBrat(
                 layout,
                 {
-                    desfoque: 2.8,
-                    escalaX: 1.0
+                    desfoque: 2.0,
+                    escalaX: layout.escalaX
                 }
             );
 
@@ -9481,8 +9500,8 @@ async function gerarBrat2(
                 construirSvgBrat(
                     layoutFrame,
                     {
-                        desfoque: i === 0 ? 0 : 2.8,
-                        escalaX: 1.0,
+                        desfoque: i === 0 ? 0 : 2.0,
+                        escalaX: layoutCompleto.escalaX,
                         deslocamentoX: 0,
                         deslocamentoY: 0
                     }
@@ -9509,8 +9528,8 @@ async function gerarBrat2(
             construirSvgBrat(
                 layoutCompleto,
                 {
-                    desfoque: 2.8,
-                    escalaX: 1.0,
+                    desfoque: 2.0,
+                    escalaX: layoutCompleto.escalaX,
                     deslocamentoX: 0,
                     deslocamentoY: 0
                 }
