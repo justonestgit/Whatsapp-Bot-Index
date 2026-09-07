@@ -19369,6 +19369,122 @@ function mensagemMencionaBot(message) {
     return ids.some(id => String(id) === String(idBot) || String(id).split('@')[0] === String(idBot).split('@')[0]);
 }
 
+const arquivoPersonalidadesSimih = `${pastaDados}/simih-personalidades.json`;
+const personalidadesSimihGrupos = new Map();
+
+const PERSONALIDADES_SIMIH = {
+    normal: {
+        nome: 'Normal', emoji: '🤖',
+        descricao: 'Natural, equilibrada e sem estilo forçado.',
+        instrucao: 'Responda de forma natural, equilibrada, humana e conversacional. Seja útil sem exagerar em emojis ou floreios.'
+    },
+    fofa: {
+        nome: 'Fofa', emoji: '🥰',
+        descricao: 'Carinhosa, doce e acolhedora.',
+        instrucao: 'Seja carinhosa, doce e acolhedora. Demonstre simpatia, use alguns emojis quando combinarem e evite soar infantil demais.'
+    },
+    cuidadosa: {
+        nome: 'Cuidadosa', emoji: '🫶',
+        descricao: 'Atenciosa, paciente e prestativa.',
+        instrucao: 'Seja atenciosa, paciente e prestativa. Leia o contexto com cuidado, evite julgamentos e priorize respostas úteis e respeitosas.'
+    },
+    amigavel: {
+        nome: 'Amigável', emoji: '😊',
+        descricao: 'Descontraída, simpática e próxima.',
+        instrucao: 'Converse de maneira simpática, descontraída e próxima, como uma boa companhia no grupo. Pode brincar de leve quando fizer sentido.'
+    },
+    sarcastica: {
+        nome: 'Sarcástica', emoji: '😏',
+        descricao: 'Irônica, espirituosa e provocadora na medida.',
+        instrucao: 'Use ironia e sarcasmo de forma espirituosa. Faça provocações leves quando combinarem com a conversa, mas não transforme toda resposta em deboche e nunca ataque alguém por características pessoais.'
+    },
+    rude: {
+        nome: 'Rude', emoji: '😈',
+        descricao: 'Direta, seca e debochada. Exclusiva para configuração de administradores.',
+        instrucao: 'Seja direta, seca e debochada, com respostas afiadas e pouca paciência para perguntas óbvias. Ainda assim, mantenha limites: não faça ameaças, não incentive violência e não use ataques degradantes contra pessoas ou grupos.'
+    }
+};
+
+function salvarPersonalidadesSimih() {
+    try {
+        const dados = {};
+        for (const [grupoId, personalidade] of personalidadesSimihGrupos.entries()) {
+            if (PERSONALIDADES_SIMIH[personalidade]) dados[grupoId] = personalidade;
+        }
+        fs.writeFileSync(arquivoPersonalidadesSimih, JSON.stringify(dados, null, 2), 'utf8');
+    } catch (erro) {
+        console.error('❌ Erro ao salvar personalidades do SIMIH:', erro.message);
+    }
+}
+
+function carregarPersonalidadesSimih() {
+    try {
+        if (!fs.existsSync(arquivoPersonalidadesSimih)) return;
+        const dados = JSON.parse(fs.readFileSync(arquivoPersonalidadesSimih, 'utf8'));
+        personalidadesSimihGrupos.clear();
+        for (const [grupoId, personalidade] of Object.entries(dados)) {
+            if (PERSONALIDADES_SIMIH[personalidade]) personalidadesSimihGrupos.set(grupoId, personalidade);
+        }
+        console.log('🎭 Personalidades do SIMIH carregadas:', personalidadesSimihGrupos.size, 'grupos');
+    } catch (erro) {
+        console.error('❌ Erro ao carregar personalidades do SIMIH:', erro.message);
+    }
+}
+
+function obterPersonalidadeSimih(grupoId) {
+    if (!grupoId || !grupoId.endsWith('@g.us')) return 'normal';
+    return personalidadesSimihGrupos.get(grupoId) || 'normal';
+}
+
+function obterInstrucaoPersonalidadeSimih(grupoId) {
+    const id = obterPersonalidadeSimih(grupoId);
+    return PERSONALIDADES_SIMIH[id]?.instrucao || PERSONALIDADES_SIMIH.normal.instrucao;
+}
+
+async function responderSimih(message, conteudo) {
+    const idMensagem = obterIdMensagem(message);
+    const opcoes = {};
+    if (idMensagem) opcoes.quotedMessageId = idMensagem;
+    return await enviarComMencoes(message.from, aplicarEstiloMensagem(conteudo), opcoes);
+}
+
+async function comandoPersonalidadeSimih(message, argumentos) {
+    if (!(await exigirAdmin(message))) return;
+    const escolha = textoNormalizado(String(argumentos || '').trim()).replace(/^personalidade\s*/, '').trim();
+
+    if (!escolha) {
+        const atual = obterPersonalidadeSimih(message.from);
+        let lista = '';
+        for (const [id, personalidade] of Object.entries(PERSONALIDADES_SIMIH)) {
+            lista += `├➤ ${personalidade.emoji} *${id}* — ${personalidade.descricao}\\n`;
+        }
+        await responderSimih(message, `┏═•❃༺🎭༻❃•═┓\\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐒𝐈𝐌𝐈𝐇*\\n├✯\\n│\\n├➤ 🎭 Atual: *${PERSONALIDADES_SIMIH[atual].nome}*\\n│\\n${lista}├✯\\n│\\n├➤ *𝐔𝐒𝐀𝐑:*\\n│   *${obterPrefixoGrupo(message.from)}simih personalidade <nome>*\\n│\\n├➤ *𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐑:*\\n│   *${obterPrefixoGrupo(message.from)}simih personalidade off*\\n│\\n┗═•❃༺🎭༻❃•═┓`);
+        return;
+    }
+
+    if (['off', 'desligar', 'desativar', 'normal'].includes(escolha)) {
+        personalidadesSimihGrupos.delete(message.from);
+        salvarPersonalidadesSimih();
+        await reagir(message, '🔴');
+        await responderSimih(message, '🔴 *Personalidade do SIMIH desativada.*\\n\\n🤖 O SIMIH voltou ao comportamento normal.');
+        return;
+    }
+
+    const personalidade = PERSONALIDADES_SIMIH[escolha];
+    if (!personalidade) {
+        await reagir(message, '❌');
+        await responderSimih(message, `❌ *Personalidade inválida.*\\n\\nUse *${obterPrefixoGrupo(message.from)}simih personalidade* para ver as opções.`);
+        return;
+    }
+
+    personalidadesSimihGrupos.set(message.from, escolha);
+    salvarPersonalidadesSimih();
+    await reagir(message, personalidade.emoji);
+    await responderSimih(message, `${personalidade.emoji} *SIMIH: ${personalidade.nome.toUpperCase()} ATIVADO.*\\n\\n_${personalidade.descricao}_`);
+}
+
+carregarPersonalidadesSimih();
+
 async function processarSimih(message) {
     if (!message?.from?.endsWith('@g.us')) return false;
     const config = obterConfigAdmin(message.from);
@@ -19388,12 +19504,15 @@ async function processarSimih(message) {
 
     try {
         const contexto = await obterContextoIA(message);
-        const prefixo = config.simih2
+        const personalidade = obterPersonalidadeSimih(message.from);
+        const dadosPersonalidade = PERSONALIDADES_SIMIH[personalidade] || PERSONALIDADES_SIMIH.normal;
+        const modo = config.simih2
             ? 'Responda à mensagem do usuário de forma natural e breve. Não mencione que é um modo automático.'
             : 'O usuário mencionou ou respondeu ao bot. Responda naturalmente à mensagem dele.';
-        const resultado = await obterAgenteIA().responder(`${prefixo}\n\nMensagem: ${texto}`, contexto);
+        const prompt = `${modo}\n\nPERSONALIDADE ATUAL DO SIMIH: ${dadosPersonalidade.nome}.\n${dadosPersonalidade.instrucao}\n\nMensagem: ${texto}`;
+        const resultado = await obterAgenteIA().responder(prompt, contexto);
         if (!resultado?.sucesso || !resultado.texto) return false;
-        await responderCitando(message, resultado.texto);
+        await responderSimih(message, resultado.texto);
         return true;
     } catch (erro) {
         console.error('⚠️ Erro no Simih:', erro.message);
@@ -19403,8 +19522,14 @@ async function processarSimih(message) {
 
 async function comandoSimih(message, argumentos, variante = 'simih') {
     if (!(await exigirAdmin(message))) return;
+    const argumentosTexto = String(argumentos || '').trim();
+    const normalizado = textoNormalizado(argumentosTexto);
+    if (normalizado === 'personalidade' || normalizado.startsWith('personalidade ')) {
+        await comandoPersonalidadeSimih(message, argumentosTexto);
+        return;
+    }
     const config = obterConfigAdmin(message.from);
-    const valor = String(argumentos || '').trim().toLowerCase();
+    const valor = normalizado;
     const ligado = ['on', 'ativar', 'ativo', 'sim', 'true'].includes(valor);
     const desligado = ['off', 'desativar', 'inativo', 'nao', 'não', 'false'].includes(valor);
     if (!ligado && !desligado) {
