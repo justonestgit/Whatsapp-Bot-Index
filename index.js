@@ -271,52 +271,41 @@ function obterPrefixoGrupo(grupoId) {
 function formatarConfiguracaoAdmin(config) {
     const prefixo = config.prefixo || PREFIXO;
     const estado = valor => valor ? '🟢 𝐎𝐍' : '🔴 𝐎𝐅𝐅';
-    const lista = valor => Array.isArray(valor) && valor.length ? `${valor.length} item${valor.length === 1 ? '' : 's'}` : 'vazia';
+    const totalAtivos = (chaves = []) => chaves.filter(chave => Boolean(config[chave])).length;
+
+    const moderacaoAtivos = totalAtivos([
+        'antilink', 'antiflood', 'antiMention', 'antiPalavra', 'autoBan', 'limitexto'
+    ]);
+    const midiaAtivos = totalAtivos([
+        'antiImg', 'antiVideo', 'antiAudio', 'antiDoc', 'antiSticker', 'antiCatalogo'
+    ]);
+    const sistemasAtivos = totalAtivos([
+        'jogos', 'economia', 'xp', 'cmds', 'multiprefix'
+    ]);
+    const entradaAtivos = totalAtivos(['welcome', 'goodbye']);
 
     return `┏═•❃༺⚙️༻❃•═┓
-│      *𝐂𝐎𝐍𝐅𝐈𝐆 𝐃𝐎 𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
+│       *𝐂𝐎𝐍𝐅𝐈𝐆 𝐃𝐎 𝐉𝐔𝐒𝐓 𝐁𝐎𝐓*
 ├✯
-│ 🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-├➤ 🔗 Antilink: *${estado(config.antilink)}*
-├➤ 🚨 Antiflood: *${config.antiflood ? `🟢 𝐎𝐍 • ${config.floodLimite}` : '🔴 𝐎𝐅𝐅'}*
-├➤ 👥 Anti-menção: *${estado(config.antiMention)}*
-├➤ 🤬 Antipalavra: *${estado(config.antiPalavra)}*
-├➤ 🚫 Palavras bloqueadas: *${lista(config.palavrasProibidas)}*
-├➤ 🔨 Autoban: *${estado(config.autoBan)}*
-├➤ 📏 Limite de texto: *${config.limitexto ? `🟢 𝐎𝐍 • ${config.limiteTexto}` : '🔴 𝐎𝐅𝐅'}*
+│ 𝐄𝐬𝐜𝐨𝐥𝐡𝐚 𝐮𝐦𝐚 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐢𝐚:
 │
-│ 🖼️ *𝐅𝐈𝐋𝐓𝐑𝐎 𝐃𝐄 𝐌𝐈́𝐃𝐈𝐀*
-├➤ 🖼️ Imagens: *${estado(config.antiImg)}*
-├➤ 🎥 Vídeos: *${estado(config.antiVideo)}*
-├➤ 🎵 Áudios: *${estado(config.antiAudio)}*
-├➤ 📄 Documentos: *${estado(config.antiDoc)}*
-├➤ 🧩 Figurinhas: *${estado(config.antiSticker)}*
-├➤ 🛍️ Catálogo: *${estado(config.antiCatalogo)}*
+├➤ 🛡️ *1. MODERAÇÃO* — ${moderacaoAtivos}/6 ativos
+├➤ 🖼️ *2. MÍDIA* — ${midiaAtivos}/6 ativos
+├➤ 👋 *3. ENTRADA/SAÍDA* — ${entradaAtivos}/2 ativos
+├➤ 🎮 *4. SISTEMAS* — ${sistemasAtivos}/5 ativos
+├➤ 🏠 *5. GRUPO* — prefixo *${prefixo}*
+├➤ 🟢 *6. LISTA BRANCA* — ${Array.isArray(config.listaBranca) ? config.listaBranca.length : 0} pessoa(s)
 │
-│ 👋 *𝐄𝐍𝐓𝐑𝐀𝐃𝐀 𝐄 𝐒𝐀𝐈́𝐃𝐀*
-├➤ 👋 Welcome: *${estado(config.welcome)}*
-├➤ 🚪 Goodbye: *${estado(config.goodbye)}*
+├✯ *𝐀𝐂𝐄𝐒𝐒𝐎 𝐑Á𝐏𝐈𝐃𝐎*
+├➤ *${prefixo}config 1* → Moderação
+├➤ *${prefixo}config 2* → Filtros de mídia
+├➤ *${prefixo}config 3* → Entrada e saída
+├➤ *${prefixo}config 4* → Sistemas
+├➤ *${prefixo}config 5* → Grupo
+├➤ *${prefixo}config 6* → Lista branca
 │
-│ 🎮 *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒*
-├➤ 🎮 Jogos: *${estado(config.jogos)}*
-├➤ 💰 Economia: *${estado(config.economia)}*
-├➤ ⭐ XP: *${estado(config.xp)}*
-├➤ 📋 Comandos: *${estado(config.cmds)}*
-├➤ 🔣 Multiprefix: *${estado(config.multiprefix)}*
-│
-│ 🏠 *𝐆𝐑𝐔𝐏𝐎*
-├➤ 📜 Regras: *${config.regras ? '🟢 CONFIGURADAS' : '🔴 NÃO CONFIGURADAS'}*
-├➤ 🔣 Prefixo: *${prefixo}*
-├➤ 📝 Logs: *${estado(config.logs)}*
-│
-│ 💡 *𝐀𝐂̧𝐎̃𝐄𝐒 𝐑𝐀́𝐏𝐈𝐃𝐀𝐒*
-├➤ *${prefixo}config moderacao*
-├➤ *${prefixo}config midia*
-├➤ *${prefixo}config sistemas*
-├➤ *${prefixo}config grupo*
-│
-┗═•❃༺⚙️༻❃•═┛
-_Use ${prefixo}config <seção> para abrir os controles._`;
+├✯ _Também funciona: ${prefixo}conf 1, ${prefixo}conf 2..._
+┗═•❃༺⚙️༻❃•═┛`;
 }
 
 // Carrega os dados salvos
@@ -18395,77 +18384,126 @@ async function comandoConfigAdmin(message, argumentos = '') {
     const args = String(argumentos || '').trim();
     const prefixo = obterPrefixoGrupo(grupo);
 
-    if (!args) {
-        await reagir(message, '⚙️');
-        await responderCitando(message, formatarConfiguracaoAdmin(config));
+    const secoes = {
+        '1': {
+            titulo: '🛡️ 𝐌𝐎𝐃𝐄𝐑𝐀ÇÃ𝐎',
+            linhas: [
+                `├➤ 🔗 Antilink: *${config.antilink ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🚨 Antiflood: *${config.antiflood ? `🟢 ON • ${config.floodLimite}/10s` : '🔴 OFF'}*`,
+                `├➤ 👥 Anti-menção: *${config.antiMention ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🤬 Antipalavra: *${config.antiPalavra ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🔨 Autoban: *${config.autoBan ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 📏 Limite de texto: *${config.limitexto ? `🟢 ON • ${config.limiteTexto}` : '🔴 OFF'}*`,
+                '',
+                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
+                `├➤ ${prefixo}config antilink on/off`,
+                `├➤ ${prefixo}config antiflood on/off`,
+                `├➤ ${prefixo}config antiflood limite 8`,
+                `├➤ ${prefixo}config antimencao on/off`,
+                `├➤ ${prefixo}config antipalavra on/off`,
+                `├➤ ${prefixo}config autoban on/off`,
+                `├➤ ${prefixo}config limitexto on/off`,
+                `├➤ ${prefixo}config limitexto limite 1000`,
+                `├➤ ${prefixo}config palavra add <palavra>`,
+                `├➤ ${prefixo}config palavra remove <palavra>`,
+                `├➤ ${prefixo}config palavra list`
+            ]
+        },
+        '2': {
+            titulo: '🖼️ 𝐅𝐈𝐋𝐓𝐑𝐎 𝐃𝐄 𝐌Í𝐃𝐈𝐀',
+            linhas: [
+                `├➤ 🖼️ Imagens: *${config.antiImg ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🎥 Vídeos: *${config.antiVideo ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🎵 Áudios: *${config.antiAudio ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 📄 Documentos: *${config.antiDoc ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🧩 Figurinhas: *${config.antiSticker ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🛍️ Catálogo: *${config.antiCatalogo ? '🟢 ON' : '🔴 OFF'}*`,
+                '',
+                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
+                `├➤ ${prefixo}config antiimg on/off`,
+                `├➤ ${prefixo}config antivideo on/off`,
+                `├➤ ${prefixo}config antiaudio on/off`,
+                `├➤ ${prefixo}config antidoc on/off`,
+                `├➤ ${prefixo}config antisticker on/off`,
+                `├➤ ${prefixo}config anticatalogo on/off`
+            ]
+        },
+        '3': {
+            titulo: '👋 𝐄𝐍𝐓𝐑𝐀𝐃𝐀 𝐄 𝐒𝐀Í𝐃𝐀',
+            linhas: [
+                `├➤ 👋 Welcome: *${config.welcome ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🚪 Goodbye: *${config.goodbye ? '🟢 ON' : '🔴 OFF'}*`,
+                '',
+                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
+                `├➤ ${prefixo}welcome on/off`,
+                `├➤ ${prefixo}setwelcome <texto>`,
+                `├➤ ${prefixo}goodbye on/off`,
+                `├➤ ${prefixo}setgoodbye <texto>`
+            ]
+        },
+        '4': {
+            titulo: '🎮 𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒',
+            linhas: [
+                `├➤ 🎮 Jogos: *${config.jogos ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 💰 Economia: *${config.economia ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ ⭐ XP: *${config.xp ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 📋 Comandos: *${config.cmds ? '🟢 ON' : '🔴 OFF'}*`,
+                `├➤ 🔣 Multiprefix: *${config.multiprefix ? '🟢 ON' : '🔴 OFF'}*`,
+                '',
+                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
+                `├➤ ${prefixo}config jogos on/off`,
+                `├➤ ${prefixo}config economia on/off`,
+                `├➤ ${prefixo}config xp on/off`,
+                `├➤ ${prefixo}config cmds on/off`,
+                `├➤ ${prefixo}config multiprefix on/off`
+            ]
+        },
+        '5': {
+            titulo: '🏠 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎',
+            linhas: [
+                `├➤ 🔣 Prefixo atual: *${prefixo}*`,
+                `├➤ 📜 Regras: *${config.regras ? '🟢 CONFIGURADAS' : '🔴 NÃO CONFIGURADAS'}*`,
+                `├➤ 📝 Logs: *${config.logs ? '🟢 ON' : '🔴 OFF'}*`,
+                '',
+                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
+                `├➤ ${prefixo}setnome <nome>`,
+                `├➤ ${prefixo}setdesc <texto>`,
+                `├➤ ${prefixo}setfoto + imagem`,
+                `├➤ ${prefixo}setregras <texto>`,
+                `├➤ ${prefixo}regras`,
+                `├➤ ${prefixo}config logs on/off`,
+                `├➤ ${prefixo}config multiprefix on/off`
+            ]
+        },
+        '6': {
+            titulo: '🟢 𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀',
+            linhas: [
+                `├➤ 👥 Pessoas protegidas: *${Array.isArray(config.listaBranca) ? config.listaBranca.length : 0}*`,
+                '',
+                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
+                `├➤ ${prefixo}config whitelist add @pessoa`,
+                `├➤ ${prefixo}config whitelist remove @pessoa`,
+                `├➤ ${prefixo}config whitelist list`
+            ]
+        }
+    };
+
+    const chaveSecao = ({1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',moderacao:'1',mod:'1',midia:'2',media:'2',entrada:'3',saida:'3',sistemas:'4',sistema:'4',grupo:'5',whitelist:'6',lista:'6'})[args.toLowerCase()];
+
+    if (!args || chaveSecao) {
+        if (!args) {
+            await reagir(message, '⚙️');
+            await responderCitando(message, formatarConfiguracaoAdmin(config));
+            return;
+        }
+        const secao = secoes[chaveSecao];
+        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│       *${secao.titulo}*\n├✯\n${secao.linhas.join('\\n')}\n│\n├✯ _Voltar: ${prefixo}config_\n┗═•❃༺⚙️༻❃•═┓`);
         return;
     }
 
     const partes = args.split(/\s+/);
     const alvo = String(partes.shift() || '').toLowerCase();
     const valor = partes.join(' ').trim();
-
-    const secoes = {
-        moderacao: `┏═•❃༺🛡️༻❃•═┓
-│      *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
-├✯
-├➤ *${prefixo}config antilink on/off*
-├➤ *${prefixo}config antiflood on/off*
-├➤ *${prefixo}config antiflood limite 8*
-├➤ *${prefixo}config antimencao on/off*
-├➤ *${prefixo}config antipalavra on/off*
-├➤ *${prefixo}config palavra add <palavra>*
-├➤ *${prefixo}config palavra remove <palavra>*
-├➤ *${prefixo}config palavra list*
-├➤ *${prefixo}config autoban on/off*
-├➤ *${prefixo}config limitexto on/off*
-├➤ *${prefixo}config limitexto limite 1000*
-┗═•❃༺🛡️༻❃•═┛`,
-        midia: `┏═•❃༺🖼️༻❃•═┓
-│        *𝐅𝐈𝐋𝐓𝐑𝐎 𝐃𝐄 𝐌𝐈́𝐃𝐈𝐀*
-├✯
-├➤ *${prefixo}config antiimg on/off*
-├➤ *${prefixo}config antivideo on/off*
-├➤ *${prefixo}config antiaudio on/off*
-├➤ *${prefixo}config antidoc on/off*
-├➤ *${prefixo}config antisticker on/off*
-├➤ *${prefixo}config anticatalogo on/off*
-┗═•❃༺🖼️༻❃•═┛`,
-        sistemas: `┏═•❃༺🎮༻❃•═┓
-│         *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒*
-├✯
-├➤ *${prefixo}config jogos on/off*
-├➤ *${prefixo}config economia on/off*
-├➤ *${prefixo}config xp on/off*
-├➤ *${prefixo}config cmds on/off*
-├➤ *${prefixo}config multiprefix on/off*
-┗═•❃༺🎮༻❃•═┛`,
-        grupo: `┏═•❃༺🏠༻❃•═┓
-│           *𝐆𝐑𝐔𝐏𝐎*
-├✯
-├➤ *${prefixo}welcome on/off*
-├➤ *${prefixo}setwelcome <texto>*
-├➤ *${prefixo}goodbye on/off*
-├➤ *${prefixo}setgoodbye <texto>*
-├➤ *${prefixo}setnome <nome>*
-├➤ *${prefixo}setfoto* + imagem
-├➤ *${prefixo}setdesc <texto>*
-├➤ *${prefixo}setregras <texto>*
-├➤ *${prefixo}regras*
-┗═•❃༺🏠༻❃•═┛`,
-        whitelist: `┏═•❃༺🟢༻❃•═┓
-│        *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*
-├✯
-├➤ *${prefixo}config whitelist add @pessoa*
-├➤ *${prefixo}config whitelist remove @pessoa*
-└➤ *${prefixo}config whitelist list*
-┗═•❃༺🟢༻❃•═┛`
-    };
-
-    if (secoes[alvo] && !valor) {
-        await responderCitando(message, secoes[alvo]);
-        return;
-    }
 
     const normalizarBool = v => {
         const x = String(v || '').toLowerCase();
@@ -18490,12 +18528,7 @@ async function comandoConfigAdmin(message, argumentos = '') {
             salvarConfigAdmin();
             registrarLogAdmin(message, `config ${alvo}`, bool ? 'on' : 'off');
             await reagir(message, bool ? '🟢' : '🔴');
-            await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
-│      *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀𝐂̧𝐀̃𝐎 𝐀𝐋𝐓𝐄𝐑𝐀𝐃𝐀*
-├✯
-├➤ ⚙️ *${alvo}*: ${bool ? '🟢 𝐀𝐓𝐈𝐕𝐀𝐃𝐎' : '🔴 𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐃𝐎'}
-├➤ 💾 _Salvo exclusivamente para este grupo._
-┗═•❃༺⚙️༻❃•═┛`);
+            await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│      *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐀𝐋𝐓𝐄𝐑𝐀𝐃𝐀*\n├✯\n├➤ ⚙️ *${alvo}*: ${bool ? '🟢 𝐀𝐓𝐈𝐕𝐀𝐃𝐎' : '🔴 𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐃𝐎'}\n├➤ 💾 _Salvo neste grupo._\n┗═•❃༺⚙️༻❃•═┓`);
             return;
         }
     }
@@ -18505,11 +18538,7 @@ async function comandoConfigAdmin(message, argumentos = '') {
         if (Number.isInteger(n) && n >= 3 && n <= 30) {
             config.floodLimite = n;
             salvarConfigAdmin();
-            await responderCitando(message, `┏═•❃༺🚨༻❃•═┓
-│ *𝐋𝐈𝐌𝐈𝐓𝐄 𝐃𝐎 𝐀𝐍𝐓𝐈𝐅𝐋𝐎𝐎𝐃*
-├✯
-├➤ 📊 Novo limite: *${n} mensagens / 10s*
-┗═•❃༺🚨༻❃•═┓`);
+            await responderCitando(message, `┏═•❃༺🚨༻❃•═┓\n│ *𝐋𝐈𝐌𝐈𝐓𝐄 𝐃𝐎 𝐀𝐍𝐓𝐈𝐅𝐋𝐎𝐎𝐃*\n├✯\n├➤ 📊 Novo limite: *${n} mensagens / 10s*\n┗═•❃༺🚨༻❃•═┓`);
             return;
         }
     }
@@ -18519,11 +18548,7 @@ async function comandoConfigAdmin(message, argumentos = '') {
         if (Number.isInteger(n) && n >= 100 && n <= 10000) {
             config.limiteTexto = n;
             salvarConfigAdmin();
-            await responderCitando(message, `┏═•❃༺📏༻❃•═┓
-│ *𝐋𝐈𝐌𝐈𝐓𝐄 𝐃𝐄 𝐓𝐄𝐗𝐓𝐎*
-├✯
-├➤ 📏 Novo limite: *${n} caracteres*
-┗═•❃༺📏༻❃•═┓`);
+            await responderCitando(message, `┏═•❃༺📏༻❃•═┓\n│ *𝐋𝐈𝐌𝐈𝐓𝐄 𝐃𝐄 𝐓𝐄𝐗𝐓𝐎*\n├✯\n├➤ 📏 Novo limite: *${n} caracteres*\n┗═•❃༺📏༻❃•═┓`);
             return;
         }
     }
@@ -18533,24 +18558,16 @@ async function comandoConfigAdmin(message, argumentos = '') {
         const palavra = partes.join(' ').trim().toLowerCase();
         if (acao === 'list') {
             const lista = config.palavrasProibidas.length
-                ? config.palavrasProibidas.map((x,i) => `├➤ ${i + 1}. *${x}*`).join('\n')
+                ? config.palavrasProibidas.map((x,i) => `├➤ ${i + 1}. *${x}*`).join('\\n')
                 : '├➤ _Nenhuma palavra cadastrada._';
-            await responderCitando(message, `┏═•❃༺🤬༻❃•═┓
-│       *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*
-├✯
-${lista}
-┗═•❃༺🤬༻❃•═┛`);
+            await responderCitando(message, `┏═•❃༺🤬༻❃•═┓\n│       *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n${lista}\n┗═•❃༺🤬༻❃•═┓`);
             return;
         }
         if ((acao === 'add' || acao === 'remove') && palavra) {
             if (acao === 'add' && !config.palavrasProibidas.includes(palavra)) config.palavrasProibidas.push(palavra);
             if (acao === 'remove') config.palavrasProibidas = config.palavrasProibidas.filter(x => x !== palavra);
             salvarConfigAdmin();
-            await responderCitando(message, `┏═•❃༺🤬༻❃•═┓
-│ *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*
-├✯
-├➤ ${acao === 'add' ? '🟢 Adicionada' : '🗑️ Removida'}: *${palavra}*
-┗═•❃༺🤬༻❃•═┛`);
+            await responderCitando(message, `┏═•❃༺🤬༻❃•═┓\n│ *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n├➤ ${acao === 'add' ? '🟢 Adicionada' : '🗑️ Removida'}: *${palavra}*\n┗═•❃༺🤬༻❃•═┓`);
             return;
         }
     }
@@ -18561,39 +18578,21 @@ ${lista}
         const ids = mencoes.map(p => idDaPessoa(p)).filter(Boolean);
         if (acao === 'list') {
             const lista = config.listaBranca.length
-                ? config.listaBranca.map((x,i) => `├➤ ${i + 1}. @${String(x).split('@')[0]}`).join('\n')
+                ? config.listaBranca.map((x,i) => `├➤ ${i + 1}. @${String(x).split('@')[0]}`).join('\\n')
                 : '├➤ _Nenhum usuário na lista branca._';
-            await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓
-│       *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*
-├✯
-${lista}
-┗═•❃༺🟢༻❃•═┓`, { mentions: config.listaBranca });
+            await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓\n│       *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n${lista}\n┗═•❃༺🟢༻❃•═┓`, { mentions: config.listaBranca });
             return;
         }
         if ((acao === 'add' || acao === 'remove') && ids.length) {
             if (acao === 'add') config.listaBranca = [...new Set([...config.listaBranca, ...ids])];
             else config.listaBranca = config.listaBranca.filter(id => !ids.some(x => idsIguais(x, id)));
             salvarConfigAdmin();
-            await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓
-│       *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*
-├✯
-├➤ ${acao === 'add' ? '🟢 Adicionado(s)' : '🗑️ Removido(s)'} com sucesso.
-┗═•❃༺🟢༻❃•═┓`, { mentions: ids });
+            await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓\n│       *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n├➤ ${acao === 'add' ? '🟢 Adicionado(s)' : '🗑️ Removido(s)'} com sucesso.\n┗═•❃༺🟢༻❃•═┓`, { mentions: ids });
             return;
         }
     }
 
-    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓
-│      *𝐂𝐎𝐌𝐀𝐍𝐃𝐎 𝐂𝐎𝐍𝐅𝐈𝐆*
-├✯
-├➤ ❌ Opção não reconhecida.
-│
-├➤ 💡 Use *${prefixo}config* para ver o painel completo.
-├➤ 🛡️ *${prefixo}config moderacao*
-├➤ 🖼️ *${prefixo}config midia*
-├➤ 🎮 *${prefixo}config sistemas*
-├➤ 🏠 *${prefixo}config grupo*
-┗═•❃༺⚙️༻❃•═┛`);
+    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│      *𝐂𝐎𝐍𝐅𝐈𝐆*\n├✯\n├➤ ❌ Opção não reconhecida.\n│\n├➤ 💡 Use *${prefixo}config* para abrir o painel.\n├➤ 🔢 Depois escolha *1 a 6*.\n├➤ ⚡ Exemplo: *${prefixo}config 1*\n┗═•❃༺⚙️༻❃•═┓`);
 }
 
 async function comandoToggleGrupo(message, tipo, valor) {
@@ -19610,6 +19609,7 @@ case 'filhosranking':
             break;
 
         case 'config':
+        case 'conf':
             await comandoConfigAdmin(message, argumentos); break;
         case 'antimencao':
         case 'antipalavra':
