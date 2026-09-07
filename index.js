@@ -258,56 +258,57 @@ function formatarConfiguracaoAdmin(config) {
     const estado = valor => valor ? '🟢 ON' : '🔴 OFF';
 
     return `┏═•❃༺⚙️༻❃•═┓
-│   *𝐏𝐀𝐈𝐍𝐄𝐋 𝐃𝐄 𝐀𝐃𝐌𝐈𝐍*
+│     *𝐏𝐀𝐈𝐍𝐄𝐋 𝐃𝐄 𝐀𝐃𝐌𝐈𝐍*
 │
-│ 🛡️ *MODERAÇÃO*
-├➤ ${prefixo}antilink on/off
-├➤ ${prefixo}antilink allow <domínio>
-├➤ ${prefixo}antilink remove <domínio>
-├➤ ${prefixo}antilink list
-├➤ ${prefixo}antiflood on/off
-├➤ ${prefixo}antiflood limite <n>
-├➤ ${prefixo}limpar <quantidade>
+│ 🛡️ *𝐌𝐎𝐃𝐄𝐑𝐀𝐂̧𝐀̃𝐎*
+├➤ *${prefixo}antilink on/off*
+├➤ *${prefixo}antilink allow <domínio>*
+├➤ *${prefixo}antilink remove <domínio>*
+├➤ *${prefixo}antilink list*
+├➤ *${prefixo}antiflood on/off*
+├➤ *${prefixo}antiflood limite <n>*
+├➤ *${prefixo}limpar <quantidade>*
 │
-│ 👋 *ENTRADA E SAÍDA*
-├➤ ${prefixo}welcome on/off
-├➤ ${prefixo}setwelcome <texto>
-├➤ ${prefixo}goodbye on/off
-├➤ ${prefixo}setgoodbye <texto>
+│ 👋 *𝐄𝐍𝐓𝐑𝐀𝐃𝐀 𝐄 𝐒𝐀𝐈́𝐃𝐀*
+├➤ *${prefixo}welcome on/off*
+├➤ *${prefixo}setwelcome <texto>*
+├➤ *${prefixo}goodbye on/off*
+├➤ *${prefixo}setgoodbye <texto>*
 │
-│ 🎮 *SISTEMAS DO GRUPO*
-├➤ ${prefixo}jogos on/off
-├➤ ${prefixo}economia on/off
-├➤ ${prefixo}xp on/off
-├➤ ${prefixo}cmds on/off
+│ 🎮 *𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*
+├➤ *${prefixo}jogos on/off*
+├➤ *${prefixo}economia on/off*
+├➤ *${prefixo}xp on/off*
+├➤ *${prefixo}cmds on/off*
 │
-│ 📜 *GRUPO*
-├➤ ${prefixo}setregras <texto>
-├➤ ${prefixo}regras
-├➤ ${prefixo}setnome <nome>
-├➤ ${prefixo}setfoto 📷
-├➤ ${prefixo}desc
-├➤ ${prefixo}setdesc <descrição>
+│ 📜 *𝐆𝐑𝐔𝐏𝐎*
+├➤ *${prefixo}setregras <texto>*
+├➤ *${prefixo}regras*
+├➤ *${prefixo}setnome <nome>*
+├➤ *${prefixo}setfoto* 📷
+├➤ *${prefixo}desc*
+├➤ *${prefixo}setdesc <descrição>*
 │
-│ 👑 *EQUIPE*
-├➤ ${prefixo}staff
-├➤ ${prefixo}darxp @pessoa <quantia>
-├➤ ${prefixo}removerxp @pessoa <quantia>
-├➤ ${prefixo}resetxp @pessoa
-├➤ ${prefixo}darcoins @pessoa <quantia>
-├➤ ${prefixo}removercoins @pessoa <quantia>
-├➤ ${prefixo}reseteco @pessoa
+│ 👑 *𝐄𝐐𝐔𝐈𝐏𝐄*
+├➤ *${prefixo}staff*
+├➤ *${prefixo}darxp @pessoa <quantia>*
+├➤ *${prefixo}removerxp @pessoa <quantia>*
+├➤ *${prefixo}resetxp @pessoa*
+├➤ *${prefixo}darcoins @pessoa <quantia>*
+├➤ *${prefixo}removercoins @pessoa <quantia>*
+├➤ *${prefixo}reseteco @pessoa*
 │
-│ 🎁 *SORTEIOS*
-├➤ ${prefixo}sorteio <tempo> <prêmio>
-├➤ ${prefixo}participar
-├➤ ${prefixo}cancelarsorteio
+│ 🎁 *𝐒𝐎𝐑𝐓𝐄𝐈𝐎𝐒*
+├➤ *${prefixo}sorteio <tempo> <prêmio>*
+├➤ *${prefixo}participar*
+├➤ *${prefixo}cancelarsorteio*
 │
-│ ⚙️ *SISTEMA*
-├➤ ${prefixo}logs on/off
-└➤ ${prefixo}prefixo <símbolo>
+│ ⚙️ *𝐒𝐈𝐒𝐓𝐄𝐌𝐀*
+├➤ *${prefixo}logs on/off*
+└➤ *${prefixo}prefixo <símbolo>*
 
-│ 📊 *STATUS ATUAL*
+┏═•❃༺📊༻❃•═┓
+│      *𝐒𝐓𝐀𝐓𝐔𝐒 𝐀𝐓𝐔𝐀𝐋*
 ├➤ 🔗 Antilink: *${estado(config.antilink)}*
 ├➤ 🚨 Antiflood: *${config.antiflood ? `🟢 ON (${config.floodLimite})` : '🔴 OFF'}*
 ├➤ 👋 Welcome: *${estado(config.welcome)}*
@@ -318,9 +319,11 @@ function formatarConfiguracaoAdmin(config) {
 ├➤ 📋 Comandos: *${estado(config.cmds)}*
 ├➤ 📝 Logs: *${estado(config.logs)}*
 └➤ 🔣 Prefixo: *${prefixo}*
+┗═•❃༺📊༻❃•═┛
 
 💡 *Dica:* use *${prefixo}config <comando>* para ver a ajuda de uma opção.`;
 }
+
 
 // Carrega os dados salvos
 function carregarDados() {
