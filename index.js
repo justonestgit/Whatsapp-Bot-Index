@@ -18657,14 +18657,14 @@ async function comandoIA(message, argumentos = '') {
         return;
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-        await reagir(message, '🔑');
-        await responderCitando(
-            message,
-            '🔑 _A IA ainda não está configurada neste computador._\n\nDefina a variável de ambiente *GEMINI_API_KEY* e reinicie o bot.'
-        );
-        return;
-    }
+if (!process.env.OPENAI_API_KEY) {
+    await reagir(message, '🔑');
+    await responderCitando(
+        message,
+        '🔑 _A IA ainda não está configurada neste computador._\n\nDefina a variável de ambiente *OPENAI_API_KEY* e reinicie o bot.'
+    );
+    return;
+}
 
     try {
         const contexto = await obterContextoIA(message);
