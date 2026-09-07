@@ -4173,30 +4173,6 @@ function idsIguais(id1, id2) {
     return Boolean(numeroA && numeroB && numeroA === numeroB);
 }
 
-function salvarParticipantesGrupos() {
-
-    const dados = {};
-
-    for (
-        const [grupo, participantes]
-        of participantesGrupos
-    ) {
-
-        dados[grupo] =
-            [...participantes];
-    }
-
-    fs.writeFileSync(
-        arquivoParticipantesGrupos,
-        JSON.stringify(
-            dados,
-            null,
-            4
-        ),
-        'utf8'
-    );
-}
-
 // ============================================================
 // OBTER IDS DA PESSOA
 // ============================================================
@@ -11323,73 +11299,62 @@ Use uma menção ou responda à mensagem da pessoa.
 // 📢 TTG
 // ============================================================
 
-async function ttg(message, argumentos) {
-    const permitido = await exigirAdmin(message);
-    if (!permitido) return;
+async function ttg(message, argumentos = '') {
+    if (!(await exigirAdmin(message))) return;
 
     const texto = String(argumentos || '').trim();
     if (!texto) {
         await reagir(message, '❌');
-        await responderCitando(message, `┏═•❃༺📢༻❃•═┓
-│      *𝐓𝐓𝐆 • 𝐌𝐀𝐑𝐂𝐀𝐑 𝐓𝐎𝐃𝐎𝐒*
-├✯
-├➤ ❌ Informe a mensagem que será enviada.
-│
-├➤ 💡 Exemplo:
-│   *${obterPrefixoGrupo(message.from)}ttg atenção, pessoal!* 
-│
-┗═•❃༺📢༻❃•═┛`);
+        await responderCitando(message, `┏═•❃༺📢༻❃•═┓\n│      *𝐓𝐓𝐆 • 𝐌𝐀𝐑𝐂𝐀𝐑 𝐓𝐎𝐃𝐎𝐒*\n├✯\n├➤ ❌ Informe a mensagem que será enviada.\n│\n├➤ 💡 Exemplo:\n│   *${obterPrefixoGrupo(message.from)}ttg atenção, pessoal!*\n┗═•❃༺📢༻❃•═┓`);
         return;
     }
 
-    let chat;
-    try {
-        chat = await message.getChat();
-    } catch (erro) {
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-│ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐓𝐓𝐆*
-├✯
-├➤ Não consegui acessar os participantes deste grupo.
-└➤ _${erro.message}_
-┗═•❃༺❌༻❃•═┓`);
-        return;
-    }
-
-    if (!chat.isGroup) {
-        await responderCitando(message, `┏═•❃༺❌༻❃•═┓
-│ *𝐓𝐓𝐆 𝐃𝐈𝐒𝐏𝐎𝐍𝐈́𝐕𝐄𝐋 𝐀𝐏𝐄𝐍𝐀𝐒 𝐄𝐌 𝐆𝐑𝐔𝐏𝐎𝐒*
-┗═•❃༺❌༻❃•═┓`);
-        return;
-    }
-
-    const botId = client?.info?.wid?._serialized || '';
-    const participantes = (chat.participants || [])
-        .map(p => p?.id?._serialized || (p?.id?.user ? `${p.id.user}@c.us` : null))
-        .filter(Boolean)
-        .filter(id => id !== botId);
-
-    const unicos = [...new Set(participantes)];
-    if (!unicos.length) {
-        await responderCitando(message, `┏═•❃༺⚠️༻❃•═┓
-│ *𝐓𝐓𝐆 𝐒𝐄𝐌 𝐏𝐀𝐑𝐓𝐈𝐂𝐈𝐏𝐀𝐍𝐓𝐄𝐒*
-├✯
-├➤ Não encontrei participantes para mencionar.
-┗═•❃༺⚠️༻❃•═┓`);
+    if (!message.from?.endsWith('@g.us')) {
+        await responderCitando(message, '❌ _O TTG só funciona em grupos._');
         return;
     }
 
     try {
-        await message.delete(true);
+        const ids = await client.pupPage.evaluate((chatId) => {
+            try {
+                const Store = window.require('WAWebCollections');
+                const chat = Store?.Chat?.get(chatId);
+                const participantes = chat?.groupMetadata?.participants;
+                if (!participantes) return { erro: 'Participantes do grupo não encontrados.' };
+
+                const modelos = typeof participantes.getModelsArray === 'function'
+                    ? participantes.getModelsArray()
+                    : (Array.isArray(participantes.models) ? participantes.models : []);
+
+                return {
+                    ids: modelos
+                        .map(p => p?.id?._serialized || p?.id?.toString?.() || '')
+                        .filter(Boolean)
+                };
+            } catch (erro) {
+                return { erro: String(erro?.message || erro) };
+            }
+        }, message.from);
+
+        if (ids?.erro) throw new Error(ids.erro);
+        const botId = client.info?.wid?._serialized || '';
+        const participantes = [...new Set((ids?.ids || []).filter(id => id && id !== botId))];
+
+        if (!participantes.length) {
+            await responderCitando(message, '⚠️ _Não encontrei participantes para mencionar._');
+            return;
+        }
+
+        const corpo = `${texto}\n\n${participantes.map(id => `@${String(id).split('@')[0]}`).join(' ')}`;
+        await enviarComMencoes(message.from, corpo, {
+            mentions: participantes,
+            quotedMessageId: obterIdMensagem(message)
+        });
     } catch (erro) {
-        console.log('⚠️ Não foi possível apagar o comando TTG:', erro.message);
+        console.error('❌ Erro no TTG:', erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│ *𝐄𝐑𝐑𝐎 𝐍𝐎 𝐓𝐓𝐆*\n├✯\n├➤ _Não consegui obter os participantes deste grupo._\n├➤ _${erro?.message || erro}_\n┗═•❃༺❌༻❃•═┓`);
     }
-
-    const mencoes = unicos.map(id => `@${String(id).split('@')[0]}`);
-    const corpo = `${texto}\n\n${mencoes.join(' ')}`;
-
-    await enviarComMencoes(message.from, corpo, {
-        mentions: unicos
-    });
 }
 
 // ============================================================
@@ -18553,25 +18518,150 @@ async function comandoAnotacao(message, acao, argumentos='') {
 
 async function comandoPromoverRebaixar(message, acao) {
     if (!(await exigirAdmin(message))) return;
-    const pessoa=await obterAlvoComContato(message,true);if(!pessoa)return;const id=idDaPessoa(pessoa);if(!id)return;
-    try { const chat=await message.getChat(); if(acao==='promover') await chat.promoteParticipants([id]); else await chat.demoteParticipants([id]); await responderCitando(message,`┏═•❃༺${acao==='promover'?'👑':'🔻'}༻❃•═┓\n├➤ @${id.split('@')[0]} foi *${acao==='promover'?'promovido a administrador':'rebaixado'}*.\n┗═•❃༺${acao==='promover'?'👑':'🔻'}༻❃•═┓`,{mentions:[id]}); } catch(erro){console.error(`❌ Erro ao ${acao}:`,erro);await responderCitando(message,`❌ _Não foi possível ${acao==='promover'?'promover':'rebaixar'} essa pessoa._`);}
+
+    if (!message.from?.endsWith('@g.us')) {
+        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        return;
+    }
+
+    const pessoa = await obterAlvoComContato(message, true);
+    if (!pessoa) return;
+
+    const idAlvo = idDaPessoa(pessoa);
+    if (!idAlvo) {
+        await responderCitando(message, '❌ _Não consegui identificar a pessoa selecionada._');
+        return;
+    }
+
+    const idRemetente = obterIdRemetente(message);
+    const botId = client.info?.wid?._serialized || '';
+
+    if (idsIguais(idAlvo, idRemetente)) {
+        await responderCitando(message, '🤨 _Você não pode alterar o próprio cargo por este comando._');
+        return;
+    }
+
+    if (botId && idsIguais(idAlvo, botId)) {
+        await responderCitando(message, '🤖 _Eu não posso alterar meu próprio cargo._');
+        return;
+    }
+
+    try {
+        const resultado = await client.pupPage.evaluate(async (chatId, alvoId, acao) => {
+            try {
+                const Store = window.require('WAWebCollections');
+                const chat = Store?.Chat?.get(chatId);
+                if (!chat) return { ok: false, erro: 'Grupo não encontrado no WhatsApp.' };
+
+                const participantes = chat.groupMetadata?.participants;
+                const modelos = typeof participantes?.getModelsArray === 'function'
+                    ? participantes.getModelsArray()
+                    : (Array.isArray(participantes?.models) ? participantes.models : []);
+
+                const normalizar = id => id?._serialized || id?.toString?.() || '';
+                const participante = modelos.find(p => normalizar(p?.id) === alvoId);
+                if (!participante) return { ok: false, erro: 'Usuário não encontrado nos participantes do grupo.' };
+
+                const idReal = normalizar(participante.id) || alvoId;
+                if (acao === 'promover' && (participante.isAdmin || participante.isSuperAdmin)) {
+                    return { ok: true, jaEstava: true };
+                }
+                if (acao === 'rebaixar' && !participante.isAdmin && !participante.isSuperAdmin) {
+                    return { ok: true, jaEstava: true };
+                }
+
+                const metodos = acao === 'promover'
+                    ? ['promoteParticipants', 'promoteParticipant']
+                    : ['demoteParticipants', 'demoteParticipant'];
+
+                const alvos = [idReal];
+                for (const objeto of [chat, chat.groupMetadata]) {
+                    if (!objeto) continue;
+                    for (const nome of metodos) {
+                        if (typeof objeto[nome] !== 'function') continue;
+                        try {
+                            const retorno = nome.endsWith('Participants')
+                                ? await objeto[nome](alvos)
+                                : await objeto[nome](idReal);
+                            return { ok: true, retorno: retorno ?? null };
+                        } catch (erro) {
+                            // Tenta o próximo método disponível.
+                        }
+                    }
+                }
+
+                return { ok: false, erro: 'A API interna do WhatsApp não disponibilizou a operação de administração.' };
+            } catch (erro) {
+                return { ok: false, erro: String(erro?.message || erro) };
+            }
+        }, message.from, idAlvo, acao);
+
+        if (!resultado?.ok) throw new Error(resultado?.erro || 'Operação não concluída.');
+
+        await reagir(message, acao === 'promover' ? '👑' : '🔻');
+        if (resultado.jaEstava) {
+            await responderAlvoComMencao(message,
+                `ℹ️ @${String(idAlvo).split('@')[0]} ${acao === 'promover' ? 'já é administrador' : 'já não é administrador'}.`,
+                pessoa
+            );
+            return;
+        }
+
+        await responderAlvoComMencao(message,
+            `┏═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┓\n├➤ @${String(idAlvo).split('@')[0]} foi *${acao === 'promover' ? 'promovido a administrador' : 'rebaixado'}*.\n┗═•❃༺${acao === 'promover' ? '👑' : '🔻'}༻❃•═┓`,
+            pessoa
+        );
+    } catch (erro) {
+        console.error(`❌ Erro ao ${acao}:`, erro);
+        await reagir(message, '❌');
+        await responderCitando(message, `┏═•❃༺❌༻❃•═┓\n│ *𝐍𝐀̃𝐎 𝐅𝐎𝐈 𝐏𝐎𝐒𝐒𝐈́𝐕𝐄𝐋 ${acao === 'promover' ? '𝐏𝐑𝐎𝐌𝐎𝐕𝐄𝐑' : '𝐑𝐄𝐁𝐀𝐈𝐗𝐀𝐑'}*\n├✯\n├➤ _${erro?.message || erro}_\n┗═•❃༺❌༻❃•═┓`);
+    }
 }
 
-async function comandoMarcar(message, modo, argumentos='') {
+async function comandoMarcar(message, modo, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
+    if (!message.from?.endsWith('@g.us')) {
+        await responderCitando(message, '❌ _Esse comando só funciona em grupos._');
+        return;
+    }
+
     try {
-        const chat = await message.getChat();
+        const resultado = await client.pupPage.evaluate((chatId) => {
+            try {
+                const Store = window.require('WAWebCollections');
+                const chat = Store?.Chat?.get(chatId);
+                const participantes = chat?.groupMetadata?.participants;
+                if (!participantes) return { erro: 'Participantes do grupo não encontrados.' };
+                const modelos = typeof participantes.getModelsArray === 'function'
+                    ? participantes.getModelsArray()
+                    : (Array.isArray(participantes.models) ? participantes.models : []);
+                return {
+                    ids: modelos.map(p => p?.id?._serialized || p?.id?.toString?.() || '').filter(Boolean)
+                };
+            } catch (erro) {
+                return { erro: String(erro?.message || erro) };
+            }
+        }, message.from);
+
+        if (resultado?.erro) throw new Error(resultado.erro);
         const botId = client.info?.wid?._serialized || '';
-        const ids = (chat.participants || [])
-            .map(p => p.id?._serialized || (p.id?.user ? `${p.id.user}@c.us` : String(p.id || '')))
-            .filter(Boolean)
-            .filter((id, i, a) => a.indexOf(id) === i && id !== botId);
-        const corpo = argumentos.trim() || '📢 *Atenção, pessoal!*';
-        const texto = `${modo === 'hidetag' ? '​' : '📢 '}${corpo}\n\n${ids.map(id => `@${String(id).split('@')[0]}`).join(' ')}`;
-        await enviarComMencoes(message.from, aplicarEstiloMensagem(texto), { mentions: ids, quotedMessageId: obterIdMensagem(message) });
+        const ids = [...new Set((resultado?.ids || []).filter(id => id && id !== botId))];
+        if (!ids.length) {
+            await responderCitando(message, '⚠️ _Não encontrei participantes para marcar._');
+            return;
+        }
+
+        const corpo = String(argumentos || '').trim() || '📢 *Atenção, pessoal!*';
+        const prefixo = modo === 'hidetag' ? '' : '📢 ';
+        const texto = `${prefixo}${corpo}\n\n${ids.map(id => `@${String(id).split('@')[0]}`).join(' ')}`;
+        await enviarComMencoes(message.from, aplicarEstiloMensagem(texto), {
+            mentions: ids,
+            quotedMessageId: obterIdMensagem(message)
+        });
     } catch (erro) {
         console.error('❌ Erro ao marcar:', erro);
-        await responderCitando(message,'❌ _Não consegui marcar os participantes._');
+        await reagir(message, '❌');
+        await responderCitando(message, `❌ _Não consegui marcar os participantes._\n_${erro?.message || erro}_`);
     }
 }
 
@@ -18601,225 +18691,6 @@ async function verificarHorariosGrupos() {
 // PROCESSADOR DE COMANDOS
 // ============================================================
 
-
-async function comandoConfigAdmin(message, argumentos = '') {
-    if (!(await exigirAdmin(message))) return;
-
-    const grupo = message.from;
-    const config = obterConfigAdmin(grupo);
-    const args = String(argumentos || '').trim();
-    const prefixo = obterPrefixoGrupo(grupo);
-
-    const secoes = {
-        '1': {
-            titulo: '🛡️ 𝐌𝐎𝐃𝐄𝐑𝐀ÇÃ𝐎',
-            linhas: [
-                `├➤ 🔗 Antilink: *${config.antilink ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🚨 Antiflood: *${config.antiflood ? `🟢 ON • ${config.floodLimite}/10s` : '🔴 OFF'}*`,
-                `├➤ 👥 Anti-menção: *${config.antiMention ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🤬 Antipalavra: *${config.antiPalavra ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🔨 Autoban: *${config.autoBan ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 📏 Limite de texto: *${config.limitexto ? `🟢 ON • ${config.limiteTexto}` : '🔴 OFF'}*`,
-                '',
-                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
-                `├➤ ${prefixo}config antilink on/off`,
-                `├➤ ${prefixo}config antiflood on/off`,
-                `├➤ ${prefixo}config antiflood limite 8`,
-                `├➤ ${prefixo}config antimencao on/off`,
-                `├➤ ${prefixo}config antipalavra on/off`,
-                `├➤ ${prefixo}config autoban on/off`,
-                `├➤ ${prefixo}config limitexto on/off`,
-                `├➤ ${prefixo}config limitexto limite 1000`,
-                `├➤ ${prefixo}config palavra add <palavra>`,
-                `├➤ ${prefixo}config palavra remove <palavra>`,
-                `├➤ ${prefixo}config palavra list`
-            ]
-        },
-        '2': {
-            titulo: '🖼️ 𝐅𝐈𝐋𝐓𝐑𝐎 𝐃𝐄 𝐌Í𝐃𝐈𝐀',
-            linhas: [
-                `├➤ 🖼️ Imagens: *${config.antiImg ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🎥 Vídeos: *${config.antiVideo ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🎵 Áudios: *${config.antiAudio ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 📄 Documentos: *${config.antiDoc ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🧩 Figurinhas: *${config.antiSticker ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🛍️ Catálogo: *${config.antiCatalogo ? '🟢 ON' : '🔴 OFF'}*`,
-                '',
-                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
-                `├➤ ${prefixo}config antiimg on/off`,
-                `├➤ ${prefixo}config antivideo on/off`,
-                `├➤ ${prefixo}config antiaudio on/off`,
-                `├➤ ${prefixo}config antidoc on/off`,
-                `├➤ ${prefixo}config antisticker on/off`,
-                `├➤ ${prefixo}config anticatalogo on/off`
-            ]
-        },
-        '3': {
-            titulo: '👋 𝐄𝐍𝐓𝐑𝐀𝐃𝐀 𝐄 𝐒𝐀Í𝐃𝐀',
-            linhas: [
-                `├➤ 👋 Welcome: *${config.welcome ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🚪 Goodbye: *${config.goodbye ? '🟢 ON' : '🔴 OFF'}*`,
-                '',
-                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
-                `├➤ ${prefixo}welcome on/off`,
-                `├➤ ${prefixo}setwelcome <texto>`,
-                `├➤ ${prefixo}goodbye on/off`,
-                `├➤ ${prefixo}setgoodbye <texto>`
-            ]
-        },
-        '4': {
-            titulo: '🎮 𝐒𝐈𝐒𝐓𝐄𝐌𝐀𝐒',
-            linhas: [
-                `├➤ 🎮 Jogos: *${config.jogos ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 💰 Economia: *${config.economia ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ ⭐ XP: *${config.xp ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 📋 Comandos: *${config.cmds ? '🟢 ON' : '🔴 OFF'}*`,
-                `├➤ 🔣 Multiprefix: *${config.multiprefix ? '🟢 ON' : '🔴 OFF'}*`,
-                '',
-                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
-                `├➤ ${prefixo}config jogos on/off`,
-                `├➤ ${prefixo}config economia on/off`,
-                `├➤ ${prefixo}config xp on/off`,
-                `├➤ ${prefixo}config cmds on/off`,
-                `├➤ ${prefixo}config multiprefix on/off`
-            ]
-        },
-        '5': {
-            titulo: '🏠 𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎',
-            linhas: [
-                `├➤ 🔣 Prefixo atual: *${prefixo}*`,
-                `├➤ 📜 Regras: *${config.regras ? '🟢 CONFIGURADAS' : '🔴 NÃO CONFIGURADAS'}*`,
-                `├➤ 📝 Logs: *${config.logs ? '🟢 ON' : '🔴 OFF'}*`,
-                '',
-                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
-                `├➤ ${prefixo}setnome <nome>`,
-                `├➤ ${prefixo}setdesc <texto>`,
-                `├➤ ${prefixo}setfoto + imagem`,
-                `├➤ ${prefixo}setregras <texto>`,
-                `├➤ ${prefixo}regras`,
-                `├➤ ${prefixo}config logs on/off`,
-                `├➤ ${prefixo}config multiprefix on/off`
-            ]
-        },
-        '6': {
-            titulo: '🟢 𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀',
-            linhas: [
-                `├➤ 👥 Pessoas protegidas: *${Array.isArray(config.listaBranca) ? config.listaBranca.length : 0}*`,
-                '',
-                `├✯ *𝐂𝐎𝐌𝐀𝐍𝐃𝐎𝐒*`,
-                `├➤ ${prefixo}config whitelist add @pessoa`,
-                `├➤ ${prefixo}config whitelist remove @pessoa`,
-                `├➤ ${prefixo}config whitelist list`
-            ]
-        }
-    };
-
-    const chaveSecao = ({1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',moderacao:'1',mod:'1',midia:'2',media:'2',entrada:'3',saida:'3',sistemas:'4',sistema:'4',grupo:'5',whitelist:'6',lista:'6'})[args.toLowerCase()];
-
-    if (!args || chaveSecao) {
-        if (!args) {
-            await reagir(message, '⚙️');
-            await responderCitando(message, formatarConfiguracaoAdmin(config));
-            return;
-        }
-        const secao = secoes[chaveSecao];
-        await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│       *${secao.titulo}*\n├✯\n${secao.linhas.join('\\n')}\n│\n├✯ _Voltar: ${prefixo}config_\n┗═•❃༺⚙️༻❃•═┓`);
-        return;
-    }
-
-    const partes = args.split(/\s+/);
-    const alvo = String(partes.shift() || '').toLowerCase();
-    const valor = partes.join(' ').trim();
-
-    const normalizarBool = v => {
-        const x = String(v || '').toLowerCase();
-        if (['on','sim','true','1','ativar','ativado'].includes(x)) return true;
-        if (['off','nao','não','false','0','desativar','desativado'].includes(x)) return false;
-        return null;
-    };
-
-    const mapaBool = {
-        antilink: 'antilink', antiflood: 'antiflood', antimencao: 'antiMention',
-        antipalavra: 'antiPalavra', autoban: 'autoBan',
-        antiimg: 'antiImg', antivideo: 'antiVideo', antiaudio: 'antiAudio',
-        antidoc: 'antiDoc', antisticker: 'antiSticker', anticatalogo: 'antiCatalogo',
-        limitexto: 'limitexto', multiprefix: 'multiprefix',
-        jogos: 'jogos', economia: 'economia', xp: 'xp', cmds: 'cmds', logs: 'logs'
-    };
-
-    if (mapaBool[alvo]) {
-        const bool = normalizarBool(valor);
-        if (bool !== null) {
-            config[mapaBool[alvo]] = bool;
-            salvarConfigAdmin();
-            registrarLogAdmin(message, `config ${alvo}`, bool ? 'on' : 'off');
-            await reagir(message, bool ? '🟢' : '🔴');
-            await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│      *𝐂𝐎𝐍𝐅𝐈𝐆𝐔𝐑𝐀ÇÃ𝐎 𝐀𝐋𝐓𝐄𝐑𝐀𝐃𝐀*\n├✯\n├➤ ⚙️ *${alvo}*: ${bool ? '🟢 𝐀𝐓𝐈𝐕𝐀𝐃𝐎' : '🔴 𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐃𝐎'}\n├➤ 💾 _Salvo neste grupo._\n┗═•❃༺⚙️༻❃•═┓`);
-            return;
-        }
-    }
-
-    if (alvo === 'antiflood' && valor.toLowerCase().startsWith('limite ')) {
-        const n = Number(valor.slice(8).trim());
-        if (Number.isInteger(n) && n >= 3 && n <= 30) {
-            config.floodLimite = n;
-            salvarConfigAdmin();
-            await responderCitando(message, `┏═•❃༺🚨༻❃•═┓\n│ *𝐋𝐈𝐌𝐈𝐓𝐄 𝐃𝐎 𝐀𝐍𝐓𝐈𝐅𝐋𝐎𝐎𝐃*\n├✯\n├➤ 📊 Novo limite: *${n} mensagens / 10s*\n┗═•❃༺🚨༻❃•═┓`);
-            return;
-        }
-    }
-
-    if (alvo === 'limitexto' && valor.toLowerCase().startsWith('limite ')) {
-        const n = Number(valor.slice(8).trim());
-        if (Number.isInteger(n) && n >= 100 && n <= 10000) {
-            config.limiteTexto = n;
-            salvarConfigAdmin();
-            await responderCitando(message, `┏═•❃༺📏༻❃•═┓\n│ *𝐋𝐈𝐌𝐈𝐓𝐄 𝐃𝐄 𝐓𝐄𝐗𝐓𝐎*\n├✯\n├➤ 📏 Novo limite: *${n} caracteres*\n┗═•❃༺📏༻❃•═┓`);
-            return;
-        }
-    }
-
-    if (alvo === 'palavra') {
-        const acao = String(partes.shift() || '').toLowerCase();
-        const palavra = partes.join(' ').trim().toLowerCase();
-        if (acao === 'list') {
-            const lista = config.palavrasProibidas.length
-                ? config.palavrasProibidas.map((x,i) => `├➤ ${i + 1}. *${x}*`).join('\\n')
-                : '├➤ _Nenhuma palavra cadastrada._';
-            await responderCitando(message, `┏═•❃༺🤬༻❃•═┓\n│       *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n${lista}\n┗═•❃༺🤬༻❃•═┓`);
-            return;
-        }
-        if ((acao === 'add' || acao === 'remove') && palavra) {
-            if (acao === 'add' && !config.palavrasProibidas.includes(palavra)) config.palavrasProibidas.push(palavra);
-            if (acao === 'remove') config.palavrasProibidas = config.palavrasProibidas.filter(x => x !== palavra);
-            salvarConfigAdmin();
-            await responderCitando(message, `┏═•❃༺🤬༻❃•═┓\n│ *𝐏𝐀𝐋𝐀𝐕𝐑𝐀𝐒 𝐁𝐋𝐎𝐐𝐔𝐄𝐀𝐃𝐀𝐒*\n├✯\n├➤ ${acao === 'add' ? '🟢 Adicionada' : '🗑️ Removida'}: *${palavra}*\n┗═•❃༺🤬༻❃•═┓`);
-            return;
-        }
-    }
-
-    if (alvo === 'whitelist') {
-        const acao = String(partes.shift() || '').toLowerCase();
-        const mencoes = await message.getMentions().catch(() => []);
-        const ids = mencoes.map(p => idDaPessoa(p)).filter(Boolean);
-        if (acao === 'list') {
-            const lista = config.listaBranca.length
-                ? config.listaBranca.map((x,i) => `├➤ ${i + 1}. @${String(x).split('@')[0]}`).join('\\n')
-                : '├➤ _Nenhum usuário na lista branca._';
-            await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓\n│       *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n${lista}\n┗═•❃༺🟢༻❃•═┓`, { mentions: config.listaBranca });
-            return;
-        }
-        if ((acao === 'add' || acao === 'remove') && ids.length) {
-            if (acao === 'add') config.listaBranca = [...new Set([...config.listaBranca, ...ids])];
-            else config.listaBranca = config.listaBranca.filter(id => !ids.some(x => idsIguais(x, id)));
-            salvarConfigAdmin();
-            await enviarComMencoes(message.from, `┏═•❃༺🟢༻❃•═┓\n│       *𝐋𝐈𝐒𝐓𝐀 𝐁𝐑𝐀𝐍𝐂𝐀*\n├✯\n├➤ ${acao === 'add' ? '🟢 Adicionado(s)' : '🗑️ Removido(s)'} com sucesso.\n┗═•❃༺🟢༻❃•═┓`, { mentions: ids });
-            return;
-        }
-    }
-
-    await responderCitando(message, `┏═•❃༺⚙️༻❃•═┓\n│      *𝐂𝐎𝐍𝐅𝐈𝐆*\n├✯\n├➤ ❌ Opção não reconhecida.\n│\n├➤ 💡 Use *${prefixo}config* para abrir o painel.\n├➤ 🔢 Depois escolha *1 a 6*.\n├➤ ⚡ Exemplo: *${prefixo}config 1*\n┗═•❃༺⚙️༻❃•═┓`);
-}
 
 async function comandoToggleGrupo(message, tipo, valor) {
     if (!(await exigirAdmin(message))) return;
@@ -18888,7 +18759,7 @@ async function comandoSetNome(message, argumentos = '') {
     try { const resultado = await client.pupPage.evaluate(async (id, novoNome) => { try { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo não encontrado.'}; if (typeof chat.setSubject==='function') { await chat.setSubject(novoNome); return {ok:true}; } if (chat.groupMetadata?.subject?.set) { chat.groupMetadata.subject.set(novoNome); return {ok:true}; } return {ok:false,erro:'Método de nome indisponível.'}; } catch(e){return {ok:false,erro:String(e?.message||e)}} }, message.from, nome); if (!resultado?.ok) throw new Error(resultado?.erro); registrarLogAdmin(message,'setnome',nome); await responderCitando(message, `✅ *Nome do grupo alterado.*\n\n🏷️ ${nome}`); } catch(e){ await responderCitando(message, `❌ Não consegui alterar o nome.\n_${e.message}_`); }
 }
 
-async function comandoDescricao(message) {
+async function comandoDescricao(message, argumentos = '') {
     if (!(await exigirAdmin(message))) return;
     try { const resultado = await client.pupPage.evaluate(async id => { const Store=window.require('WAWebCollections'); const chat=Store?.Chat?.get(id); if (!chat) return {ok:false,erro:'Grupo não encontrado.'}; return {ok:true,descricao:chat.groupMetadata?.description || chat.description || ''}; }, message.from); if (!resultado?.ok) throw new Error(resultado.erro); if (!argumentos.trim()) { await responderCitando(message, `┏═•❃༺📄༻❃•═┓\n├✯ *𝐃𝐄𝐒𝐂𝐑𝐈𝐂̧𝐀̃𝐎 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n${resultado.descricao || '_Sem descrição._'}\n┗═•❃༺📄༻❃•═┓`); return; } const desc=argumentos.trim(); const alterado=await client.pupPage.evaluate(async (id,descricao)=>{try{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);if(!chat)return {ok:false,erro:'Grupo não encontrado.'};if(typeof chat.setDescription==='function'){await chat.setDescription(descricao);return {ok:true};}return {ok:false,erro:'Método de descrição indisponível.'};}catch(e){return {ok:false,erro:String(e?.message||e)}}},message.from,desc); if(!alterado?.ok) throw new Error(alterado.erro); registrarLogAdmin(message,'desc'); await responderCitando(message,'✅ *Descrição do grupo atualizada.*'); } catch(e){ await responderCitando(message,`❌ Não consegui alterar a descrição.\n_${e.message}_`); }
 }
@@ -19556,6 +19427,7 @@ case 'recusar':
         
     case 'ttg':
     case 'totag':
+    case 'trtg':
     await ttg(
         message,
         argumentos
