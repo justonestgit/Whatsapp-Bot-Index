@@ -9191,7 +9191,7 @@ async function renderizarBratNoNavegador(texto, opcoes = {}) {
 }
 
 async function gerarBrat1(message, argumento) {
-    const texto = (argumento || '').trim().toLowerCase();
+    const texto = (argumento || '').trim();
 
     if (!texto) {
         await reagir(message, '❌');
@@ -9206,7 +9206,7 @@ async function gerarBrat1(message, argumento) {
         const { buffer } = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
-            desfoque: 4,
+            desfoque: 2.5,
             pesoFonte: 400
         });
 
@@ -9237,7 +9237,7 @@ async function gerarBrat1(message, argumento) {
 // ============================================================
 
 async function gerarBrat2(message, argumento) {
-    const texto = (argumento || '').trim().toLowerCase();
+    const texto = (argumento || '').trim();
 
     if (!texto) {
         await reagir(message, '❌');
@@ -9290,7 +9290,7 @@ async function gerarBrat2(message, argumento) {
                 const frame = await renderizarBratNoNavegador(textoFrame, {
                     fundo: '#ffffff',
                     corTexto: '#000000',
-                    desfoque: i === 0 ? 0 : 4,
+                    desfoque: i === 0 ? 0 : 2.5,
                     pesoFonte: 400,
                     fonte: layoutCompleto.layout.fonte
                 });
@@ -9308,7 +9308,7 @@ async function gerarBrat2(message, argumento) {
         const final = await renderizarBratNoNavegador(texto, {
             fundo: '#ffffff',
             corTexto: '#000000',
-            desfoque: 4,
+            desfoque: 2.5,
             pesoFonte: 400,
             fonte: layoutCompleto.layout.fonte
         });
