@@ -19451,39 +19451,115 @@ async function responderSimih(message, conteudo) {
 async function comandoPersonalidadeSimih(message, argumentos) {
     if (!(await exigirAdmin(message))) return;
     const escolha = textoNormalizado(String(argumentos || '').trim()).replace(/^personalidade\s*/, '').trim();
+    const prefixo = obterPrefixoGrupo(message.from);
 
     if (!escolha) {
         const atual = obterPersonalidadeSimih(message.from);
-        let lista = '';
-        for (const [id, personalidade] of Object.entries(PERSONALIDADES_SIMIH)) {
-            lista += `├➤ ${personalidade.emoji} *${id}* — ${personalidade.descricao}\\n`;
-        }
-        await responderSimih(message, `┏═•❃༺🎭༻❃•═┓\\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐒𝐈𝐌𝐈𝐇*\\n├✯\\n│\\n├➤ 🎭 Atual: *${PERSONALIDADES_SIMIH[atual].nome}*\\n│\\n${lista}├✯\\n│\\n├➤ *𝐔𝐒𝐀𝐑:*\\n│   *${obterPrefixoGrupo(message.from)}simih personalidade <nome>*\\n│\\n├➤ *𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐑:*\\n│   *${obterPrefixoGrupo(message.from)}simih personalidade off*\\n│\\n┗═•❃༺🎭༻❃•═┓`);
+        const personalidadeAtual = PERSONALIDADES_SIMIH[atual] || PERSONALIDADES_SIMIH.normal;
+        const selecionaveis = Object.entries(PERSONALIDADES_SIMIH)
+            .filter(([id]) => id !== 'normal')
+            .map(([id, personalidade]) => `├➤ ${personalidade.emoji} *${id}*\n│   ${personalidade.descricao}`)
+            .join('\n');
+
+        await responderSimih(message, `┏═•❃༺🎭༻❃•═┓\n│      *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐃𝐎 𝐒𝐈𝐌𝐈𝐇*\n├✯\n│\n├➤ 🎭 Atual: *${personalidadeAtual.nome}*\n│\n${selecionaveis}\n│\n├✯\n│\n├➤ *𝐔𝐒𝐀𝐑:*\n│   *${prefixo}simih personalidade <nome>*\n│\n├➤ *𝐍𝐎𝐑𝐌𝐀𝐋:*\n│   *${prefixo}simih personalidade normal*\n│\n├➤ *𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐑:*\n│   *${prefixo}simih personalidade off*\n│\n┗═•❃༺🎭༻❃•═┓`);
         return;
     }
 
-    if (['off', 'desligar', 'desativar', 'normal'].includes(escolha)) {
+    if (['off', 'desligar', 'desativar'].includes(escolha)) {
         personalidadesSimihGrupos.delete(message.from);
         salvarPersonalidadesSimih();
         await reagir(message, '🔴');
-        await responderSimih(message, '🔴 *Personalidade do SIMIH desativada.*\\n\\n🤖 O SIMIH voltou ao comportamento normal.');
+        await responderSimih(message, `┏═•❃༺🔴༻❃•═┓\n│ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐃𝐄𝐒𝐀𝐓𝐈𝐕𝐀𝐃𝐀*\n│\n├➤ 🤖 O SIMIH voltou ao comportamento normal.\n┗═•❃༺🔴༻❃•═┓`);
         return;
     }
 
     const personalidade = PERSONALIDADES_SIMIH[escolha];
     if (!personalidade) {
         await reagir(message, '❌');
-        await responderSimih(message, `❌ *Personalidade inválida.*\\n\\nUse *${obterPrefixoGrupo(message.from)}simih personalidade* para ver as opções.`);
+        await responderSimih(message, `┏═•❃༺❌༻❃•═┓\n│ *𝐏𝐄𝐑𝐒𝐎𝐍𝐀𝐋𝐈𝐃𝐀𝐃𝐄 𝐈𝐍𝐕Á𝐋𝐈𝐃𝐀*\n│\n├➤ Use *${prefixo}simih personalidade* para ver as opções.\n┗═•❃༺❌༻❃•═┓`);
         return;
     }
 
     personalidadesSimihGrupos.set(message.from, escolha);
     salvarPersonalidadesSimih();
     await reagir(message, personalidade.emoji);
-    await responderSimih(message, `${personalidade.emoji} *SIMIH: ${personalidade.nome.toUpperCase()} ATIVADO.*\\n\\n_${personalidade.descricao}_`);
+    await responderSimih(message, `┏═•❃༺${personalidade.emoji}༻❃•═┓\n│ *𝐒𝐈𝐌𝐈𝐇: ${personalidade.nome.toUpperCase()}*\n│\n├➤ ${personalidade.descricao}\n┗═•❃༺${personalidade.emoji}༻❃•═┓`);
 }
 
 carregarPersonalidadesSimih();
+
+const SIMIH_RPM_LIMITE = Math.max(1, Math.min(9, Number(process.env.SIMIH_RPM_LIMITE) || 8));
+const SIMIH_INTERVALO_JANELA_MS = 60 * 1000;
+const SIMIH_COOLDOWN_NORMAL_MS = 3000;
+const SIMIH_COOLDOWN_SIMIH2_MS = 10000;
+const SIMIH_MAX_PENDENTES = 2;
+const historicoChamadasSimih = [];
+const pendenciasSimih = new Map();
+let filaSimih = Promise.resolve();
+
+function esperarSimih(ms) {
+    return new Promise(resolve => setTimeout(resolve, Math.max(0, ms)));
+}
+
+function obterEsperaRateLimitSimih(erro) {
+    const textoErro = String(erro?.message || erro || '');
+    const correspondencia = textoErro.match(/try again in\s+(\d+(?:\.\d+)?)s/i);
+    if (!correspondencia) return 0;
+    return Math.ceil(Number(correspondencia[1]) * 1000) + 1000;
+}
+
+async function aguardarLimiteSimih() {
+    while (true) {
+        const agora = Date.now();
+        while (historicoChamadasSimih.length && agora - historicoChamadasSimih[0] >= SIMIH_INTERVALO_JANELA_MS) {
+            historicoChamadasSimih.shift();
+        }
+
+        if (historicoChamadasSimih.length < SIMIH_RPM_LIMITE) {
+            historicoChamadasSimih.push(Date.now());
+            return;
+        }
+
+        const espera = historicoChamadasSimih[0] + SIMIH_INTERVALO_JANELA_MS - agora + 250;
+        await esperarSimih(espera);
+    }
+}
+
+function executarNaFilaSimih(grupoId, tarefa) {
+    const pendentes = pendenciasSimih.get(grupoId) || 0;
+    if (pendentes >= SIMIH_MAX_PENDENTES) return Promise.resolve(false);
+    pendenciasSimih.set(grupoId, pendentes + 1);
+
+    const executar = filaSimih.then(async () => {
+        try {
+            await aguardarLimiteSimih();
+            return await tarefa();
+        } finally {
+            const atuais = pendenciasSimih.get(grupoId) || 1;
+            if (atuais <= 1) pendenciasSimih.delete(grupoId);
+            else pendenciasSimih.set(grupoId, atuais - 1);
+        }
+    });
+
+    filaSimih = executar.catch(() => false);
+    return executar;
+}
+
+async function chamarIAComProtecaoSimih(prompt, contexto) {
+    let tentativa = 0;
+    while (tentativa < 2) {
+        tentativa++;
+        try {
+            return await obterAgenteIA().responder(prompt, contexto);
+        } catch (erro) {
+            const espera = obterEsperaRateLimitSimih(erro);
+            if (!espera || tentativa >= 2) throw erro;
+            console.warn(`⏳ SIMIH atingiu o limite da API. Aguardando ${Math.ceil(espera / 1000)}s antes de tentar novamente.`);
+            await esperarSimih(espera);
+        }
+    }
+    return null;
+}
 
 async function processarSimih(message) {
     if (!message?.from?.endsWith('@g.us')) return false;
@@ -19499,25 +19575,32 @@ async function processarSimih(message) {
 
     const agora = Date.now();
     const ultimo = ultimoSimih.get(message.from) || 0;
-    if (agora - ultimo < 3000) return false;
+    const cooldown = config.simih2 ? SIMIH_COOLDOWN_SIMIH2_MS : SIMIH_COOLDOWN_NORMAL_MS;
+    if (agora - ultimo < cooldown) return false;
     ultimoSimih.set(message.from, agora);
 
-    try {
-        const contexto = await obterContextoIA(message);
-        const personalidade = obterPersonalidadeSimih(message.from);
-        const dadosPersonalidade = PERSONALIDADES_SIMIH[personalidade] || PERSONALIDADES_SIMIH.normal;
-        const modo = config.simih2
-            ? 'Responda à mensagem do usuário de forma natural e breve. Não mencione que é um modo automático.'
-            : 'O usuário mencionou ou respondeu ao bot. Responda naturalmente à mensagem dele.';
-        const prompt = `${modo}\n\nPERSONALIDADE ATUAL DO SIMIH: ${dadosPersonalidade.nome}.\n${dadosPersonalidade.instrucao}\n\nMensagem: ${texto}`;
-        const resultado = await obterAgenteIA().responder(prompt, contexto);
-        if (!resultado?.sucesso || !resultado.texto) return false;
-        await responderSimih(message, resultado.texto);
-        return true;
-    } catch (erro) {
-        console.error('⚠️ Erro no Simih:', erro.message);
-        return false;
-    }
+    return executarNaFilaSimih(message.from, async () => {
+        try {
+            const contexto = await obterContextoIA(message);
+            const personalidade = obterPersonalidadeSimih(message.from);
+            const dadosPersonalidade = PERSONALIDADES_SIMIH[personalidade] || PERSONALIDADES_SIMIH.normal;
+            const modo = config.simih2
+                ? 'Responda à mensagem do usuário de forma natural e breve. Não mencione que é um modo automático.'
+                : 'O usuário mencionou ou respondeu ao bot. Responda naturalmente à mensagem dele.';
+            const prompt = `${modo}\n\nPERSONALIDADE ATUAL DO SIMIH: ${dadosPersonalidade.nome}.\n${dadosPersonalidade.instrucao}\n\nMensagem: ${texto}`;
+            const resultado = await chamarIAComProtecaoSimih(prompt, contexto);
+            if (!resultado?.sucesso || !resultado.texto) return false;
+            await responderSimih(message, resultado.texto);
+            return true;
+        } catch (erro) {
+            if (obterEsperaRateLimitSimih(erro)) {
+                console.warn('⚠️ SIMIH: limite de requisições atingido. A mensagem foi descartada para evitar spam de 429.');
+            } else {
+                console.error('⚠️ Erro no Simih:', erro.message);
+            }
+            return false;
+        }
+    });
 }
 
 async function comandoSimih(message, argumentos, variante = 'simih') {
@@ -19534,13 +19617,14 @@ async function comandoSimih(message, argumentos, variante = 'simih') {
     const desligado = ['off', 'desativar', 'inativo', 'nao', 'não', 'false'].includes(valor);
     if (!ligado && !desligado) {
         const estado = config[variante] ? 'ATIVO' : 'INATIVO';
-        await responderCitando(message, `🤖 *${variante.toUpperCase()}*\n\nEstado: *${estado}*\n\nUse *${obterPrefixoGrupo(message.from)}${variante} on/off*.`);
+        const prefixo = obterPrefixoGrupo(message.from);
+        await responderCitando(message, `┏═•❃༺🤖༻❃•═┓\n│ *𝐒𝐈𝐌𝐈𝐇${variante === 'simih2' ? '2' : ''}*\n│\n├➤ Estado: *${estado}*\n│\n├➤ Ativar: *${prefixo}${variante} on*\n├➤ Desativar: *${prefixo}${variante} off*\n├➤ Personalidade: *${prefixo}simih personalidade*\n┗═•❃༺🤖༻❃•═┓`);
         return;
     }
     config[variante] = ligado;
     salvarConfigAdmin();
     await reagir(message, ligado ? '✅' : '❌');
-    await responderCitando(message, `🤖 *${variante.toUpperCase()} ${ligado ? 'ATIVADO' : 'DESATIVADO'}.*`);
+    await responderCitando(message, `┏═•❃༺${ligado ? '✅' : '❌'}༻❃•═┓\n│ *𝐒𝐈𝐌𝐈𝐇${variante === 'simih2' ? '2' : ''} ${ligado ? 'ATIVADO' : 'DESATIVADO'}*\n│\n├➤ ${ligado ? 'O SIMIH está pronto para responder.' : 'O SIMIH não responderá automaticamente neste grupo.'}\n┗═•❃༺${ligado ? '✅' : '❌'}༻❃•═┓`);
 }
 
 const COMANDOS_RPG = new Set(['rpg','tapa','soco','chute','empurrar','duelo','roubar','abracar','proteger','curar','elogiar','zoar','aventura','chuterpg']);
