@@ -9103,18 +9103,26 @@ function quebrarTextoBrat(texto, caracteresPorLinha) {
 
 function calcularLayoutBrat(texto) {
     const tamanho = 1000;
-    const margem = 55;
-    const larguraUtil = tamanho - (margem * 2);
-    const alturaUtil = tamanho - (margem * 2);
 
-    // O efeito original depende mais da geometria do texto do que de
-    // simplesmente escolher uma fonte "narrow". A largura final é
-    // controlada separadamente para reproduzir o aspecto comprimido.
-    const fonteMaxima = 310;
-    const fonteMinima = 48;
+    // A referência visual da versão deluxe não centraliza o bloco inteiro.
+    // O texto começa perto do canto superior esquerdo e ocupa a maior parte
+    // da área, com uma composição propositalmente simples/"mal alinhada".
+    const margemEsquerda = 58;
+    const margemDireita = 58;
+    const margemSuperior = 68;
+    const margemInferior = 58;
+    const larguraUtil =
+        tamanho - margemEsquerda - margemDireita;
+    const alturaUtil =
+        tamanho - margemSuperior - margemInferior;
+
+    // A arte é baseada em Arial comum comprimida horizontalmente, não em
+    // Arial Narrow. O achatamento é aplicado na largura, mantendo a altura.
+    const fonteMaxima = 300;
+    const fonteMinima = 52;
     const escalaX = 0.69;
     const pesoFonte = 400;
-    const alturaLinhaFator = 0.88;
+    const alturaLinhaFator = 0.86;
 
     const palavras = texto
         .trim()
@@ -9126,11 +9134,10 @@ function calcularLayoutBrat(texto) {
             return 0;
         }
 
-        // Métrica deliberadamente conservadora. A largura real do SVG será
-        // normalizada com textLength, então esta etapa serve apenas para
-        // escolher o maior tamanho de fonte que cabe.
+        // Métrica aproximada de Arial antes do achatamento horizontal.
+        // A decisão final de largura continua sendo feita pelo textLength.
         const caracteres = valor.length;
-        const larguraBase = caracteres * fonte * 0.55;
+        const larguraBase = caracteres * fonte * 0.54;
         const espacamento =
             Math.max(0, caracteres - 1) * letterSpacing;
 
@@ -9152,7 +9159,11 @@ function calcularLayoutBrat(texto) {
 
             if (
                 !linhaAtual ||
-                larguraEstimada(tentativa, fonte, letterSpacing) <= larguraUtil
+                larguraEstimada(
+                    tentativa,
+                    fonte,
+                    letterSpacing
+                ) <= larguraUtil
             ) {
                 linhaAtual = tentativa;
                 continue;
@@ -9169,15 +9180,15 @@ function calcularLayoutBrat(texto) {
         return linhas;
     }
 
-    // O textFit usado em geradores desse estilo procura o maior tamanho
-    // possível dentro da caixa. Fazemos a mesma coisa por busca binária,
-    // em vez de reduzir a fonte em passos fixos.
+    // O gerador de referência procura o maior tamanho que cabe na caixa.
+    // Aqui usamos busca binária para evitar que o texto fique artificialmente
+    // pequeno por causa de passos fixos.
     let baixo = fonteMinima;
     let alto = fonteMaxima;
     let melhor = fonteMinima;
     let melhorLinhas = montarLinhas(
         fonteMinima,
-        -2
+        -1.0
     );
 
     while (baixo <= alto) {
@@ -9187,7 +9198,7 @@ function calcularLayoutBrat(texto) {
             (fonteMaxima - fonteMinima);
 
         const letterSpacing =
-            -1.5 - (proporcao * 2.0);
+            -0.5 - (proporcao * 1.2);
 
         const linhas = montarLinhas(
             fonte,
@@ -9213,17 +9224,17 @@ function calcularLayoutBrat(texto) {
         (fonteMaxima - fonteMinima);
 
     const letterSpacing =
-        -1.5 - (proporcao * 2.0);
+        -0.5 - (proporcao * 1.2);
 
     return {
         fonte: melhor,
         linhas: melhorLinhas,
         alturaLinha: melhor * alturaLinhaFator,
         letterSpacing,
-        margemEsquerda: margem,
-        margemDireita: margem,
-        margemSuperior: margem,
-        margemInferior: margem,
+        margemEsquerda,
+        margemDireita,
+        margemSuperior,
+        margemInferior,
         larguraUtil,
         alturaUtil,
         escalaX,
@@ -9239,23 +9250,21 @@ function construirSvgBrat(
     const fundo = opcoes.fundo ?? '#ffffff';
     const corTexto = opcoes.corTexto ?? '#000000';
     const desfoque = opcoes.desfoque ?? 2.0;
-    const escalaX = opcoes.escalaX ?? layout.escalaX ?? 0.69;
-    const deslocamentoX = opcoes.deslocamentoX ?? 0;
-    const deslocamentoY = opcoes.deslocamentoY ?? 0;
 
     const {
         fonte,
         linhas,
         alturaLinha,
         letterSpacing,
-        pesoFonte = 400
+        pesoFonte = 400,
+        margemEsquerda = 58,
+        margemSuperior = 68,
+        larguraUtil = 884
     } = layout;
 
-    const alturaTotal = linhas.length * alturaLinha;
     const yInicial =
-        ((tamanho - alturaTotal) / 2) +
-        (alturaLinha * 0.78) +
-        deslocamentoY;
+        margemSuperior +
+        (fonte * 0.76);
 
     const linhasSvg = linhas
         .map((linha, indice) => {
@@ -9263,27 +9272,29 @@ function construirSvgBrat(
                 yInicial +
                 indice * alturaLinha;
 
-            // textLength faz o ajuste de largura depois da medição. Isso é
-            // muito mais previsível do que confiar em uma largura média de
-            // caractere e evita que palavras curtas fiquem minúsculas.
+            // O texto fica alinhado à esquerda. A compressão é feita no
+            // comprimento dos glifos, preservando a altura original da fonte.
             const larguraNaturalEstimada =
                 Math.max(
                     1,
-                    linha.length * fonte * 0.55
+                    linha.length * fonte * 0.54
                 );
+
+            const larguraComprimida =
+                larguraNaturalEstimada * (0.69 / 0.54);
 
             const larguraDesejada =
                 Math.min(
-                    1000 - 110,
+                    larguraUtil,
                     Math.max(
-                        90,
-                        larguraNaturalEstimada * escalaX
+                        70,
+                        larguraComprimida
                     )
                 );
 
             return `
 <tspan
-    x="500"
+    x="${margemEsquerda}"
     y="${y}"
     textLength="${larguraDesejada.toFixed(2)}"
     lengthAdjust="spacingAndGlyphs"
@@ -9320,18 +9331,13 @@ function construirSvgBrat(
         fill="${fundo}"
     />
 
-    <!--
-        O scaleX antigo deslocava o centro para a esquerda porque escalava
-        em torno da origem (0,0). O texto agora é ancorado no centro e sua
-        largura é definida diretamente por textLength.
-    -->
     <text
-        x="500"
+        x="0"
         y="0"
-        font-family="Arial Narrow, Arial, Liberation Sans Narrow, sans-serif"
+        font-family="Arial, Liberation Sans, sans-serif"
         font-size="${fonte}"
         font-weight="${pesoFonte}"
-        text-anchor="middle"
+        text-anchor="start"
         letter-spacing="${letterSpacing}"
         fill="${corTexto}"
         filter="url(#bratBlur)"
@@ -9340,6 +9346,7 @@ function construirSvgBrat(
     </text>
 </svg>`;
 }
+
 
 
 // ============================================================
