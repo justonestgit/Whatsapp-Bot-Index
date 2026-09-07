@@ -18530,7 +18530,7 @@ async function comandoStaff(message) {
     try { const dados=await client.pupPage.evaluate(id=>{const Store=window.require('WAWebCollections');const chat=Store?.Chat?.get(id);const p=chat?.groupMetadata?.participants;if(!p)return null;const arr=typeof p.getModelsArray==='function'?p.getModelsArray():(p.models||[]);return arr.filter(x=>x.isAdmin||x.isSuperAdmin).map(x=>({id:x.id?._serialized||'',owner:!!x.isSuperAdmin}));},message.from); if(!dados) throw new Error('Não consegui obter a equipe.'); const linhas=dados.map((x,i)=>`${x.owner?'👑':'🛡️'} *${i+1}.* @${x.id.split('@')[0]}`).join('\n'); await enviarComMencoes(message.from,`┏═•❃༺👑༻❃•═┓\n│ *𝐒𝐓𝐀𝐅𝐅 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎*\n│\n${linhas || '_Nenhum administrador encontrado._'}\n┗═•❃༺👑༻❃•═┓`,{mentions:dados.map(x=>x.id)}); } catch(e){ await responderCitando(message,`❌ Não consegui consultar a equipe.\n_${e.message}_`); }
 }
 
-async function obterPessoaAlvoAdmin(message, argumentos = '') {
+async function obterPessoaAlvoAdmin(message, argumentos = '', usarRemetenteComoPadrao = false) {
     const mencionados = [...new Set(message?.mentionedIds || [])];
     if (mencionados.length) return mencionados[0];
     if (message?.hasQuotedMsg) {
@@ -18540,12 +18540,14 @@ async function obterPessoaAlvoAdmin(message, argumentos = '') {
         } catch {}
     }
     const numero = String(argumentos || '').match(/\b\d{8,15}\b/)?.[0];
-    return numero ? `${numero}@c.us` : null;
+    if (numero) return `${numero}@c.us`;
+    if (usarRemetenteComoPadrao) return obterIdRemetente(message);
+    return null;
 }
 
 async function comandoDarXP(message, argumentos, remover = false) {
     if (!(await exigirAdmin(message))) return;
-    const alvo = await obterPessoaAlvoAdmin(message, argumentos);
+    const alvo = await obterPessoaAlvoAdmin(message, argumentos, true);
     const qtd = Number(String(argumentos || '').match(/\b(\d+)\b/)?.[1]);
     if (!alvo || !Number.isFinite(qtd) || qtd <= 0) { await responderCitando(message, `❌ Use *${obterPrefixoGrupo(message.from)}${remover ? 'removerxp' : 'darxp'} @pessoa 100*.`); return; }
     const atual = garantirDadosXP(message.from, alvo);
@@ -18557,15 +18559,31 @@ async function comandoDarXP(message, argumentos, remover = false) {
 
 async function comandoDarCoins(message, argumentos, remover = false) {
     if (!(await exigirAdmin(message))) return;
-    const alvo=await obterPessoaAlvoAdmin(message,argumentos); const qtd=Number(String(argumentos||'').match(/\b(\d+)\b/)?.[1]); if(!alvo||!Number.isFinite(qtd)||qtd<=0){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${remover?'removercoins':'darcoins'} @pessoa 100*.`);return;} const atual=moedasUsuarios.get(alvo)||{saldo:0}; atual.saldo=Math.max(0,atual.saldo+(remover?-qtd:qtd)); moedasUsuarios.set(alvo,atual); salvarMoedas(); await responderCitando(message,`💰 *${remover?'MOEDAS REMOVIDAS':'MOEDAS ADICIONADAS'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover?'-':''}${qtd}`); }
+    const alvo=await obterPessoaAlvoAdmin(message,argumentos,true); const qtd=Number(String(argumentos||'').match(/\b(\d+)\b/)?.[1]); if(!alvo||!Number.isFinite(qtd)||qtd<=0){await responderCitando(message,`❌ Use *${obterPrefixoGrupo(message.from)}${remover?'removercoins':'darcoins'} @pessoa 100*.`);return;} const atual=moedasUsuarios.get(alvo)||{saldo:0}; atual.saldo=Math.max(0,atual.saldo+(remover?-qtd:qtd)); moedasUsuarios.set(alvo,atual); salvarMoedas(); await responderCitando(message,`💰 *${remover?'MOEDAS REMOVIDAS':'MOEDAS ADICIONADAS'}*\n\n👤 @${String(alvo).split('@')[0]}\n➤ ${remover?'-':''}${qtd}`); }
 
 async function comandoResetXP(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
-    const alvo=await obterPessoaAlvoAdmin(message,argumentos); const grupo=dadosXP.get(message.from);
-    if(alvo){ if(grupo) grupo.delete(alvo); salvarXP(); await responderCitando(message,`♻️ XP de @${String(alvo).split('@')[0]} resetado.`); return; }
-    if(grupo) grupo.clear(); salvarXP(); await responderCitando(message,'♻️ *XP de todos os membros deste grupo foi resetado.*');
+    const alvo=await obterPessoaAlvoAdmin(message,argumentos);
+    if (!alvo) {
+        await responderCitando(message,`❌ Para resetar o XP, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}resetxp @pessoa*.`);
+        return;
+    }
+    const grupo=dadosXP.get(message.from);
+    if(grupo) grupo.delete(alvo);
+    salvarXP();
+    await responderCitando(message,`♻️ XP de @${String(alvo).split('@')[0]} resetado.`);
 }
-async function comandoResetEco(message, argumentos='') { if (!(await exigirAdmin(message))) return; const alvo=await obterPessoaAlvoAdmin(message,argumentos); if(alvo){moedasUsuarios.delete(alvo);salvarMoedas();await responderCitando(message,`♻️ Economia de @${String(alvo).split('@')[0]} resetada.`);return;} await responderCitando(message,'⚠️ Por segurança, o reset geral da economia deve ser feito por usuário. Use uma menção.'); }
+async function comandoResetEco(message, argumentos='') {
+    if (!(await exigirAdmin(message))) return;
+    const alvo=await obterPessoaAlvoAdmin(message,argumentos);
+    if(!alvo){
+        await responderCitando(message,`❌ Para resetar a economia, mencione a pessoa ou responda a uma mensagem dela.\n\nExemplo: *${obterPrefixoGrupo(message.from)}reseteco @pessoa*.`);
+        return;
+    }
+    moedasUsuarios.delete(alvo);
+    salvarMoedas();
+    await responderCitando(message,`♻️ Economia de @${String(alvo).split('@')[0]} resetada.`);
+}
 
 async function comandoSorteio(message, argumentos='') {
     if (!(await exigirAdmin(message))) return;
