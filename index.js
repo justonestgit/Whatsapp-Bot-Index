@@ -9104,12 +9104,10 @@ function quebrarTextoBrat(texto, caracteresPorLinha) {
 function calcularLayoutBrat(texto) {
 
     const tamanho = 1000;
-
-    // Caixa onde o texto pode ocupar
-    const margemEsquerda = 75;
-    const margemDireita = 55;
-    const margemSuperior = 55;
-    const margemInferior = 55;
+    const margemEsquerda = 68;
+    const margemDireita = 72;
+    const margemSuperior = 68;
+    const margemInferior = 68;
 
     const larguraUtil =
         tamanho -
@@ -9121,33 +9119,21 @@ function calcularLayoutBrat(texto) {
         margemSuperior -
         margemInferior;
 
-    // Começa grande e vai diminuindo
-    let fonte = 250;
+    let fonte = 170;
 
-    while (fonte >= 35) {
+    while (fonte >= 40) {
 
-        /*
-         * Quanto menor a fonte,
-         * mais apertadas ficam as letras.
-         */
         const proporcao =
-            (fonte - 35) /
-            (210 - 35);
+            (fonte - 40) /
+            (170 - 40);
 
         const letterSpacing =
-            -2.0 -
-            ((1 - proporcao) * 3.0);
+            -1.4 -
+            ((1 - proporcao) * 1.8);
 
-        /*
-         * Estimativa da largura média de uma letra.
-         * Será usada apenas para uma primeira aproximação.
-         */
         const larguraMediaLetra =
-            fonte * 0.50;
+            fonte * 0.43;
 
-        /*
-         * Converte o texto em palavras.
-         */
         const palavras =
             texto
                 .trim()
@@ -9155,180 +9141,93 @@ function calcularLayoutBrat(texto) {
                 .filter(Boolean);
 
         const linhas = [];
-
         let linhaAtual = '';
 
-        /*
-         * Aproximação da largura de uma palavra.
-         *
-         * O letter-spacing entra no cálculo,
-         * fazendo o texto realmente ficar mais comprimido
-         * quando a fonte diminui.
-         */
         function medirTexto(textoMedido) {
-
             if (!textoMedido) {
                 return 0;
             }
 
-            const caracteres =
-                textoMedido.length;
+            const caracteres = textoMedido.length;
 
             return (
-                caracteres *
-                larguraMediaLetra
-            ) +
-            (
-                Math.max(
-                    0,
-                    caracteres - 1
-                ) *
-                letterSpacing
+                caracteres * larguraMediaLetra
+            ) + (
+                Math.max(0, caracteres - 1) * letterSpacing
             );
         }
 
-        /*
-         * Coloca palavra por palavra.
-         */
-        for (
-            const palavra of palavras
-        ) {
+        for (const palavra of palavras) {
 
             const tentativa =
                 linhaAtual
                     ? `${linhaAtual} ${palavra}`
                     : palavra;
 
-            const largura =
-                medirTexto(
-                    tentativa
-                );
-
             if (
                 !linhaAtual ||
-                largura <= larguraUtil
+                medirTexto(tentativa) <= larguraUtil
             ) {
-
-                linhaAtual =
-                    tentativa;
-
+                linhaAtual = tentativa;
             } else {
-
-                linhas.push(
-                    linhaAtual
-                );
-
-                linhaAtual =
-                    palavra;
+                linhas.push(linhaAtual);
+                linhaAtual = palavra;
             }
         }
 
-        /*
-         * Adiciona a última linha.
-         */
         if (linhaAtual) {
-
-            linhas.push(
-                linhaAtual
-            );
+            linhas.push(linhaAtual);
         }
 
-        /*
-         * Espaçamento vertical.
-         *
-         * Conforme a fonte diminui,
-         * as linhas também ficam mais próximas.
-         */
         const alturaLinha =
-            fonte *
-            (
-                0.92 -
-                ((1 - proporcao) * 0.12)
+            fonte * (
+                0.88 -
+                ((1 - proporcao) * 0.05)
             );
 
         const alturaTotal =
-            linhas.length *
-            alturaLinha;
+            linhas.length * alturaLinha;
 
-        /*
-         * Se couber na caixa,
-         * encontramos o tamanho ideal.
-         */
-        if (
-            alturaTotal <=
-            alturaUtil
-        ) {
-
+        if (alturaTotal <= alturaUtil) {
             return {
-
                 fonte,
-
                 linhas,
-
                 alturaLinha,
-
                 letterSpacing,
-
-                margemEsquerda
-
+                margemEsquerda,
+                margemDireita,
+                margemSuperior,
+                margemInferior,
+                larguraUtil,
+                alturaUtil
             };
         }
 
-        /*
-         * Não coube?
-         * Diminui a fonte e tenta novamente.
-         */
-        fonte -= 4;
+        fonte -= 3;
     }
 
-    /*
-     * Segurança caso seja texto gigantesco.
-     */
-    const fonteFinal = 35;
-
-    const palavras =
-        texto
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
-
-    const letterSpacing = -5;
-
-    const larguraMediaLetra =
-        fonteFinal * 0.50;
-
+    const fonteFinal = 40;
+    const letterSpacing = -3.2;
+    const larguraMediaLetra = fonteFinal * 0.43;
+    const palavras = texto.trim().split(/\s+/).filter(Boolean);
     const linhas = [];
-
     let linhaAtual = '';
 
-    function medirTextoFinal(
-        textoMedido
-    ) {
-
+    function medirTextoFinal(textoMedido) {
         if (!textoMedido) {
             return 0;
         }
 
-        const caracteres =
-            textoMedido.length;
+        const caracteres = textoMedido.length;
 
         return (
-            caracteres *
-            larguraMediaLetra
-        ) +
-        (
-            Math.max(
-                0,
-                caracteres - 1
-            ) *
-            letterSpacing
+            caracteres * larguraMediaLetra
+        ) + (
+            Math.max(0, caracteres - 1) * letterSpacing
         );
     }
 
-    for (
-        const palavra of palavras
-    ) {
-
+    for (const palavra of palavras) {
         const tentativa =
             linhaAtual
                 ? `${linhaAtual} ${palavra}`
@@ -9336,52 +9235,33 @@ function calcularLayoutBrat(texto) {
 
         if (
             !linhaAtual ||
-            medirTextoFinal(
-                tentativa
-            ) <= larguraUtil
+            medirTextoFinal(tentativa) <= larguraUtil
         ) {
-
-            linhaAtual =
-                tentativa;
-
+            linhaAtual = tentativa;
         } else {
-
-            linhas.push(
-                linhaAtual
-            );
-
-            linhaAtual =
-                palavra;
+            linhas.push(linhaAtual);
+            linhaAtual = palavra;
         }
     }
 
     if (linhaAtual) {
-
-        linhas.push(
-            linhaAtual
-        );
+        linhas.push(linhaAtual);
     }
 
     return {
-
         fonte: fonteFinal,
-
         linhas,
-
-        alturaLinha:
-            fonteFinal * 0.80,
-
+        alturaLinha: fonteFinal * 0.83,
         letterSpacing,
-
-        margemEsquerda
-
+        margemEsquerda,
+        margemDireita,
+        margemSuperior,
+        margemInferior,
+        larguraUtil,
+        alturaUtil
     };
 }
 
-
-// ============================================================
-// SVG BRAT
-// ============================================================
 
 function construirSvgBrat(
     layout,
@@ -9389,61 +9269,38 @@ function construirSvgBrat(
 ) {
 
     const tamanho = 1000;
-
-    const desfoque =
-        opcoes.desfoque ?? 2.8;
-
-    const escalaX =
-        opcoes.escalaX ?? 1.0;
-
-    const deslocamentoX =
-        opcoes.deslocamentoX ?? 0;
-
-    const deslocamentoY =
-        opcoes.deslocamentoY ?? 0;
+    const desfoque = opcoes.desfoque ?? 2.2;
+    const escalaX = opcoes.escalaX ?? 1.0;
+    const deslocamentoX = opcoes.deslocamentoX ?? 0;
+    const deslocamentoY = opcoes.deslocamentoY ?? 0;
 
     const {
         fonte,
         linhas,
         alturaLinha,
         letterSpacing,
-        margemEsquerda
+        margemEsquerda,
+        margemSuperior = 68
     } = layout;
 
-    const alturaTotal =
-        linhas.length *
-        alturaLinha;
-
-    /*
-     * Centraliza verticalmente,
-     * mas mantém o texto preso à esquerda.
-     */
     const yInicial =
-        (tamanho / 2) -
-        (alturaTotal / 2) +
+        margemSuperior +
         (alturaLinha * 0.78) +
         deslocamentoY;
 
     const linhasSvg =
         linhas
-            .map(
-                (
-                    linha,
-                    indice
-                ) => {
+            .map((linha, indice) => {
+                const y =
+                    yInicial +
+                    indice * alturaLinha;
 
-                    const y =
-                        yInicial +
-                        indice *
-                        alturaLinha;
-
-                    return `
+                return `
 <tspan
     x="${margemEsquerda}"
     y="${y}"
 >${escaparXmlBrat(linha)}</tspan>`;
-                }
-            )
+            })
             .join('');
 
     return `
@@ -9453,9 +9310,7 @@ function construirSvgBrat(
     height="${tamanho}"
     viewBox="0 0 ${tamanho} ${tamanho}"
 >
-
     <defs>
-
         <filter
             id="bratBlur"
             x="-20%"
@@ -9463,16 +9318,11 @@ function construirSvgBrat(
             width="140%"
             height="140%"
         >
-
             <feGaussianBlur
                 stdDeviation="${desfoque}"
             />
-
         </filter>
-
     </defs>
-
-    <!-- Fundo branco -->
 
     <rect
         x="0"
@@ -9483,29 +9333,22 @@ function construirSvgBrat(
     />
 
     <g
-        transform="
-            translate(${deslocamentoX}, 0)
-            scale(${escalaX}, 1)
-        "
+        transform="translate(${deslocamentoX}, 0) scale(${escalaX}, 1)"
     >
-
         <text
             x="${margemEsquerda}"
             y="0"
             font-family="Arial Narrow, Liberation Sans Narrow, Arial, Helvetica, sans-serif"
             font-size="${fonte}"
             font-weight="400"
+            font-stretch="condensed"
             letter-spacing="${letterSpacing}"
             fill="#000000"
             filter="url(#bratBlur)"
         >
-
             ${linhasSvg}
-
         </text>
-
     </g>
-
 </svg>`;
 }
 
@@ -9513,6 +9356,7 @@ function construirSvgBrat(
 // ============================================================
 // BRAT 1
 // ============================================================
+
 
 async function gerarBrat1(
     message,
@@ -9554,7 +9398,7 @@ _Exemplo:_
             construirSvgBrat(
                 layout,
                 {
-                    desfoque: 7,
+                    desfoque: 2.8,
                     escalaX: 1.0
                 }
             );
@@ -9563,9 +9407,11 @@ _Exemplo:_
             await sharp(
                 Buffer.from(svg)
             )
+                .resize(500, 500, { fit: 'fill' })
+                .resize(1000, 1000, { fit: 'fill' })
                 .png({
-                    compressionLevel: 6,
-                    quality: 50
+                    compressionLevel: 9,
+                    quality: 65
                 })
                 .toBuffer();
 
@@ -9620,248 +9466,117 @@ async function gerarBrat2(
 ) {
 
     const texto =
-    (argumento || '')
-        .trim()
-        .toLowerCase();
+        (argumento || '')
+            .trim()
+            .toLowerCase();
 
     if (!texto) {
-
-        await reagir(
-            message,
-            '❌'
-        );
-
+        await reagir(message, '❌');
         await responderCitando(
             message,
-            `❌ *𝐓𝐄𝐗𝐓𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*
-
-_Exemplo:_
-
-*${PREFIXO}brat2 ola a todos*`
+            `❌ *𝐓𝐄𝐗𝐓𝐎 𝐍𝐀̃𝐎 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐃𝐎.*\n\n_Exemplo:_\n\n*${PREFIXO}brat2 ola a todos*`
         );
-
         return;
     }
 
     try {
-
-        // ====================================================
-        // PALAVRAS
-        // ====================================================
-
         const palavras =
             texto
                 .split(/\s+/)
                 .filter(Boolean);
 
-        // ====================================================
-        // LAYOUT COMPLETO
-        // ====================================================
-
         const layoutCompleto =
-            calcularLayoutBrat(
-                texto
-            );
+            calcularLayoutBrat(texto);
 
-        /*
-         * Mantém a mesma quantidade de caracteres
-         * por linha durante toda a animação.
-         */
         const caracteresPorLinha =
             Math.max(
-                3,
+                4,
                 Math.floor(
                     layoutCompleto.larguraUtil /
-                    (
-                        layoutCompleto.fonte *
-                        0.48
+                    Math.max(
+                        1,
+                        layoutCompleto.fonte * 0.43
                     )
                 )
             );
 
-        // ====================================================
-        // FRAMES
-        // ====================================================
+        const frames = [[]];
 
-        const frames = [];
-
-        /*
-         * Primeiro frame vazio.
-         */
-        frames.push([]);
-
-        /*
-         * Uma palavra por vez.
-         */
-        for (
-            let i = 1;
-            i <= palavras.length;
-            i++
-        ) {
-
+        for (let i = 1; i <= palavras.length; i++) {
             frames.push(
-                palavras.slice(
-                    0,
-                    i
-                )
+                palavras.slice(0, i)
             );
         }
 
-        // ====================================================
-        // GIF
-        // ====================================================
-
         const encoder =
-            new GIFEncoder(
-                1000,
-                1000
-            );
+            new GIFEncoder(1000, 1000);
 
         encoder.start();
-
         encoder.setRepeat(0);
-
-        /*
-         * Qualidade propositalmente mais baixa.
-         *
-         * Isso ajuda a chegar naquela aparência
-         * "estourada" do Brat Generator.
-         */
         encoder.setQuality(5);
 
-        // ====================================================
-        // FRAMES
-        // ====================================================
+        for (let i = 0; i < frames.length; i++) {
 
-        for (
-            let i = 0;
-            i < frames.length;
-            i++
-        ) {
-
-            const palavrasVisiveis =
-                frames[i];
-
+            const palavrasVisiveis = frames[i];
             let linhas;
 
-            // -----------------------------------------------
-            // FRAME VAZIO
-            // -----------------------------------------------
-
-            if (
-                palavrasVisiveis.length === 0
-            ) {
-
+            if (palavrasVisiveis.length === 0) {
                 linhas = [' '];
-
             } else {
-
-                const textoFrame =
-                    palavrasVisiveis.join(' ');
-
-                linhas =
-                    quebrarTextoBrat(
-                        textoFrame,
-                        caracteresPorLinha
-                    );
+                linhas = quebrarTextoBrat(
+                    palavrasVisiveis.join(' '),
+                    caracteresPorLinha
+                );
             }
 
             const layoutFrame = {
-
-                fonte:
-                    layoutCompleto.fonte,
-
+                fonte: layoutCompleto.fonte,
                 linhas,
-
-                alturaLinha:
-                    layoutCompleto.alturaLinha,
-
-                margemEsquerda:
-                    layoutCompleto.margemEsquerda,
-
-                margemDireita:
-                    layoutCompleto.margemDireita,
-
-                larguraUtil:
-                    layoutCompleto.larguraUtil
+                alturaLinha: layoutCompleto.alturaLinha,
+                letterSpacing: layoutCompleto.letterSpacing,
+                margemEsquerda: layoutCompleto.margemEsquerda,
+                margemDireita: layoutCompleto.margemDireita,
+                margemSuperior: layoutCompleto.margemSuperior,
+                margemInferior: layoutCompleto.margemInferior,
+                larguraUtil: layoutCompleto.larguraUtil,
+                alturaUtil: layoutCompleto.alturaUtil
             };
-
-            // =================================================
-            // SVG
-            // =================================================
 
             const svg =
                 construirSvgBrat(
                     layoutFrame,
                     {
-                        desfoque: 10,
-
+                        desfoque: i === 0 ? 0 : 2.8,
                         escalaX: 1.0,
-
-                        deslocamentoX: -130,
-
+                        deslocamentoX: 0,
                         deslocamentoY: 0
                     }
                 );
-
-            // =================================================
-            // REDUÇÃO DE QUALIDADE
-            // =================================================
-
-            /*
-             * Primeiro reduzimos a imagem.
-             *
-             * Depois voltamos para 1000x1000.
-             *
-             * Isso cria uma aparência mais próxima
-             * do renderizador do Brat Generator.
-             */
 
             const bufferRgba =
                 await sharp(
                     Buffer.from(svg)
                 )
-                    .resize(
-                        500,
-                        500
-                    )
-                    .resize(
-                        1000,
-                        1000
-                    )
+                    .resize(500, 500, { fit: 'fill' })
+                    .resize(1000, 1000, { fit: 'fill' })
                     .ensureAlpha()
                     .raw()
                     .toBuffer();
 
-            // =================================================
-            // VELOCIDADE
-            // =================================================
-
             encoder.setDelay(
-                i === 0
-                    ? 300
-                    : 450
+                i === 0 ? 250 : 400
             );
 
-            encoder.addFrame(
-                bufferRgba
-            );
+            encoder.addFrame(bufferRgba);
         }
-
-        // ====================================================
-        // FRAME FINAL
-        // ====================================================
 
         const svgFinal =
             construirSvgBrat(
                 layoutCompleto,
                 {
                     desfoque: 2.8,
-
                     escalaX: 1.0,
-
-                    deslocamentoX: -95,
-
+                    deslocamentoX: 0,
                     deslocamentoY: 0
                 }
             );
@@ -9870,41 +9585,18 @@ _Exemplo:_
             await sharp(
                 Buffer.from(svgFinal)
             )
-                .resize(
-                    500,
-                    500
-                )
-                .resize(
-                    1000,
-                    1000
-                )
+                .resize(500, 500, { fit: 'fill' })
+                .resize(1000, 1000, { fit: 'fill' })
                 .ensureAlpha()
                 .raw()
                 .toBuffer();
 
-        /*
-         * Mantém a frase final na tela.
-         */
-        encoder.setDelay(
-            1800
-        );
-
-        encoder.addFrame(
-            bufferFinal
-        );
-
-        // ====================================================
-        // FINALIZA GIF
-        // ====================================================
-
+        encoder.setDelay(1800);
+        encoder.addFrame(bufferFinal);
         encoder.finish();
 
         const bufferGif =
             encoder.out.getData();
-
-        // ====================================================
-        // ENVIA
-        // ====================================================
 
         const figurinhaAnimada =
             new MessageMedia(
@@ -9916,27 +9608,18 @@ _Exemplo:_
         await client.sendMessage(
             message.from,
             figurinhaAnimada,
-            {
-                sendMediaAsSticker: true
-            }
+            { sendMediaAsSticker: true }
         );
 
-        await reagir(
-            message,
-            '✅'
-        );
+        await reagir(message, '✅');
 
     } catch (erro) {
-
         console.error(
             '❌ Erro ao gerar brat2:',
             erro
         );
 
-        await reagir(
-            message,
-            '❌'
-        );
+        await reagir(message, '❌');
 
         await responderCitando(
             message,
