@@ -10,6 +10,7 @@ const { spawn } = require('child_process');
 const os = require('os');
 const crypto = require('crypto');
 const { criarAgenteIA } = require('./ai-agent');
+const { criarComandosNovos } = require('./comandos-novos');
 
 const path = require('path');
 
@@ -34,7 +35,7 @@ const logsAdminGrupos = new Map();
 const participantesSorteio = new Map();
 const historicoFlood = new Map();
 const NOME_BOT = 'JUST BOT';
-const VERSAO = '3.19';
+const VERSAO = '3.20';
 const SHAZAM_API_KEY = process.env.SHAZAM_API_KEY || '';
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY || '';
 
@@ -67,6 +68,30 @@ const historicoEconomia = [];
 const inventariosEconomia = new Map();
 const cooldownsMineracao = new Map();
 const cooldownsRoubo = new Map();
+
+const comandosNovos = criarComandosNovos({
+    client,
+    Poll,
+    responderCitando,
+    reagir,
+    enviarComMencoes,
+    obterPrefixoGrupo,
+    obterConfigAdmin,
+    salvarConfigAdmin,
+    exigirAdmin,
+    usuarioEhAdminDoGrupo,
+    obterIdRemetente,
+    buscarJsonAPI,
+    garantirDadosXP,
+    calcularNivel,
+    salvarXP,
+    resolverIdEconomia,
+    garantirCarteira,
+    registrarTransacao,
+    salvarMoedas,
+    sorteiosGrupos,
+    configuracoesAdminGrupos
+});
 const dadosRoubo = new Map();
 
 // ============================================================
@@ -5527,7 +5552,7 @@ async function menuModeracao(message) {
 │  🎁 *𝐄𝐕𝐄𝐍𝐓𝐎𝐒*
 │
 ├➤ 🎁 *${PREFIXO}sorteio 10m prêmio*
-├➤ 🎟️ *${PREFIXO}sorteio2 10m prêmio 2*\n├➤ 🪙 *${PREFIXO}sorteiogold 10m prêmio*\n├➤ 🛑 *${PREFIXO}cancelarsorteio*
+├➤ 🎟️ *${PREFIXO}sorteio2 10m prêmio 2*\n├➤ 🪙 *${PREFIXO}sorteiogold 10m prêmio*\n├➤ 🕶️ *${PREFIXO}sorteioanonimo 10m prêmio*\n├➤ 🎟️ *${PREFIXO}participaranonimo*\n├➤ 🛑 *${PREFIXO}cancelarsorteio*
 ├➤ 🧹 *${PREFIXO}limpar 10*
 ├➤ 🤝 *${PREFIXO}add_parceria nome | contato/link*\n├➤ 🤝 *${PREFIXO}del_parceria ID*\n├➤ 🤝 *${PREFIXO}parceria*\n├➤ 🤝 *${PREFIXO}modoparceria on/off*\n│\n│  ⚠️ *𝐀𝐃𝐕𝐄𝐑𝐓𝐄̂𝐍𝐂𝐈𝐀𝐒*\n│\n├➤ *${PREFIXO}adverter @pessoa motivo*\n├➤ *${PREFIXO}rm_adv @pessoa [quantidade]*\n├➤ *${PREFIXO}lista_adv*\n├➤ *${PREFIXO}ver_adv @pessoa*\n├➤ *${PREFIXO}limpar_adv*\n│\n│  📝 *𝐀𝐍𝐎𝐓𝐀𝐂̧𝐎̃𝐄𝐒*\n│\n├➤ *${PREFIXO}anotar título | texto*\n├➤ *${PREFIXO}anotações*\n├➤ *${PREFIXO}rmnota ID*\n│\n│  📋 *𝐋𝐈𝐒𝐓𝐀𝐒*\n│\n├➤ *${PREFIXO}listabranca @pessoa*\n├➤ *${PREFIXO}rmlistabranca @pessoa*\n├➤ *${PREFIXO}listanegra*\n├➤ *${PREFIXO}tirardalista @pessoa*\n├➤ *${PREFIXO}add_palavra palavra*\n├➤ *${PREFIXO}rm_palavra palavra*\n├➤ *${PREFIXO}lista_palavras*\n├➤ 📋 *${PREFIXO}logs on/off*
 │
@@ -5587,6 +5612,8 @@ async function menuUtil(message) {
 │
 ├➤ 🌦️ *${PREFIXO}clima <cidade>*
 │   _Consultar o clima atual_
+├➤ 📆 *${PREFIXO}tempohistorico <cidade>*
+│   _Ver sete dias de histórico_
 │
 ├➤ ⏱️ *${PREFIXO}uptime*
 │   _Ver há quanto tempo o bot está online_
@@ -5604,6 +5631,10 @@ async function menuUtil(message) {
 │   _Fazer uma contagem regressiva_
 ├➤ ⏱️ *${PREFIXO}cronometro 30s*
 │   _Criar um cronômetro_
+├➤ ⏰ *${PREFIXO}lembrete 30m texto*
+│   _Criar um lembrete persistente_
+├➤ 📜 *${PREFIXO}historicocomandos*
+│   _Admin: ver os últimos comandos_
 ├➤ 🧮 *${PREFIXO}calculadora 2 + 2*
 │   _Fazer cálculos_
 ├➤ 📊 *${PREFIXO}porcentagem 20 de 500*
@@ -5614,6 +5645,8 @@ async function menuUtil(message) {
 │   _Converter unidades_
 ├➤ 💱 *${PREFIXO}cotacao USD BRL 100*
 │   _Consultar cotação de moedas_
+├➤ 🪙 *${PREFIXO}cotarcrypto BTC BRL*
+│   _Consultar cotação de criptomoeda_
 ├➤ 🌐 *${PREFIXO}traduzir en pt texto*
 │   _Traduzir um texto_
 ├➤ 🔗 *${PREFIXO}encurtar https://...*
@@ -16289,6 +16322,13 @@ async function menuJogos(message) {
 ├➤ 🛑 *${PREFIXO}stop*
 │   _Jogue STOP com o grupo_
 │
+├➤ 🧠 *${PREFIXO}quizrapido <tema>*
+│   _Quiz de cinco perguntas_
+├➤ 🎯 *${PREFIXO}desafiodiario*
+│   _Desafio do dia com XP e moedas_
+├➤ 📊 *${PREFIXO}enquete pergunta | opção | opção*
+│   _Criar uma enquete no grupo_
+│
 ┗═•❃༺🎮༻❃•═┛`
     );
 }
@@ -19628,7 +19668,7 @@ async function comandoSimih(message, argumentos, variante = 'simih') {
 }
 
 const COMANDOS_RPG = new Set(['rpg','tapa','soco','chute','empurrar','duelo','roubar','abracar','proteger','curar','elogiar','zoar','aventura','chuterpg']);
-const COMANDOS_GAMER = new Set(['jogos','dado','moeda','sn','ppt','adivinha','chute','chuterpg','quiz','pokemon','ppp','passar','batata','batataquente','hotpotato','rr','roletarussa','roleta','forca','revforca','stop','slots','slot']);
+const COMANDOS_GAMER = new Set(['jogos','dado','moeda','sn','ppt','adivinha','chute','chuterpg','quiz','quizrapido','desafiodiario','desafio-diario','pokemon','ppp','passar','batata','batataquente','hotpotato','rr','roletarussa','roleta','forca','revforca','stop','slots','slot']);
 
 async function verificarModoEspecial(message, comando) {
     if (!message?.from?.endsWith('@g.us')) return true;
@@ -19738,10 +19778,10 @@ async function processarComando(
             await responderCitando(message, 'ð _Os comandos estÃ£o desativados neste grupo pelos administradores._');
             return;
         }
-        if (!admin && ['minerar','mina','loja','shop','comprar','buy','inventario','inv','doar','donate','sortearm','rankingdinheiro','rankingmoedas','ricos','slots','slot','saldo','carteira','roubar'].includes(comando) && !config.economia) {
+        if (!admin && ['minerar','mina','loja','shop','comprar','buy','inventario','inv','doar','donate','sortearm','rankingdinheiro','rankingmoedas','ricos','slots','slot','saldo','carteira','roubar','desafiodiario','desafio-diario'].includes(comando) && !config.economia) {
             await responderCitando(message, 'ð° _O sistema de economia estÃ¡ desativado neste grupo._'); return;
         }
-        if (!admin && ['dado','moeda','sn','ppt','adivinha','chute','chuterpg','quiz','pokemon','ppp','passar','batata','batataquente','hotpotato','rr','roletarussa','roleta','forca','revforca','stop'].includes(comando) && !config.jogos) {
+        if (!admin && ['dado','moeda','sn','ppt','adivinha','chute','chuterpg','quiz','quizrapido','desafiodiario','desafio-diario','pokemon','ppp','passar','batata','batataquente','hotpotato','rr','roletarussa','roleta','forca','revforca','stop'].includes(comando) && !config.jogos) {
             await responderCitando(message, 'ð® _Os jogos estÃ£o desativados neste grupo._'); return;
         }
     }
@@ -19760,6 +19800,8 @@ async function processarComando(
     }
 
     if (['config','antilink','antiflood','welcome','goodbye','setwelcome','setgoodbye','jogos','economia','xp','cmds','setregras','setnome','setfoto','desc','staff','darxp','removerxp','resetxp','darcoins','removercoins','reseteco','sorteio','cancelarsorteio','limpar','logs','prefixo','add_parceria','del_parceria','parceria','modoparceria','sorteio2','sorteiogold','anagrama'].includes(comando)) registrarLogAdmin(message, comando, argumentos);
+
+    if (await comandosNovos.executar(message, comando, argumentos)) return;
 
     switch (comando) {
 
